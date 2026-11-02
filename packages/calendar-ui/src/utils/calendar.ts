@@ -1,7 +1,21 @@
 import calendar from "@sanguogege/calendar";
 import type { LunarResult } from "@sanguogege/calendar";
-import type { BuildDaysOptions, CalendarDay } from "../types";
+import type { BuildDaysOptions, CalendarDay, WeekStartsOn } from "../types";
 import { sameDay } from "./date";
+
+/** 缓存里放的是“与选中/今天无关”的部分，可以跨实例、跨渲染复用 */
+interface BaseDay {
+  year: number;
+  month: number;
+  day: number;
+  date: Date;
+  inCurrentMonth: boolean;
+  lunar: LunarResult | null;
+}
+
+/** 保留最近 24 个月（一屏 6 周 + 前后翻几个月够用） */
+const CACHE_LIMIT = 24;
+const baseCache = new Map<string, BaseDay[]>();
 
 /** 取某一天的农历信息，超出 @sanguogege/calendar 支持范围（1900-01-31 ~ 2100-12-31）时返回 null */
 export const lunarOf = function (date: Date): LunarResult | null {
@@ -28,25 +42,57 @@ export const subtitleOf = function (day: CalendarDay): string {
   return lunar.LDayCn;
 };
 
-/** 生成 6 行 × 7 列共 42 个格子的数据 */
-export const buildDays = function (options: BuildDaysOptions): CalendarDay[] {
-  const offset = (firstWeekdayOf(options.year, options.month) - options.weekStartsOn + 7) % 7;
-  const days: CalendarDay[] = [];
+/** 生成 42 格的基础数据（含农历），这一步最贵，所以缓存 */
+const buildBaseDays = function (
+  year: number,
+  month: number,
+  weekStartsOn: WeekStartsOn,
+): BaseDay[] {
+  const offset = (firstWeekdayOf(year, month) - weekStartsOn + 7) % 7;
+  const days: BaseDay[] = [];
 
   for (let i = 0; i < 42; i++) {
-    const date = new Date(options.year, options.month - 1, i - offset + 1);
-    const inCurrentMonth =
-      date.getMonth() + 1 === options.month && date.getFullYear() === options.year;
+    const date = new Date(year, month - 1, i - offset + 1);
+    const inCurrentMonth = date.getMonth() + 1 === month && date.getFullYear() === year;
     days.push({
       year: date.getFullYear(),
       month: date.getMonth() + 1,
       day: date.getDate(),
       date,
       inCurrentMonth,
-      isToday: sameDay(date, options.today),
-      isSelected: options.selected !== null && sameDay(date, options.selected),
       lunar: inCurrentMonth ? lunarOf(date) : null,
     });
   }
   return days;
+};
+
+/** 按 key 取缓存，命中后重新插入以维持 LRU 顺序 */
+const getBaseDays = function (year: number, month: number, weekStartsOn: WeekStartsOn): BaseDay[] {
+  const key = `${year}-${month}-${weekStartsOn}`;
+  const cached = baseCache.get(key);
+
+  if (cached) {
+    baseCache.delete(key);
+    baseCache.set(key, cached);
+    return cached;
+  }
+
+  const days = buildBaseDays(year, month, weekStartsOn);
+  if (baseCache.size >= CACHE_LIMIT) {
+    const oldest = baseCache.keys().next();
+    if (!oldest.done) baseCache.delete(oldest.value);
+  }
+  baseCache.set(key, days);
+  return days;
+};
+
+/** 生成 6 行 × 7 列共 42 个格子的数据；今天/选中是每次现算的，不进缓存 */
+export const buildDays = function (options: BuildDaysOptions): CalendarDay[] {
+  const base = getBaseDays(options.year, options.month, options.weekStartsOn);
+
+  return base.map((day) => ({
+    ...day,
+    isToday: sameDay(day.date, options.today),
+    isSelected: options.selected !== null && sameDay(day.date, options.selected),
+  }));
 };

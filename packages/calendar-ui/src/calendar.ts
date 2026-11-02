@@ -53,7 +53,8 @@ export function createCalendar(
       state.year = day.year;
       state.month = day.month;
     }
-    render();
+    // 点选不换月，只需要刷新状态类，不必重建格子
+    grid.updateState(currentDays());
     options.onSelect?.(day);
   };
 

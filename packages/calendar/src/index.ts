@@ -3,6 +3,9 @@ import {
   leapMonth,
   leapDays,
   lMonthDays,
+  yearStartOf,
+  monthSegmentsOf,
+  resolveLunarYear,
   toGanZhiYear,
   toGanZhi,
   toHourGanZhi,
@@ -10,6 +13,7 @@ import {
   toChinaDay,
   getSolarTerm,
 } from "./utils/LunarFunction";
+import type { LunarMonthSegment } from "./utils/LunarFunction";
 
 import {
   toAstro,
@@ -17,6 +21,7 @@ import {
   getAnimal,
   solarDays,
   solarFirstWeek,
+  weekdayOf,
   toChinaNum,
   nthWeekdayOfMonth,
 } from "./utils/SolarFunction";
@@ -72,15 +77,20 @@ const solarFestivals = function (
   m: number,
   d: number,
   sFtv: Record<string, string[]>,
-): string[] {
-  const list = festivalList(sFtv, m, d);
-  const push = function (name: string) {
-    if (list.indexOf(name) === -1) list.push(name);
+): readonly string[] {
+  const base = festivalList(sFtv, m, d);
+  const extra: string[] = [];
+
+  const add = function (name: string) {
+    if (base.indexOf(name) === -1 && extra.indexOf(name) === -1) extra.push(name);
   };
-  if (m === 5 && d === nthWeekdayOfMonth(y, 5, 0, 2)) push("母亲节");
-  if (m === 6 && d === nthWeekdayOfMonth(y, 6, 0, 3)) push("父亲节");
-  if (m === 11 && d === nthWeekdayOfMonth(y, 11, 4, 4)) push("感恩节");
-  return list;
+
+  if (m === 5 && d === nthWeekdayOfMonth(y, 5, 0, 2)) add("母亲节");
+  if (m === 6 && d === nthWeekdayOfMonth(y, 6, 0, 3)) add("父亲节");
+  if (m === 11 && d === nthWeekdayOfMonth(y, 11, 4, 4)) add("感恩节");
+
+  // 没有浮动节日时直接返回配置里的只读数组，省掉一次拷贝
+  return extra.length === 0 ? base : base.concat(extra);
 };
 
 /** 某一天的农历节日，除夕按“腊月最后一天”计算，不写死 12-30 */
@@ -89,12 +99,12 @@ const lunarFestivals = function (
   lMonth: number,
   lDay: number,
   lFtv: Record<string, string[]>,
-): string[] {
-  const list = festivalList(lFtv, lMonth, lDay);
-  if (lMonth === 12 && lDay === lMonthDays(lYear, 12) && list.indexOf("除夕") === -1) {
-    list.push("除夕");
+): readonly string[] {
+  const base = festivalList(lFtv, lMonth, lDay);
+  if (lMonth === 12 && lDay === lMonthDays(lYear, 12) && base.indexOf("除夕") === -1) {
+    return base.concat("除夕");
   }
-  return list;
+  return base;
 };
 
 /**
@@ -107,49 +117,22 @@ const computeLunar = function (sy: number, sm: number, sd: number): LunarResult 
   }
   const config = getResolvedConfig();
 
-  let i: number;
-  let temp = 0;
-  let leap = 0;
-  let isLeap = false;
-  let offset = Math.round((utc - MIN_SOLAR_UTC) / DAY_MS);
+  const offset = Math.round((utc - MIN_SOLAR_UTC) / DAY_MS);
+  const { year, offsetInYear } = resolveLunarYear(offset);
 
-  for (i = MIN_YEAR; i < MAX_YEAR + 1 && offset > 0; i++) {
-    temp = lYearDays(i);
-    offset -= temp;
-  }
-  if (offset < 0) {
-    offset += temp;
-    i--;
+  // 月份段（闰月单独一段）按顺序扫描，最多 13 段
+  const segments = monthSegmentsOf(year);
+  let segment = segments[0] as LunarMonthSegment;
+  for (const item of segments) {
+    if (item.start > offsetInYear) break;
+    segment = item;
   }
 
-  const year = i;
-  leap = leapMonth(year);
+  const month = segment.month;
+  const day = offsetInYear - segment.start + 1;
+  const isLeap = segment.isLeap;
 
-  for (i = 1; i < 13 && offset > 0; i++) {
-    if (leap > 0 && i === leap + 1 && !isLeap) {
-      --i;
-      isLeap = true;
-      temp = leapDays(year);
-    } else {
-      temp = lMonthDays(year, i);
-    }
-    if (isLeap && i === leap + 1) isLeap = false;
-    offset -= temp;
-  }
-  if (offset === 0 && leap > 0 && i === leap + 1) {
-    isLeap = !isLeap;
-    if (isLeap) --i;
-  }
-  if (offset < 0) {
-    offset += temp;
-    --i;
-  }
-
-  const month = i;
-  const day = offset + 1;
-
-  const dayOfWeek = new Date(utc).getUTCDay();
-  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  const dayOfWeek = weekdayOf(sy, sm, sd);
   const firstTermDay = getTerm(sy, sm * 2 - 1);
   const secondTermDay = getTerm(sy, sm * 2);
   const lichunDay = getTerm(sy, 3);
@@ -158,9 +141,10 @@ const computeLunar = function (sy: number, sm: number, sd: number): LunarResult 
   if (firstTermDay === sd) term = getSolarTerm(sm * 2 - 2);
   if (secondTermDay === sd) term = getSolarTerm(sm * 2 - 1);
 
-  const rest = restOf(config.restIndex, sy, sm, sd);
-  const isBan = rest.isBan;
-  const isXiu = !isBan && (isWeekend || rest.isHoliday);
+  const restState = restOf(config.restIndex, sy, sm, sd);
+  const isBan = restState === 2;
+  // 0=普通日、1=放假、2=补班，三者互斥；只有普通日才回落到周六/周日
+  const isXiu = restState === 1 || (restState === 0 && (dayOfWeek === 0 || dayOfWeek === 6));
 
   const dayCyclical = utc / DAY_MS - (sd - 1) + 25567 + 10;
   const gzDayOffset = dayCyclical + sd - 1;
@@ -190,8 +174,6 @@ const computeLunar = function (sy: number, sm: number, sd: number): LunarResult 
       return now.getFullYear() === sy && now.getMonth() + 1 === sm && now.getDate() === sd;
     })(),
     isLeap,
-    isWeekend,
-    isWorkday: !isXiu,
     nWeek: dayOfWeek === 0 ? 7 : dayOfWeek,
     dayOfWeek,
     ncWeek: "星期" + toChinaNum(dayOfWeek),
@@ -259,17 +241,13 @@ const lunarToSolar = function (
   const maxDay = wantLeap ? leapDays(year) : lMonthDays(year, month);
   const day = assertInteger("lunarToSolar(day)", d, 1, maxDay);
 
-  let offset = 0;
-  for (let i = MIN_YEAR; i < year; i++) offset += lYearDays(i);
-  let leapAdded = false;
-  for (let i = 1; i < month; i++) {
-    if (!leapAdded && leap > 0 && leap <= i) {
-      offset += leapDays(year);
-      leapAdded = true;
-    }
-    offset += lMonthDays(year, i);
+  // 直接查表定位到该月第一天的绝对偏移，不再逐年逐月累加
+  const segments = monthSegmentsOf(year);
+  const segment = segments.find((item) => item.month === month && item.isLeap === wantLeap);
+  if (!segment) {
+    return failRange("lunarToSolar", `${year} 年${wantLeap ? "闰" : ""}${month}月不存在`);
   }
-  if (wantLeap) offset += lMonthDays(year, month);
+  const offset = yearStartOf(year) + segment.start;
 
   const utc = MIN_SOLAR_UTC + (offset + day - 1) * DAY_MS;
   if (utc > MAX_SOLAR_UTC) {

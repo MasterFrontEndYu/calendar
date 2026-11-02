@@ -72,10 +72,10 @@ export interface LunarResult {
   Xiu: boolean;
   /** 当天是否调休补班 */
   Ban: boolean;
-  /** 公历节日，例如 ["元旦"] */
-  Gljr: string[];
-  /** 农历节日，例如 ["春节"] */
-  Nljr: string[];
+  /** 公历节日，例如 ["元旦"]；没有节日时是共享的只读空数组 */
+  Gljr: readonly string[];
+  /** 农历节日，例如 ["春节"]；没有节日时是共享的只读空数组 */
+  Nljr: readonly string[];
   /** 农历年 */
   lYear: number;
   /** 农历月，1-12 */
@@ -108,10 +108,6 @@ export interface LunarResult {
   isToday: boolean;
   /** 是否闰月 */
   isLeap: boolean;
-  /** 是否周末（周六、周日） */
-  isWeekend: boolean;
-  /** 是否工作日，等于 !Xiu */
-  isWorkday: boolean;
   /** 星期数字，1-7，周一为 1、周日为 7 */
   nWeek: number;
   /** 星期数字，0-6，周日为 0，与 solarFirstWeek 口径一致 */

@@ -1,5 +1,9 @@
 import { MMDD_RE, describe, failType, isPlainObject } from "./Assert";
+import { mmddOf } from "./DateKey";
 import type { FestivalMap } from "../types";
+
+/** 没有节日时共用的空数组，冻结后不怕调用方误改 */
+const NO_FESTIVAL: readonly string[] = Object.freeze([]) as readonly string[];
 
 /**
  * 校验并规范化节日表。
@@ -62,13 +66,13 @@ const freezeFestivalMap = function (map: FestivalMap): FestivalMap {
 };
 
 /**
- * 取某一天（MMDD）的节日名称数组，没有则返回空数组
+ * 取某一天（MMDD）的节日名称，没有则返回共享的空数组。
+ *
+ * 返回的是只读数组：配置里的数组已被冻结，调用方要追加节日必须自己 copy。
  */
-const festivalList = function (map: FestivalMap, m: number, d: number): string[] {
-  const key = (m < 10 ? "0" + m : String(m)) + (d < 10 ? "0" + d : String(d));
-  const list = map[key];
-  return list ? list.slice() : [];
+const festivalList = function (map: FestivalMap, m: number, d: number): readonly string[] {
+  return map[mmddOf(m, d)] ?? NO_FESTIVAL;
 };
 
-export { normalizeFestivalMap, mergeFestivalMap, freezeFestivalMap, festivalList };
+export { normalizeFestivalMap, mergeFestivalMap, freezeFestivalMap, festivalList, NO_FESTIVAL };
 export type { FestivalMap };

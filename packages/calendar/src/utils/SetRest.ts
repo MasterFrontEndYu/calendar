@@ -1,4 +1,5 @@
 import { MMDD_RE, describe, failType, isPlainObject } from "./Assert";
+import { mmddOf } from "./DateKey";
 import type { NormalizedRestEntry, RestEntry } from "../types";
 
 /** 预建索引，避免每次查询都做数组 includes */
@@ -7,6 +8,14 @@ export interface RestIndexEntry {
   ban: Set<string>;
 }
 export type RestIndex = Record<string, RestIndexEntry>;
+
+/**
+ * 某一天的调休状态
+ *
+ * 0 = 普通日，1 = 放假，2 = 补班。放假和补班来自同一份国家法定节假日数据，不会落在同一天；
+ * 真要冲突时按补班处理（保持原有优先级）。
+ */
+export type RestState = 0 | 1 | 2;
 
 /** 规范化后的调休表，key 为年份 */
 export type RestMap = Record<string, NormalizedRestEntry>;
@@ -113,18 +122,18 @@ const buildRestIndex = function (map: RestMap): RestIndex {
 };
 
 /**
- * 查询某天的放假 / 调休状态
+ * 查询某天的调休状态
+ *
+ * 只返回一个数字，不再为每天分配 { isHoliday, isBan } 对象。
  */
-const restOf = function (
-  index: RestIndex,
-  y: number,
-  m: number,
-  d: number,
-): { isHoliday: boolean; isBan: boolean } {
-  const entry = index[String(y)];
-  if (!entry) return { isHoliday: false, isBan: false };
-  const key = (m < 10 ? "0" + m : String(m)) + (d < 10 ? "0" + d : String(d));
-  return { isHoliday: entry.xiu.has(key), isBan: entry.ban.has(key) };
+const restOf = function (index: RestIndex, y: number, m: number, d: number): RestState {
+  const entry = index[y];
+  if (!entry) return 0;
+
+  const key = mmddOf(m, d);
+  if (entry.ban.has(key)) return 2;
+  if (entry.xiu.has(key)) return 1;
+  return 0;
 };
 
 export { normalizeRestMap, mergeRestMap, freezeRestMap, buildRestIndex, restOf };

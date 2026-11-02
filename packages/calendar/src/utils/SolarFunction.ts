@@ -5,6 +5,39 @@ import { assertInteger, failRange } from "./Assert";
 const SOLAR_YEAR_MIN = 1;
 const SOLAR_YEAR_MAX = 9999;
 
+const MS_PER_DAY = 86400000;
+/** 1970-01-01 是星期四，用作星期推算的基准 */
+const EPOCH_WEEKDAY = 4;
+
+/** 用毫秒数直接算星期，避免每次都 new Date */
+const weekdayOf = function (y: number, m: number, d: number): number {
+  const days = Math.round(Date.UTC(y, m - 1, d) / MS_PER_DAY);
+  return (((days + EPOCH_WEEKDAY) % 7) + 7) % 7;
+};
+
+/** 按年缓存的 24 个节气日期，同一年只解析一次 */
+const termCache = new Map<number, number[]>();
+
+/** 解析某一年的节气表，返回 24 个日期数字 */
+const parseTerms = function (y: number): number[] {
+  const table = TermInfo[y - 1900];
+  if (typeof table !== "string" || table.length < 30) {
+    failRange("getTerm(year)", `缺少 ${y} 年的节气数据`);
+  }
+
+  const days: number[] = [];
+  for (let i = 0; i < 6; i++) {
+    const chunk = parseInt(table.slice(i * 5, i * 5 + 5), 16).toString();
+    days.push(
+      Number(chunk.slice(0, 1)),
+      Number(chunk.slice(1, 3)),
+      Number(chunk.slice(3, 4)),
+      Number(chunk.slice(4, 6)),
+    );
+  }
+  return days;
+};
+
 /**
  * 返回公历 y 年 m 月的天数（会自动处理闰年）
  * @param y 公历年
@@ -29,7 +62,7 @@ const solarDays = function (y: number, m: number): number {
 const solarFirstWeek = function (y: number, m: number): number {
   assertInteger("solarFirstWeek(year)", y, SOLAR_YEAR_MIN, SOLAR_YEAR_MAX);
   assertInteger("solarFirstWeek(month)", m, 1, 12);
-  return new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+  return weekdayOf(y, m, 1);
 };
 
 /**
@@ -83,23 +116,14 @@ const toAstro = function (m: number, d: number): string {
 const getTerm = function (y: number, n: number): number {
   assertInteger("getTerm(year)", y, 1900, 2100);
   assertInteger("getTerm(n)", n, 1, 24);
-  const table = TermInfo[y - 1900];
-  if (typeof table !== "string" || table.length < 30) {
-    failRange("getTerm(year)", `缺少 ${y} 年的节气数据`);
+
+  let days = termCache.get(y);
+  if (days === undefined) {
+    days = parseTerms(y);
+    termCache.set(y, days);
   }
-  const info: string[] = [
-    parseInt("0x" + table.slice(0, 5), 16).toString(),
-    parseInt("0x" + table.slice(5, 10), 16).toString(),
-    parseInt("0x" + table.slice(10, 15), 16).toString(),
-    parseInt("0x" + table.slice(15, 20), 16).toString(),
-    parseInt("0x" + table.slice(20, 25), 16).toString(),
-    parseInt("0x" + table.slice(25, 30), 16).toString(),
-  ];
-  const days: string[] = [];
-  info.forEach(function (chunk: string) {
-    days.push(chunk.slice(0, 1), chunk.slice(1, 3), chunk.slice(3, 4), chunk.slice(4, 6));
-  });
-  const day = parseInt(days[n - 1], 10);
+
+  const day = days[n - 1];
   if (!Number.isInteger(day)) {
     failRange("getTerm", `${y} 年第 ${n} 个节气解析失败`);
   }
@@ -126,4 +150,13 @@ const toChinaNum = function (num: number): string {
   return nStr1[num];
 };
 
-export { solarDays, toChinaNum, solarFirstWeek, nthWeekdayOfMonth, toAstro, getTerm, getAnimal };
+export {
+  solarDays,
+  toChinaNum,
+  solarFirstWeek,
+  weekdayOf,
+  nthWeekdayOfMonth,
+  toAstro,
+  getTerm,
+  getAnimal,
+};

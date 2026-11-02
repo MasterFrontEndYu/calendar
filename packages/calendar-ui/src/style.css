@@ -73,6 +73,11 @@
   gap: 4px;
 }
 
+/* 42 格固定由 JS 就地更新，把布局/绘制的影响限制在网格内部 */
+.cui__grid {
+  contain: layout paint;
+}
+
 .cui__weekday {
   padding: 4px 0;
   color: var(--cui-muted);

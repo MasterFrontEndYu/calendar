@@ -49,7 +49,9 @@ export interface GridOptions {
 /** 日期网格的句柄 */
 export interface GridHandle {
   el: HTMLElement;
-  /** 用新的格子数据整块重绘 */
+  /** 换月：更新格子文本与状态（节点复用，不重新创建） */
   render(days: CalendarDay[]): void;
+  /** 只更新选中/今天等状态类，不动文本 */
+  updateState(days: CalendarDay[]): void;
   destroy(): void;
 }

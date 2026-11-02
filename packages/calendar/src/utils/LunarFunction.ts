@@ -57,6 +57,70 @@ const lMonthDays = function (y: number, m: number): number {
   return LunarInfo[y - 1900] & (0x10000 >> m) ? 30 : 29;
 };
 
+/** 农历每年正月初一距 1900-01-31 的天数；长度 202，最后一项是 2101 正月初一 */
+const YEAR_START: number[] = (function () {
+  const starts: number[] = [0];
+  for (let y = LUNAR_YEAR_MIN; y <= LUNAR_YEAR_MAX; y++) {
+    starts.push((starts[starts.length - 1] as number) + lYearDays(y));
+  }
+  return starts;
+})();
+
+/** 某年正月初一距 1900-01-31 的天数 */
+const yearStartOf = function (year: number): number {
+  assertLunarYear(year, "yearStartOf(year)");
+  return YEAR_START[year - LUNAR_YEAR_MIN] as number;
+};
+
+/** 农历某年的一个“月份段”，闰月算独立一段 */
+export interface LunarMonthSegment {
+  month: number;
+  isLeap: boolean;
+  /** 该段 1 号距当年正月初一的天数 */
+  start: number;
+}
+
+const segmentCache = new Map<number, LunarMonthSegment[]>();
+
+/** 某年的月份段表（按时间顺序），第一次构建后缓存 */
+const monthSegmentsOf = function (year: number): LunarMonthSegment[] {
+  const cached = segmentCache.get(year);
+  if (cached) return cached;
+
+  const leap = leapMonth(year);
+  const segments: LunarMonthSegment[] = [];
+  let start = 0;
+
+  for (let m = 1; m <= 12; m++) {
+    segments.push({ month: m, isLeap: false, start });
+    start += lMonthDays(year, m);
+    if (leap === m) {
+      segments.push({ month: m, isLeap: true, start });
+      start += leapDays(year);
+    }
+  }
+
+  segmentCache.set(year, segments);
+  return segments;
+};
+
+/** 把“距 1900-01-31 的天数”换算成农历年与当年第几天（二分查找，替代逐年累减） */
+const resolveLunarYear = function (offset: number): { year: number; offsetInYear: number } {
+  let low = 0;
+  let high = LUNAR_YEAR_MAX - LUNAR_YEAR_MIN;
+
+  while (low < high) {
+    const mid = (low + high + 1) >>> 1;
+    if ((YEAR_START[mid] as number) <= offset) low = mid;
+    else high = mid - 1;
+  }
+
+  return {
+    year: LUNAR_YEAR_MIN + low,
+    offsetInYear: offset - (YEAR_START[low] as number),
+  };
+};
+
 /**
  * 农历年转换为干支纪年
  * @param lYear 农历年，允许 1899 这类边界年（只做算术，不查表）
@@ -138,6 +202,9 @@ export {
   leapMonth,
   leapDays,
   lMonthDays,
+  yearStartOf,
+  monthSegmentsOf,
+  resolveLunarYear,
   toGanZhiYear,
   toGanZhi,
   toHourGanZhi,

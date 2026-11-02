@@ -73,7 +73,6 @@ calendar.lunarToSolar(2020, 4, 1, true); // 2020-05-23（闰四月）
 | `Gljr` / `Nljr`             | string[]       | 公历节日 / 农历节日                              |
 | `Xiu`                       | boolean        | 是否休息：周末或法定节假日，且不是补班日         |
 | `Ban`                       | boolean        | 是否调休补班                                     |
-| `isWeekend` / `isWorkday`   | boolean        | 是否周末 / 是否工作日（`isWorkday === !Xiu`）    |
 | `isToday`                   | boolean        | 是否今天（按运行环境本地时区）                   |
 | `nWeek`                     | number         | 星期 1-7，**周日为 7**                           |
 | `dayOfWeek`                 | number         | 星期 0-6，**周日为 0**，与 `solarFirstWeek` 一致 |
@@ -165,7 +164,7 @@ calendar.utils.toHourGanZhi(40); // ["甲子", "乙丑", ...]
 1. 非法入参一律抛异常，不再 `return -1`、不再静默取今天、不再自动进位（如 `2024-02-30` 不再变成 3 月 1 日）。
 2. `lunarToSolar` 不再返回 `-1`。
 3. `gzYear` 改为以**立春**为界，与 `gzMonth` 一致；需要按正月初一换年的用新增的 `gzYearLunar`。
-4. `Xiu` 现在包含周末，并扣除调休补班日；新增 `isWeekend`、`isWorkday`、`dayOfWeek`。
+4. `Xiu` 现在包含周末，并扣除调休补班日；新增 `dayOfWeek`。
 5. `setRest` 由“整年覆盖”改为“按年按列表合并”。
 6. 除夕、母亲节、父亲节、感恩节改为规则计算，数据文件里已移除对应写法。
 7. 修复星座名（`摩羯座`、`天秤座`）与星座边界日期。

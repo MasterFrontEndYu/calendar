@@ -106,33 +106,18 @@ describe("配置校验", () => {
 
 describe("休息与调休", () => {
   it("周末默认休息，工作日默认上班", () => {
-    expect(calendar.solarToLunar(2026, 10, 31)).toMatchObject({
-      Xiu: true,
-      Ban: false,
-      isWeekend: true,
-      isWorkday: false,
-    });
-    expect(calendar.solarToLunar(2026, 10, 27)).toMatchObject({
-      Xiu: false,
-      Ban: false,
-      isWeekend: false,
-      isWorkday: true,
-    });
+    expect(calendar.solarToLunar(2026, 10, 31)).toMatchObject({ Xiu: true, Ban: false });
+    expect(calendar.solarToLunar(2026, 10, 27)).toMatchObject({ Xiu: false, Ban: false });
   });
 
   it("法定节假日即使在工作日也休息", () => {
     // 2020-10-01 是周四
-    expect(calendar.solarToLunar(2020, 10, 1)).toMatchObject({ Xiu: true, isWeekend: false });
+    expect(calendar.solarToLunar(2020, 10, 1)).toMatchObject({ Xiu: true, Ban: false });
   });
 
   it("调休补班日即使周末也要上班", () => {
     // 2020-10-10 是周六
-    expect(calendar.solarToLunar(2020, 10, 10)).toMatchObject({
-      Xiu: false,
-      Ban: true,
-      isWeekend: true,
-      isWorkday: true,
-    });
+    expect(calendar.solarToLunar(2020, 10, 10)).toMatchObject({ Xiu: false, Ban: true });
   });
 
   it("注入的调休立即生效", () => {
