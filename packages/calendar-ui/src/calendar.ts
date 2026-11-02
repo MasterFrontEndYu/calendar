@@ -3,7 +3,7 @@ import { createHeader } from "./components/header";
 import { createWeekdays } from "./components/weekdays";
 import { resolveLocale } from "./locales";
 import type { CalendarDay, CalendarInstance, CalendarOptions } from "./types";
-import { buildDays } from "./utils/calendar";
+import { buildDays, resolveDaySource } from "./utils/calendar";
 import { normalizeMonth, sameDay } from "./utils/date";
 import { node } from "./utils/dom";
 
@@ -18,6 +18,7 @@ export function createCalendar(
 ): CalendarInstance {
   const weekStartsOn = options.weekStartsOn ?? 1;
   const locale = resolveLocale(options.locale);
+  const source = resolveDaySource(options.holidays, options.replaceHolidays === true);
   const today = new Date();
   const initial = options.initialDate ?? today;
 
@@ -38,6 +39,7 @@ export function createCalendar(
       weekStartsOn,
       today,
       selected: state.selected,
+      source,
     });
   };
 

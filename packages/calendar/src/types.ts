@@ -119,3 +119,17 @@ export interface LunarResult {
   /** 星座，例如 "摩羯座" */
   astro: string;
 }
+
+/**
+ * 固定了一份节假日配置的转换器
+ *
+ * 由 createConverter() 创建，配置在创建时固定，与全局 setHolidays() 互不影响。
+ */
+export interface CalendarConverter {
+  /** 公历转农历，不传参返回今天 */
+  solarToLunar(this: void, y?: number, m?: number, d?: number): LunarResult;
+  /** 农历转公历 */
+  lunarToSolar(this: void, y: number, m: number, d: number, isLeapMonth?: boolean): LunarResult;
+  /** 该转换器当前配置的深拷贝，可再次用于 createConverter() / setHolidays() */
+  getHolidays(this: void): HolidaySnapshot;
+}

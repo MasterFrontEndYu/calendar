@@ -14,4 +14,4 @@ export type {
   NavOptions,
 } from "./components";
 export type { CalendarLocale, CalendarLocaleName } from "./locale";
-export type { BuildDaysOptions, WeekStartsOn, YearMonth } from "./utils";
+export type { BuildDaysOptions, DaySource, WeekStartsOn, YearMonth } from "./utils";

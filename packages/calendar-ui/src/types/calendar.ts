@@ -1,4 +1,4 @@
-import type { LunarResult } from "@sanguogege/calendar";
+import type { HolidayConfig, LunarResult } from "@sanguogege/calendar";
 import type { CalendarLocale, CalendarLocaleName } from "./locale";
 import type { WeekStartsOn, YearMonth } from "./utils";
 
@@ -47,6 +47,10 @@ export interface CalendarOptions {
   weekStartsOn?: WeekStartsOn;
   /** 界面语言：内置 "zh-CN"（默认）/ "en-US"，也可直接传自定义语言包 */
   locale?: CalendarLocale | CalendarLocaleName;
+  /** 本实例使用的节假日 / 调休配置；不传则跟随全局 setHolidays()。配置在创建时固定 */
+  holidays?: HolidayConfig;
+  /** 为 true 时忽略内置节日 / 调休数据，只使用 holidays */
+  replaceHolidays?: boolean;
   /** 是否显示头部，默认 true */
   header?: boolean;
   /** 自定义头部，替换默认的 ‹ 标题 › */

@@ -52,6 +52,73 @@ const FESTIVAL_FIELDS = ["sFtv", "lFtv"];
 const HOLIDAY_FIELDS = ["setFestival", "setRest"];
 
 /**
+ * 校验并合并一份配置，返回新的不可变配置。
+ *
+ * base 不会被修改；replace 为 true 时从空配置开始。
+ * path 只用于错误信息，区分是 setHolidays 还是 createConverter 传错了。
+ */
+const resolveConfig = function (
+  base: ResolvedConfig,
+  config: HolidayConfig = {},
+  options: SetHolidayOptions = {},
+  path = "setHolidays",
+): ResolvedConfig {
+  if (!isPlainObject(config)) {
+    failType(path, `参数必须是对象，收到 ${describe(config)}`);
+  }
+  Object.keys(config).forEach(function (key) {
+    if (HOLIDAY_FIELDS.indexOf(key) === -1) {
+      failType(`${path}.${key}`, `不认识的字段，只支持 ${HOLIDAY_FIELDS.join(" 与 ")}`);
+    }
+  });
+  if (!isPlainObject(options)) {
+    failType(`${path}(options)`, `第二个参数必须是对象，收到 ${describe(options)}`);
+  }
+  if (options.replace !== undefined && typeof options.replace !== "boolean") {
+    failType(`${path}(options).replace`, `必须是布尔值，收到 ${describe(options.replace)}`);
+  }
+  const replace = options.replace === true;
+  const from = replace ? EMPTY : base;
+
+  const festivalConfig = config.setFestival;
+  let sFtv = from.sFtv;
+  let lFtv = from.lFtv;
+  if (festivalConfig !== undefined) {
+    if (!isPlainObject(festivalConfig)) {
+      failType(`${path}.setFestival`, `必须是对象，收到 ${describe(festivalConfig)}`);
+    }
+    Object.keys(festivalConfig).forEach(function (key) {
+      if (FESTIVAL_FIELDS.indexOf(key) === -1) {
+        failType(
+          `${path}.setFestival.${key}`,
+          `不认识的字段，只支持 ${FESTIVAL_FIELDS.join(" 与 ")}`,
+        );
+      }
+    });
+    if (festivalConfig.sFtv !== undefined) {
+      sFtv = mergeFestivalMap(
+        from.sFtv,
+        normalizeFestivalMap(festivalConfig.sFtv, `${path}.setFestival.sFtv`),
+      );
+    }
+    if (festivalConfig.lFtv !== undefined) {
+      lFtv = mergeFestivalMap(
+        from.lFtv,
+        normalizeFestivalMap(festivalConfig.lFtv, `${path}.setFestival.lFtv`),
+      );
+    }
+  }
+
+  const restConfig = config.setRest;
+  const rest =
+    restConfig === undefined
+      ? from.rest
+      : mergeRestMap(from.rest, normalizeRestMap(restConfig, `${path}.setRest`));
+
+  return createResolved(sFtv, lFtv, rest);
+};
+
+/**
  * 注入自定义节日与调休数据。
  *
  * 默认是与内置数据“合并去重”，不会修改内置数据，也不会修改你传入的对象；
@@ -62,59 +129,19 @@ const HOLIDAY_FIELDS = ["setFestival", "setRest"];
  * @throws TypeError 配置格式不合法（含具体字段路径）
  */
 const setHolidays = function (config: HolidayConfig = {}, options: SetHolidayOptions = {}): void {
-  if (!isPlainObject(config)) {
-    failType("setHolidays", `参数必须是对象，收到 ${describe(config)}`);
-  }
-  Object.keys(config).forEach(function (key) {
-    if (HOLIDAY_FIELDS.indexOf(key) === -1) {
-      failType(`setHolidays.${key}`, `不认识的字段，只支持 ${HOLIDAY_FIELDS.join(" 与 ")}`);
-    }
-  });
-  if (!isPlainObject(options)) {
-    failType("setHolidays(options)", `第二个参数必须是对象，收到 ${describe(options)}`);
-  }
-  if (options.replace !== undefined && typeof options.replace !== "boolean") {
-    failType("setHolidays(options).replace", `必须是布尔值，收到 ${describe(options.replace)}`);
-  }
-  const replace = options.replace === true;
-  const base = replace ? EMPTY : current;
+  current = resolveConfig(current, config, options);
+};
 
-  const festivalConfig = config.setFestival;
-  let sFtv = base.sFtv;
-  let lFtv = base.lFtv;
-  if (festivalConfig !== undefined) {
-    if (!isPlainObject(festivalConfig)) {
-      failType("setHolidays.setFestival", `必须是对象，收到 ${describe(festivalConfig)}`);
-    }
-    Object.keys(festivalConfig).forEach(function (key) {
-      if (FESTIVAL_FIELDS.indexOf(key) === -1) {
-        failType(
-          `setHolidays.setFestival.${key}`,
-          `不认识的字段，只支持 ${FESTIVAL_FIELDS.join(" 与 ")}`,
-        );
-      }
-    });
-    if (festivalConfig.sFtv !== undefined) {
-      sFtv = mergeFestivalMap(
-        base.sFtv,
-        normalizeFestivalMap(festivalConfig.sFtv, "setHolidays.setFestival.sFtv"),
-      );
-    }
-    if (festivalConfig.lFtv !== undefined) {
-      lFtv = mergeFestivalMap(
-        base.lFtv,
-        normalizeFestivalMap(festivalConfig.lFtv, "setHolidays.setFestival.lFtv"),
-      );
-    }
-  }
-
-  const restConfig = config.setRest;
-  const rest =
-    restConfig === undefined
-      ? base.rest
-      : mergeRestMap(base.rest, normalizeRestMap(restConfig, "setHolidays.setRest"));
-
-  current = createResolved(sFtv, lFtv, rest);
+/**
+ * 以模块加载时的内置数据为基准，生成一份独立配置。
+ *
+ * 与 setHolidays 的区别：不读取、也不修改全局状态，供 createConverter 固定配置。
+ */
+const createStandaloneConfig = function (
+  config: HolidayConfig = {},
+  options: SetHolidayOptions = {},
+): ResolvedConfig {
+  return resolveConfig(BASE, config, options, "createConverter");
 };
 
 /** 恢复到内置数据 */
@@ -122,10 +149,8 @@ const resetHolidays = function (): void {
   current = BASE;
 };
 
-/**
- * 取当前生效的节假日配置的深拷贝，可再次传给 setHolidays()
- */
-const getHolidays = function (): HolidaySnapshot {
+/** 把内部配置转成可再次使用的快照 */
+const snapshotOf = function (resolved: ResolvedConfig): HolidaySnapshot {
   const cloneMap = function (map: FestivalMap): FestivalMap {
     const result: FestivalMap = {};
     Object.keys(map).forEach(function (key) {
@@ -135,18 +160,32 @@ const getHolidays = function (): HolidaySnapshot {
   };
   const result: HolidaySnapshot = {
     setFestival: {
-      sFtv: cloneMap(current.sFtv),
-      lFtv: cloneMap(current.lFtv),
+      sFtv: cloneMap(resolved.sFtv),
+      lFtv: cloneMap(resolved.lFtv),
     },
     setRest: {},
   };
-  Object.keys(current.rest).forEach(function (year) {
+  Object.keys(resolved.rest).forEach(function (year) {
     result.setRest[year] = {
-      xiu: current.rest[year].xiu.slice(),
-      ban: current.rest[year].ban.slice(),
+      xiu: resolved.rest[year].xiu.slice(),
+      ban: resolved.rest[year].ban.slice(),
     };
   });
   return result;
 };
 
-export { setHolidays, resetHolidays, getHolidays, getResolvedConfig };
+/**
+ * 取当前生效的节假日配置的深拷贝，可再次传给 setHolidays()
+ */
+const getHolidays = function (): HolidaySnapshot {
+  return snapshotOf(current);
+};
+
+export {
+  setHolidays,
+  resetHolidays,
+  getHolidays,
+  getResolvedConfig,
+  createStandaloneConfig,
+  snapshotOf,
+};

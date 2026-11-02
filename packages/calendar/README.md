@@ -109,12 +109,40 @@ calendar.setHolidays({
 [calendar] setHolidays.setFestival.sFtv.1-1 节日 key 必须是四位 "MMDD"（如 "0101"），收到 "1-1"
 ```
 
+### 多套配置：`calendar.createConverter(config?, options?)`
+
+`setHolidays()` 是全局的，同一时刻只能有一套配置。需要在同一页面里并排展示多套节假日数据时，用 `calendar.createConverter()` 把配置固定在转换器上：
+
+```ts
+import calendar from "@sanguogege/calendar";
+
+const mainland = calendar.createConverter({
+  setRest: { 2027: { xiu: ["0101", "0102"], ban: ["0104"] } },
+});
+const hongKong = calendar.createConverter({
+  setRest: { 2027: { xiu: ["0101"] } },
+});
+
+mainland.solarToLunar(2027, 1, 4).Ban; // true
+hongKong.solarToLunar(2027, 1, 4).Ban; // false
+
+// 与全局配置互不影响
+calendar.setHolidays({ setRest: { 2027: { ban: ["0101"] } } });
+hongKong.solarToLunar(2027, 1, 1).Xiu; // 仍然是 true
+```
+
+- 2.x 只导出默认 converter：`calendar.solarToLunar`、`calendar.createConverter`、`calendar.utils` 都挂在这一个对象上，没有具名函数导出；
+- 默认以内置数据为基准合并，`calendar.createConverter(config, { replace: true })` 丢弃内置数据；
+- 配置在创建时校验并冻结，之后再修改传入的对象不会生效；
+- `converter.getHolidays()` 返回该转换器配置的深拷贝，可以再传给 `calendar.createConverter()`；
+- 配置写错时错误信息前缀是 `[calendar] createConverter.…`，定位方式与 `setHolidays` 一致。
+
 ## 错误处理
 
-| 异常         | 场景                                               |
-| ------------ | -------------------------------------------------- |
-| `RangeError` | 日期越界、日期不存在、闰月不匹配、工具函数参数越界 |
-| `TypeError`  | `setHolidays` 的配置结构 / 类型不合法              |
+| 异常         | 场景                                                     |
+| ------------ | -------------------------------------------------------- |
+| `RangeError` | 日期越界、日期不存在、闰月不匹配、工具函数参数越界       |
+| `TypeError`  | `setHolidays` / `createConverter` 的配置结构或类型不合法 |
 
 ```ts
 try {
@@ -125,6 +153,8 @@ try {
 ```
 
 ## 工具方法
+
+`calendar.utils` 里全部是无状态纯函数，不读取也不受 `setHolidays()` / `createConverter()` 的配置影响，可以单独抽出来用。
 
 ```ts
 calendar.utils.lYearDays(2026); // 农历年天数
@@ -152,10 +182,11 @@ calendar.utils.toHourGanZhi(40); // ["甲子", "乙丑", ...]
 <script src="https://cdn.jsdelivr.net/npm/@sanguogege/calendar/dist/index.umd.js"></script>
 <script>
   const day = calendar.solarToLunar(2026, 4, 5);
+  calendar.utils.solarFirstWeek(2026, 4); // 3
 </script>
 ```
 
-也可以直接使用 `dist/index.iife.js`，全局变量名同样是 `calendar`。
+也可以直接使用 `dist/index.iife.js`，全局变量名同样是 `calendar`，并且它就是这个默认 converter 对象。
 
 ## 从 1.x 升级
 
@@ -169,6 +200,7 @@ calendar.utils.toHourGanZhi(40); // ["甲子", "乙丑", ...]
 6. 除夕、母亲节、父亲节、感恩节改为规则计算，数据文件里已移除对应写法。
 7. 修复星座名（`摩羯座`、`天秤座`）与星座边界日期。
 8. 节日数据修正：世界微笑日移到 5 月 8 日，寒衣节移到农历十月初一。
+9. 只保留默认导出 `calendar`，不再提供 `solarToLunar` 等具名函数导出；`createConverter` 通过 `calendar.createConverter()` 使用。
 
 ## 数据维护规范
 

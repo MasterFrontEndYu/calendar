@@ -29,11 +29,19 @@ import {
 import { assertInteger, failRange } from "./utils/Assert";
 import { festivalList } from "./utils/SetFestival";
 import { restOf } from "./utils/SetRest";
-import { getResolvedConfig, setHolidays, resetHolidays, getHolidays } from "./config";
-import type { LunarResult } from "./types";
+import {
+  getResolvedConfig,
+  setHolidays as applyHolidays,
+  resetHolidays as restoreHolidays,
+  createStandaloneConfig,
+  snapshotOf,
+} from "./config";
+import type { ResolvedConfig } from "./config";
+import type { CalendarConverter, HolidayConfig, LunarResult, SetHolidayOptions } from "./types";
 
 export type {
   LunarResult,
+  CalendarConverter,
   FestivalMap,
   FestivalConfig,
   RestEntry,
@@ -110,12 +118,16 @@ const lunarFestivals = function (
 /**
  * 核心换算，入参必须是已经校验过、且在支持范围内的公历日期
  */
-const computeLunar = function (sy: number, sm: number, sd: number): LunarResult {
+const computeLunar = function (
+  config: ResolvedConfig,
+  sy: number,
+  sm: number,
+  sd: number,
+): LunarResult {
   const utc = Date.UTC(sy, sm - 1, sd);
   if (utc < MIN_SOLAR_UTC || utc > MAX_SOLAR_UTC) {
     failRange("solarToLunar", `${sy}-${sm}-${sd} 超出 1900-01-31 ~ 2100-12-31 的支持范围`);
   }
-  const config = getResolvedConfig();
 
   const offset = Math.round((utc - MIN_SOLAR_UTC) / DAY_MS);
   const { year, offsetInYear } = resolveLunarYear(offset);
@@ -182,22 +194,16 @@ const computeLunar = function (sy: number, sm: number, sd: number): LunarResult 
   };
 };
 
-/**
- * 公历转农历
- *
- * 不传参返回今天；传参时年、月、日必须同时传入且全部合法，
- * 越界或非法日期一律抛 RangeError，不会再静默回退到今天或自动进位。
- *
- * @param y 公历年（1900-2100）
- * @param m 公历月（1-12）
- * @param d 公历日
- * @throws RangeError 日期非法或超出 1900-01-31 ~ 2100-12-31
- * @example solarToLunar(2024, 2, 10) // 正月初一
- */
-const solarToLunar = function (y?: number, m?: number, d?: number): LunarResult {
+/** 公历转农历的内部实现，节假日配置由调用方固定 */
+const solarToLunarWith = function (
+  config: ResolvedConfig,
+  y?: number,
+  m?: number,
+  d?: number,
+): LunarResult {
   if (y === undefined && m === undefined && d === undefined) {
     const now = new Date();
-    return computeLunar(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    return computeLunar(config, now.getFullYear(), now.getMonth() + 1, now.getDate());
   }
   if (y === undefined || m === undefined || d === undefined) {
     failRange(
@@ -206,23 +212,12 @@ const solarToLunar = function (y?: number, m?: number, d?: number): LunarResult 
     );
   }
   const date = validateSolar(y, m, d);
-  return computeLunar(date.year, date.month, date.day);
+  return computeLunar(config, date.year, date.month, date.day);
 };
 
-/**
- * 农历转公历
- *
- * 农历年、月、日非法（含闰月年份不匹配）一律抛 RangeError，
- * 不再返回 -1 让调用方自己判断。
- *
- * @param y 农历年（1900-2100）
- * @param m 农历月（1-12）
- * @param d 农历日（1-30）
- * @param isLeapMonth 是否闰月
- * @throws RangeError 农历日期非法、闰月不匹配，或换算结果超出 2100-12-31
- * @example lunarToSolar(2020, 4, 1, true) // 2020-05-23
- */
-const lunarToSolar = function (
+/** 农历转公历的内部实现，节假日配置由调用方固定 */
+const lunarToSolarWith = function (
+  config: ResolvedConfig,
   y: number,
   m: number,
   d: number,
@@ -254,38 +249,87 @@ const lunarToSolar = function (
     failRange("lunarToSolar", `农历 ${year}-${month}-${day} 换算后晚于 2100-12-31，超出支持范围`);
   }
   const date = new Date(utc);
-  return computeLunar(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+  return computeLunar(config, date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
 };
 
+/**
+ * 把“读某一份配置”的只读操作打包成 converter 形态
+ *
+ * 默认 converter 和 createConverter() 都走这里，保证两种实例行为完全一致。
+ */
+const createConverterAPI = function (getConfig: () => ResolvedConfig): CalendarConverter {
+  return {
+    /** 公历转农历，不传参返回今天 */
+    solarToLunar: (y, m, d) => solarToLunarWith(getConfig(), y, m, d),
+    /** 农历转公历 */
+    lunarToSolar: (y, m, d, isLeapMonth) => lunarToSolarWith(getConfig(), y, m, d, isLeapMonth),
+    /** 当前配置的深拷贝 */
+    getHolidays: () => snapshotOf(getConfig()),
+  };
+};
+
+/**
+ * 创建带独立节假日配置的转换器
+ *
+ * 配置在创建时校验并冻结，之后与全局 setHolidays() 互不影响，
+ * 适合同一页面里并排展示多套节假日数据的场景。
+ * 默认以内置数据为基准合并，传 { replace: true } 则丢弃内置数据。
+ *
+ * @param config 节假日 / 调休配置
+ * @param options replace 为 true 时忽略内置数据
+ * @throws TypeError 配置格式不合法（含具体字段路径）
+ * @example
+ * const converter = calendar.createConverter({ setRest: { 2027: { xiu: ["0101"] } } });
+ * converter.solarToLunar(2027, 1, 1).Xiu; // true
+ */
+const createConverter = function (
+  config: HolidayConfig = {},
+  options: SetHolidayOptions = {},
+): CalendarConverter {
+  const resolved = createStandaloneConfig(config, options);
+  return createConverterAPI(() => resolved);
+};
+
+const utils = {
+  lYearDays,
+  leapMonth,
+  leapDays,
+  lMonthDays,
+  toChinaMonth,
+  toChinaDay,
+  toChinaNum,
+  solarDays,
+  solarFirstWeek,
+  nthWeekdayOfMonth,
+  toAstro,
+  getAnimal,
+  getTerm,
+  getSolarTerm,
+  toGanZhi,
+  toGanZhiYear,
+  toHourGanZhi,
+};
+
+/**
+ * 默认 converter：全局 API 的唯一实现
+ *
+ * solarToLunar / lunarToSolar / getHolidays 与自定义 converter 同形，
+ * 额外带 setHolidays / resetHolidays 来管理全局配置。
+ */
 const calendar = {
+  ...createConverterAPI(getResolvedConfig),
   /** 注入自定义节日与调休数据，默认与内置数据合并去重 */
-  setHolidays,
-  /** 恢复到内置数据 */
-  resetHolidays,
-  /** 取当前生效的节假日配置（深拷贝） */
-  getHolidays,
-  solarToLunar,
-  lunarToSolar,
-  utils: {
-    lYearDays,
-    leapMonth,
-    leapDays,
-    lMonthDays,
-    toChinaMonth,
-    toChinaDay,
-    toChinaNum,
-    solarDays,
-    solarFirstWeek,
-    nthWeekdayOfMonth,
-    toAstro,
-    getAnimal,
-    getTerm,
-    getSolarTerm,
-    toGanZhi,
-    toGanZhiYear,
-    toHourGanZhi,
+  setHolidays(this: void, config: HolidayConfig = {}, options: SetHolidayOptions = {}): void {
+    applyHolidays(config, options);
   },
+  /** 恢复到内置数据 */
+  resetHolidays(this: void): void {
+    restoreHolidays();
+  },
+  /** 创建带独立节假日配置的转换器 */
+  createConverter,
+  utils,
 };
 
-export { solarToLunar, lunarToSolar, setHolidays, resetHolidays, getHolidays };
+// 只保留默认 converter 一套 API：2.x 不再提供具名函数导出
 export default calendar;
