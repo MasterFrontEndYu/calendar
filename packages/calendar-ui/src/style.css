@@ -137,11 +137,11 @@
   display: none;
 }
 
-.cui__day-tag.is-xiu {
+.cui__day-tag[data-tone="rest"] {
   color: var(--cui-rest);
 }
 
-.cui__day-tag.is-ban {
+.cui__day-tag[data-tone="work"] {
   color: var(--cui-accent);
 }
 
@@ -155,7 +155,7 @@
   opacity: 0.35;
 }
 
-.cui__day.is-rest .cui__day-sub {
+.cui__day[data-tone="rest"] .cui__day-sub {
   color: var(--cui-rest);
 }
 

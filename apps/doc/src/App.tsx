@@ -1,22 +1,6 @@
-import { Title } from "@solidjs/meta";
-import { Loading } from "solid-js";
-import { paths, Router } from "./router";
-import "./App.css";
+import { SolidBaseRoot } from "@kobalte/solidbase/client";
+import { Router } from "./router";
 
 export default function App() {
-  return (
-    <Router>
-      {(props) => (
-        <>
-          <Title>Solid App</Title>
-          <nav>
-            <a href={paths()}>Home</a>
-            <a href={paths.users()}>Users</a>
-            <a href={paths.calendar()}>Calendar</a>
-          </nav>
-          <Loading fallback={<main>Loading…</main>}>{props.children}</Loading>
-        </>
-      )}
-    </Router>
-  );
+  return <Router>{(props) => <SolidBaseRoot>{props.children}</SolidBaseRoot>}</Router>;
 }

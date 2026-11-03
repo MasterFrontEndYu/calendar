@@ -1,7 +1,7 @@
 /**
  * 语言包
  *
- * 只负责日历自身的界面文字；农历、节气、节日名来自 @sanguogege/calendar，始终是中文。
+ * 只负责日历自身的界面文字；农历、节气、节日等业务文案由适配器提供。
  */
 export interface CalendarLocale {
   /** 语言标签，例如 "zh-CN"，仅用于调试与覆盖 */

@@ -41,17 +41,17 @@ export interface HeaderHandle {
 }
 
 /** 日期网格的入参 */
-export interface GridOptions {
+export interface GridOptions<TData = null> {
   /** 点中某一格时触发 */
-  onSelect: (day: CalendarDay) => void;
+  onSelect: (day: CalendarDay<TData>) => void;
 }
 
 /** 日期网格的句柄 */
-export interface GridHandle {
+export interface GridHandle<TData = null> {
   el: HTMLElement;
   /** 换月：更新格子文本与状态（节点复用，不重新创建） */
-  render(days: CalendarDay[]): void;
+  render(days: CalendarDay<TData>[]): void;
   /** 只更新选中/今天等状态类，不动文本 */
-  updateState(days: CalendarDay[]): void;
+  updateState(days: CalendarDay<TData>[]): void;
   destroy(): void;
 }

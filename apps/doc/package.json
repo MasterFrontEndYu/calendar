@@ -1,6 +1,7 @@
 {
   "name": "doc",
   "version": "0.0.0",
+  "private": true,
   "description": "",
   "license": "MIT",
   "type": "module",
@@ -12,13 +13,16 @@
     "lint": "vp lint"
   },
   "dependencies": {
+    "@kobalte/solidbase": "3.0.0",
     "@sanguogege/calendar-ui": "workspace:*",
+    "@sanguogege/calendar-ui-lunar": "workspace:*",
     "@solidjs/meta": "^1.0.0-next.2",
-    "@solidjs/router": "^2.0.0-next.43",
+    "@solidjs/router": "2.0.0-next.37",
     "@solidjs/web": "^2.0.0-rc.20",
     "solid-js": "^2.0.0-rc.20"
   },
   "devDependencies": {
+    "@iconify-json/ri": "^1.2.10",
     "@solidjs/diagnostics": "^2.0.0-rc.20",
     "@solidjs/testing-library": "^1.0.0-beta.3",
     "@solidjs/vite-plugin": "^3.0.0-next.54",

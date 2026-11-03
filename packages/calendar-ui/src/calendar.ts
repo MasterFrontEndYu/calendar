@@ -3,7 +3,7 @@ import { createHeader } from "./components/header";
 import { createWeekdays } from "./components/weekdays";
 import { resolveLocale } from "./locales";
 import type { CalendarDay, CalendarInstance, CalendarOptions } from "./types";
-import { buildDays, resolveDaySource } from "./utils/calendar";
+import { buildDays } from "./utils/days";
 import { normalizeMonth, sameDay } from "./utils/date";
 import { node } from "./utils/dom";
 
@@ -11,14 +11,15 @@ import { node } from "./utils/dom";
  * 在容器里创建一个日历
  *
  * 只依赖 DOM，不依赖任何框架；重复调用 createCalendar 会各自独立。
+ * 不传 adapter 时就是纯公历，适配器负责提供副标题、标记和透传数据。
  */
-export function createCalendar(
+export function createCalendar<TData = null>(
   container: HTMLElement,
-  options: CalendarOptions = {},
+  options: CalendarOptions<TData> = {},
 ): CalendarInstance {
   const weekStartsOn = options.weekStartsOn ?? 1;
   const locale = resolveLocale(options.locale);
-  const source = resolveDaySource(options.holidays, options.replaceHolidays === true);
+  const adapter = options.adapter;
   const today = new Date();
   const initial = options.initialDate ?? today;
 
@@ -32,14 +33,15 @@ export function createCalendar(
   const weekdays = createWeekdays(weekStartsOn, locale);
 
   /** 按当前 state 生成 42 个格子 */
-  const currentDays = function (): CalendarDay[] {
-    return buildDays({
+  const currentDays = function (): CalendarDay<TData>[] {
+    return buildDays<TData>({
       year: state.year,
       month: state.month,
       weekStartsOn,
       today,
       selected: state.selected,
-      source,
+      locale,
+      adapter,
     });
   };
 
@@ -49,7 +51,7 @@ export function createCalendar(
   };
 
   /** 处理点选：补位格只改选中，不切换展示月份 */
-  const handleSelect = function (day: CalendarDay) {
+  const handleSelect = function (day: CalendarDay<TData>) {
     state.selected = day.date;
     if (day.inCurrentMonth) {
       state.year = day.year;
@@ -64,7 +66,7 @@ export function createCalendar(
     options.onSelect?.(days.find((item) => sameDay(item.date, day.date)) ?? day);
   };
 
-  const grid = createGrid({ onSelect: handleSelect });
+  const grid = createGrid<TData>({ onSelect: handleSelect });
 
   const goTo = function (year: number, month: number) {
     const next = normalizeMonth(year, month);

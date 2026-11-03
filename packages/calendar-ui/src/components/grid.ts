@@ -8,18 +8,18 @@ const CELL_COUNT = 42;
 /**
  * 日期网格：42 个格子只建一次，之后按索引复用
  *
- * - render：换月时更新日期/农历文本 + 状态
+ * - render：换月时更新日期/副标题 + 状态
  * - updateState：只切选中/今天等状态类，不动文本
  *
  * 没有做“按日期复用 + DOM 重排”：42 个节点的移动比 42 次文本写入更贵，
  * 实测换月反而从 0.60ms 退化到 0.93ms。
  */
-export const createGrid = function (options: GridOptions): GridHandle {
+export const createGrid = function <TData = null>(options: GridOptions<TData>): GridHandle<TData> {
   const el = node("div", "cui__grid");
   const cells = Array.from({ length: CELL_COUNT }, () => createDayCell());
   el.append(...cells);
 
-  let days: CalendarDay[] = [];
+  let days: CalendarDay<TData>[] = [];
 
   const onClick = (event: MouseEvent) => {
     const cell = (event.target as HTMLElement).closest<HTMLElement>(".cui__day");
@@ -34,14 +34,14 @@ export const createGrid = function (options: GridOptions): GridHandle {
 
   return {
     el,
-    render: (next: CalendarDay[]) => {
+    render: (next: CalendarDay<TData>[]) => {
       days = next;
       for (let i = 0; i < CELL_COUNT; i++) {
         const day = next[i];
         if (day) setDay(cells[i] as HTMLButtonElement, day);
       }
     },
-    updateState: (next: CalendarDay[]) => {
+    updateState: (next: CalendarDay<TData>[]) => {
       days = next;
       for (let i = 0; i < CELL_COUNT; i++) {
         const day = next[i];

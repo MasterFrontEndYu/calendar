@@ -1,0 +1,75 @@
+---
+title: 农历适配器
+---
+
+# 农历适配器
+
+`@sanguogege/calendar-ui-lunar` 把 `@sanguogege/calendar` 接到 `calendar-ui` 的公共 `CalendarAdapter` 上。它只依赖这两个包，不修改 UI 核心。
+
+```bash
+bun add @sanguogege/calendar-ui @sanguogege/calendar-ui-lunar
+```
+
+## 用法
+
+```ts
+import { createCalendar } from "@sanguogege/calendar-ui-lunar";
+import "@sanguogege/calendar-ui/style.css";
+
+const instance = createCalendar(container, {
+  initialDate: new Date(2026, 9, 1),
+  onSelect: (day) => {
+    day.subtitle; // "国庆节"
+    day.badge; // { text: "休", tone: "rest" }
+    day.data?.lMonthCn; // "八月"
+    day.data?.nljr; // 农历节日
+  },
+});
+```
+
+接口和纯公历入口一致，只是 `day.data` 变成完整的 `LunarResult`。
+
+## 选项
+
+| 选项              | 类型            | 说明                                        |
+| ----------------- | --------------- | ------------------------------------------- |
+| `holidays`        | `HolidayConfig` | 本实例的节日 / 调休配置                     |
+| `replaceHolidays` | `boolean`       | 为 `true` 时忽略内置数据，只使用 `holidays` |
+
+其余选项（`initialDate`、`weekStartsOn`、`locale`、`header`、`renderHeader`、`onSelect`、`onMonthChange`）与 `calendar-ui` 相同。
+
+## 副标题与标记
+
+- `subtitle` 优先级：节气 > 农历节日 > 公历节日 > 农历日；
+- `badge`：`xiu` 显示「休」，`ban` 显示「班」；
+- 两者都来自 `rest.json`，普通周末不会自动显示休。
+
+```ts
+day.data?.xiu; // 是否在放假日列表
+day.data?.ban; // 是否在调休补班列表
+```
+
+`day.data` 在 `1900-01-31 ~ 2100-12-31` 之外为 `null`。
+
+## 多套配置
+
+```ts
+const mainland = createCalendar(hostA, { holidays: mainlandHolidays });
+const hongKong = createCalendar(hostB, { holidays: hongKongHolidays });
+```
+
+- `holidays` 在 `createCalendar()` 时校验并固定；
+- 多个实例传同一个配置对象时会共享月份缓存；
+- 不传 `holidays` 时使用全局 `setHolidays()`。
+
+## 只做换算，不用 UI
+
+如果只需要日期数据，可以直接用核心包：
+
+```ts
+import calendar from "@sanguogege/calendar";
+
+calendar.solarToLunar(2026, 10, 1).gljr;
+```
+
+详见 [calendar 核心](/guide/calendar)。

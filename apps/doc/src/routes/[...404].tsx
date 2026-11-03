@@ -12,14 +12,11 @@ export const route = {
 export default function NotFound() {
   return (
     <main>
-      <Title>Not Found - Solid App</Title>
-      <h1>Page Not Found</h1>
+      <Title>页面不存在 - calendar</Title>
+      <h1>页面不存在</h1>
+      <p>这个地址没有对应的文档或演示。</p>
       <p>
-        Visit{" "}
-        <a href="https://docs.solidjs.com" target="_blank" rel="noreferrer">
-          docs.solidjs.com
-        </a>{" "}
-        to learn how to build Solid apps.
+        回到 <a href="/">首页</a>，或从 <a href="/guide">指南</a> 开始阅读。
       </p>
     </main>
   );

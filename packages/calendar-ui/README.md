@@ -1,6 +1,6 @@
 # calendar-ui
 
-纯 DOM 的日历组件：农历、节气、节日与调休来自 `@sanguogege/calendar`，渲染层不依赖任何框架。
+纯 DOM、零依赖的公历日历核心，不依赖任何农历 / 节假日库。副标题、左上角标记和透传数据通过 `CalendarAdapter` 注入，第三方可以接自己的日历实现。
 
 ## 用法
 
@@ -11,7 +11,7 @@ import "@sanguogege/calendar-ui/style.css";
 const instance = createCalendar(container, {
   weekStartsOn: 1, // 0 周日 / 1 周一（默认）
   locale: "zh-CN", // 或 "en-US" / 自定义语言包
-  onSelect: (day) => console.log(day.year, day.month, day.day, day.lunar?.nljr),
+  onSelect: (day) => console.log(day.year, day.month, day.day, day.data),
 });
 
 instance.nextMonth();
@@ -21,40 +21,40 @@ instance.destroy();
 
 ## 选项
 
-| 选项              | 类型                                    | 说明                                                   |
-| ----------------- | --------------------------------------- | ------------------------------------------------------ |
-| `initialDate`     | `Date`                                  | 初始日期，默认今天                                     |
-| `weekStartsOn`    | `0 \| 1`                                | 一周从哪天开始，默认 1                                 |
-| `locale`          | `CalendarLocale \| CalendarLocaleName`  | 界面语言，默认 `"zh-CN"`                               |
-| `header`          | `boolean`                               | 是否显示头部，默认 `true`                              |
-| `renderHeader`    | `HeaderRenderer`                        | 自定义头部，替换默认的 `‹ 标题 ›`                      |
-| `holidays`        | `HolidayConfig`                         | 本实例的节假日 / 调休配置                              |
-| `replaceHolidays` | `boolean`                               | 为 `true` 时忽略内置节日 / 调休数据，只使用 `holidays` |
-| `onSelect`        | `(day: CalendarDay) => void`            | 选中某一天时触发                                       |
-| `onMonthChange`   | `(year: number, month: number) => void` | 切换月份时触发                                         |
+| 选项            | 类型                                    | 说明                              |
+| --------------- | --------------------------------------- | --------------------------------- |
+| `initialDate`   | `Date`                                  | 初始日期，默认今天                |
+| `weekStartsOn`  | `0 \| 1`                                | 一周从哪天开始，默认 1            |
+| `locale`        | `CalendarLocale \| CalendarLocaleName`  | 界面语言，默认 `"zh-CN"`          |
+| `header`        | `boolean`                               | 是否显示头部，默认 `true`         |
+| `renderHeader`  | `HeaderRenderer`                        | 自定义头部，替换默认的 `‹ 标题 ›` |
+| `adapter`       | `CalendarAdapter<TData>`                | 日历适配器；不传就是纯公历        |
+| `onSelect`      | `(day: CalendarDay<TData>) => void`     | 选中某一天时触发                  |
+| `onMonthChange` | `(year: number, month: number) => void` | 切换月份时触发                    |
 
-## 休 / 班标记
-
-日期格左上角会根据 `day.lunar` 显示标记（数据来自 `@sanguogege/calendar` 的 `rest.json`，与周末无关）：
-
-- `lunar.xiu === true` → 「休」
-- `lunar.ban === true` → 「班」
-- 两者都为 `false` → 不显示
-
-颜色可用 `--cui-rest`（休）和 `--cui-accent`（班）覆盖。
-
-## 多套节假日配置
-
-`@sanguogege/calendar` 的 `setHolidays()` 是全局的；`calendar-ui` 通过 `holidays` 选项，把配置固定到实例自己的转换器上，所以同一页面里可以并排显示不同地区的节假日：
+## 适配器
 
 ```ts
-const mainland = createCalendar(hostA, { holidays: mainlandHolidays });
-const hongKong = createCalendar(hostB, { holidays: hongKongHolidays });
+interface CalendarAdapter<TData = unknown> {
+  readonly id: string;
+  decorateMonth(input: MonthInput): ReadonlyArray<DayDecoration<TData> | null>;
+}
 ```
 
-- 配置在 `createCalendar()` 时校验并固定，之后修改对象内容不会生效；
-- 多个实例传**同一个配置对象**时会共享月份缓存，建议把配置提到模块级常量，不要每次渲染新建对象；
-- 不传 `holidays` 时跟随全局 `setHolidays()`。全局配置仍然不会让已经缓存的月份失效，需要在任何 `createCalendar()` 之前调用。
+`decorateMonth` 每次拿到 42 个日期，返回同长度的装饰数组：
+
+```ts
+{
+  subtitle?: string;                  // 格子副标题
+  badge?: { text: string; tone?: string }; // 左上角标记，tone 写到 data-tone
+  data?: TData;                       // 透传给 onSelect
+  ariaLabel?: string;                 // 覆盖默认 aria-label
+}
+```
+
+核心不解释 `badge` 和 `data` 的含义；`tone` 对应的颜色由 CSS 决定（内置 `rest` / `work` 两种，可通过 `--cui-rest`、`--cui-accent` 覆盖）。
+
+官方农历适配器见 `@sanguogege/calendar-ui-lunar`；第三方也可以按这个接口接入自己的日历。
 
 ## 开发
 

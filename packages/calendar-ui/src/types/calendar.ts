@@ -1,9 +1,17 @@
-import type { HolidayConfig, LunarResult } from "@sanguogege/calendar";
 import type { CalendarLocale, CalendarLocaleName } from "./locale";
-import type { WeekStartsOn, YearMonth } from "./utils";
 
-/** 日历中的一格 */
-export interface CalendarDay {
+/** 一周从哪天开始：0 为周日，1 为周一 */
+export type WeekStartsOn = 0 | 1;
+
+/** 规范后的年月 */
+export interface YearMonth {
+  year: number;
+  /** 1-12 */
+  month: number;
+}
+
+/** 日历格的公历日期部分 */
+export interface CalendarDate {
   /** 公历年 */
   year: number;
   /** 公历月，1-12 */
@@ -14,12 +22,77 @@ export interface CalendarDay {
   date: Date;
   /** 是否属于当前展示的月份（false 表示上一月/下一月的补位格） */
   inCurrentMonth: boolean;
+}
+
+/** 格子左上角的小标记，例如「休」「班」 */
+export interface CalendarBadge {
+  /** 显示文字 */
+  text: string;
+  /** 传给样式的 data-tone，核心不解释具体含义 */
+  tone?: string;
+}
+
+/** 适配器对单个格子的装饰 */
+export interface DayDecoration<TData = unknown> {
+  /** 格子副标题，例如节气、节日、农历日 */
+  subtitle?: string;
+  /** 左上角小标记；不传则不显示 */
+  badge?: CalendarBadge;
+  /** 透传给 onSelect 的数据，核心不解释 */
+  data?: TData;
+  /** 覆盖默认 aria-label；不传时由日期、标记、副标题拼接 */
+  ariaLabel?: string;
+}
+
+/** 每次渲染月视图时传给适配器的上下文 */
+export interface MonthInput {
+  /** 公历年 */
+  year: number;
+  /** 公历月，1-12 */
+  month: number;
+  /** 一周从哪天开始 */
+  weekStartsOn: WeekStartsOn;
+  /** 今天 */
+  today: Date;
+  /** 当前界面语言 */
+  locale: CalendarLocale;
+  /** 固定 42 个日期，包含上下月补位格 */
+  days: readonly CalendarDate[];
+}
+
+/**
+ * 日历适配器
+ *
+ * 核心只认识这个接口，不依赖任何具体的农历/节假日实现。
+ * 第三方可以实现它接入自己的日历数据。
+ */
+export interface CalendarAdapter<TData = unknown> {
+  /** 适配器标识，用于调试和排查 */
+  readonly id: string;
+
+  /**
+   * 生成当前月的 42 个格子的装饰
+   *
+   * 返回数组按索引和 input.days 对齐；没有装饰的位置返回 null。
+   * 每次换月、选中、重新渲染都会调用，适配器应自行缓存重计算。
+   */
+  decorateMonth(input: MonthInput): ReadonlyArray<DayDecoration<TData> | null>;
+}
+
+/** 日历中的一格 */
+export interface CalendarDay<TData = null> extends CalendarDate {
   /** 是否今天 */
   isToday: boolean;
   /** 是否当前选中 */
   isSelected: boolean;
-  /** @sanguogege/calendar 的换算结果；超出 1900-2100 支持范围时为 null */
-  lunar: LunarResult | null;
+  /** 格子副标题，例如节气、节日、农历日 */
+  subtitle: string;
+  /** 左上角小标记 */
+  badge: CalendarBadge | null;
+  /** 适配器透传的数据 */
+  data: TData | null;
+  /** 无障碍名称 */
+  ariaLabel: string;
 }
 
 /** 自定义头部能拿到的上下文 */
@@ -40,25 +113,23 @@ export interface HeaderRenderContext {
 export type HeaderRenderer = (context: HeaderRenderContext) => HTMLElement;
 
 /** 创建日历时的配置 */
-export interface CalendarOptions {
+export interface CalendarOptions<TData = null> {
   /** 初始日期，默认今天 */
   initialDate?: Date;
   /** 一周从哪天开始，默认 1（周一） */
   weekStartsOn?: WeekStartsOn;
   /** 界面语言：内置 "zh-CN"（默认）/ "en-US"，也可直接传自定义语言包 */
   locale?: CalendarLocale | CalendarLocaleName;
-  /** 本实例使用的节假日 / 调休配置；不传则跟随全局 setHolidays()。配置在创建时固定 */
-  holidays?: HolidayConfig;
-  /** 为 true 时忽略内置节日 / 调休数据，只使用 holidays */
-  replaceHolidays?: boolean;
   /** 是否显示头部，默认 true */
   header?: boolean;
   /** 自定义头部，替换默认的 ‹ 标题 › */
   renderHeader?: HeaderRenderer;
   /** 选中某一天时触发 */
-  onSelect?: (day: CalendarDay) => void;
+  onSelect?: (day: CalendarDay<TData>) => void;
   /** 切换月份时触发 */
   onMonthChange?: (year: number, month: number) => void;
+  /** 日历适配器；不传时就是纯公历 */
+  adapter?: CalendarAdapter<TData>;
 }
 
 /** 返回的实例 */

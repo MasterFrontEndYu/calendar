@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
   "module": "./dist/index.mjs",
   "types": "./src/index.ts",
   "exports": {
@@ -19,9 +22,6 @@
     "dev": "vp pack --watch",
     "test": "vp test",
     "typecheck": "vp check"
-  },
-  "dependencies": {
-    "@sanguogege/calendar": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

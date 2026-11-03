@@ -1,0 +1,26 @@
+---
+title: 简介
+---
+
+# calendar
+
+一套围绕中国日历的工具集：
+
+| 包                              | 作用                               | 运行时依赖                 |
+| ------------------------------- | ---------------------------------- | -------------------------- |
+| `@sanguogege/calendar`          | 公历 / 农历互转、节气、节日、调休  | 零依赖                     |
+| `@sanguogege/calendar-ui`       | 纯公历 DOM 日历核心                | 零依赖                     |
+| `@sanguogege/calendar-ui-lunar` | 把 `calendar` 接进 UI 的官方适配器 | `calendar` + `calendar-ui` |
+
+## 设计原则
+
+- **核心只做换算**：`calendar` 不碰 DOM，也不依赖框架。
+- **UI 核心默认纯公历**：不装农历包、不 import 农历代码，bundle 里就没有农历数据。
+- **公共适配器接口**：`CalendarAdapter` 是公开的，第三方可以接自己的历法或节假日源。
+- **配置按实例固定**：需要多套节假日时用 `createConverter`，互不影响。
+
+## 下一步
+
+- [calendar 核心](/guide/calendar)：换算、节气、节日与调休。
+- [calendar-ui](/guide/calendar-ui)：纯公历组件和适配器接口。
+- [农历适配器](/guide/lunar)：把 `@sanguogege/calendar` 接到 UI 上。

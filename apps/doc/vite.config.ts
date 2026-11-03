@@ -1,11 +1,48 @@
-import { fileRoutes } from "filesystem-routing/vite";
-import { defineConfig } from "vite-plus";
+import { createSolidBase } from "@kobalte/solidbase/config";
+import defaultTheme from "@kobalte/solidbase/default-theme";
 import solid from "@solidjs/vite-plugin";
+import { defineConfig } from "vite-plus";
+
+const solidBase = createSolidBase(defaultTheme);
 
 export default defineConfig({
   plugins: [
-    solid({ start: true, extensions: [".jsx", ".tsx"], diagnostics: false }),
-    fileRoutes({ types: true }),
+    solidBase.plugin({
+      title: "calendar",
+      titleTemplate: ":title",
+      description: "公历 / 农历日历组件、节假日数据与 Solid 适配器",
+      lang: "zh-CN",
+      themeConfig: {
+        nav: [
+          { text: "指南", link: "/guide" },
+          { text: "演示", link: "/calendar" },
+        ],
+        sidebar: {
+          "/guide": [
+            {
+              title: "开始",
+              collapsed: false,
+              items: [
+                { title: "简介", link: "/" },
+                { title: "calendar 核心", link: "/calendar" },
+                { title: "calendar-ui", link: "/calendar-ui" },
+                { title: "农历适配器", link: "/lunar" },
+              ],
+            },
+          ],
+        },
+        socialLinks: {
+          github: "https://github.com/sanguogege/calendar",
+        },
+        text: {
+          editPage: "编辑此页",
+          copyPage: "复制页面",
+          copiedPage: "已复制",
+          copyFailedPage: "复制失败",
+        },
+      },
+    }),
+    solid(solidBase.startConfig({ diagnostics: false })),
   ],
   server: {
     port: 3000,

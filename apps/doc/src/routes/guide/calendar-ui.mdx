@@ -1,0 +1,117 @@
+---
+title: calendar-ui
+---
+
+# calendar-ui
+
+`@sanguogege/calendar-ui` 是纯 DOM 的公历日历核心，**零运行时依赖**，不 import 任何农历或节假日库。
+
+```bash
+bun add @sanguogege/calendar-ui
+```
+
+## 基本用法
+
+```ts
+import { createCalendar } from "@sanguogege/calendar-ui";
+import "@sanguogege/calendar-ui/style.css";
+
+const instance = createCalendar(container, {
+  initialDate: new Date(2026, 9, 1),
+  weekStartsOn: 1,
+  locale: "zh-CN",
+  onSelect: (day) => {
+    console.log(day.year, day.month, day.day);
+    console.log(day.subtitle); // 默认 ""
+    console.log(day.badge); // 默认 null
+    console.log(day.data); // 默认 null
+  },
+});
+```
+
+不传 `adapter` 时，`CalendarDay` 只有公历信息：
+
+```ts
+interface CalendarDay<TData = null> {
+  year: number;
+  month: number;
+  day: number;
+  date: Date;
+  inCurrentMonth: boolean;
+  isToday: boolean;
+  isSelected: boolean;
+  subtitle: string;
+  badge: CalendarBadge | null;
+  data: TData | null;
+  ariaLabel: string;
+}
+```
+
+## 适配器接口
+
+农历、节假日、月相之类的业务信息通过公开的 `CalendarAdapter` 注入：
+
+```ts
+interface CalendarAdapter<TData = unknown> {
+  readonly id: string;
+  decorateMonth(input: MonthInput): ReadonlyArray<DayDecoration<TData> | null>;
+}
+```
+
+`decorateMonth` 每次拿到 42 个日期，返回同长度的装饰数组：
+
+```ts
+interface DayDecoration<TData> {
+  subtitle?: string;
+  badge?: { text: string; tone?: string };
+  data?: TData;
+  ariaLabel?: string;
+}
+```
+
+- `subtitle` 渲染在日期下方；
+- `badge` 渲染在左上角，`tone` 写到 `data-tone`，内置 `rest` / `work` 两种颜色；
+- `data` 会原样出现在 `onSelect` 的 `day.data` 上；
+- 没有装饰的位置返回 `null`。
+
+示例：
+
+```ts
+const adapter: CalendarAdapter<{ note: string }> = {
+  id: "my-calendar",
+  decorateMonth({ days }) {
+    return days.map((date) => {
+      if (date.month === 10 && date.day === 1) {
+        return {
+          subtitle: "国庆节",
+          badge: { text: "休", tone: "rest" },
+          data: { note: "holiday" },
+        };
+      }
+      return null;
+    });
+  },
+};
+
+createCalendar(container, { adapter });
+```
+
+## 纯公历的 bundle 边界
+
+默认入口没有 `@sanguogege/calendar` 依赖，也不含 `LunarInfo`、`TermInfo`、节日 JSON。需要农历时换适配器入口：
+
+- 官方实现：[农历适配器](/guide/lunar)
+- 第三方：实现 `decorateMonth`，传入 `adapter` 即可
+
+## 样式变量
+
+```css
+.cui {
+  --cui-accent: #2563eb;
+  --cui-rest: #e5484d;
+  --cui-bg: #ffffff;
+  --cui-fg: #1f2328;
+}
+```
+
+标记和副标题的颜色都走 CSS 变量，暗色模式由样式表内置。

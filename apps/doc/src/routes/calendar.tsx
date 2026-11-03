@@ -1,6 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { createSignal, onSettled } from "solid-js";
-import { createCalendar } from "@sanguogege/calendar-ui";
+import { createCalendar } from "@sanguogege/calendar-ui-lunar";
 import "@sanguogege/calendar-ui/style.css";
 
 export default function CalendarPage() {
@@ -12,9 +12,8 @@ export default function CalendarPage() {
     if (!host) return;
     const instance = createCalendar(host, {
       onSelect: (day) => {
-        console.log("onSelect", day);
-        const lunar = day.lunar ? `${day.lunar.lMonthCn}${day.lunar.lDayCn}` : "";
-        const festivals = day.lunar ? [...day.lunar.nljr, ...day.lunar.gljr].join(" / ") : "";
+        const lunar = day.data ? `${day.data.lMonthCn}${day.data.lDayCn}` : "";
+        const festivals = day.data ? [...day.data.nljr, ...day.data.gljr].join(" / ") : "";
         setPicked(
           `${day.year}-${day.month}-${day.day} ${lunar}${festivals ? ` · ${festivals}` : ""}`,
         );
@@ -25,9 +24,9 @@ export default function CalendarPage() {
 
   return (
     <main>
-      <Title>日历 - calendar-ui</Title>
-      <h1>calendar-ui</h1>
-      <p>纯 DOM 日历，挂在这个页面里。</p>
+      <Title>日历演示 - calendar</Title>
+      <h1>日历演示</h1>
+      <p>纯 DOM 日历，挂在这个页面里；左上角会显示休 / 班标记。</p>
       <div
         style={{
           width: "100%",

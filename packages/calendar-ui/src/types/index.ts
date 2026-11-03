@@ -1,9 +1,16 @@
 export type {
+  CalendarAdapter,
+  CalendarBadge,
+  CalendarDate,
   CalendarDay,
   CalendarInstance,
   CalendarOptions,
+  DayDecoration,
   HeaderRenderContext,
   HeaderRenderer,
+  MonthInput,
+  WeekStartsOn,
+  YearMonth,
 } from "./calendar";
 export type {
   GridHandle,
@@ -14,4 +21,4 @@ export type {
   NavOptions,
 } from "./components";
 export type { CalendarLocale, CalendarLocaleName } from "./locale";
-export type { BuildDaysOptions, DaySource, WeekStartsOn, YearMonth } from "./utils";
+export type { BuildDaysOptions } from "./utils";

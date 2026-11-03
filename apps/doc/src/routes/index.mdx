@@ -1,0 +1,35 @@
+---
+layout: home
+title: calendar
+hero:
+  name: calendar
+  text: 公历 / 农历日历工具集
+  tagline: 纯 TypeScript 的日历核心，可插拔的 Solid UI，内置节气、节日与调休
+  actions:
+    - theme: brand
+      text: 开始阅读
+      link: /guide
+    - theme: alt
+      text: 在线演示
+      link: /calendar
+features:
+  - title: 公历 / 农历互转
+    details: 1900-2100 全量换算，附带干支、节气、生肖、星座、节日和星期。
+  - title: 节假日与调休
+    details: 内置 2026 年国务院放假安排，支持按年注入、replace 模式和独立 converter。
+  - title: 纯公历 UI 核心
+    details: calendar-ui 零运行时依赖，默认只渲染公历，农历通过公共适配器接入。
+  - title: Solid 2
+    details: 纯 DOM 组件，不绑定框架；文档站本身就是一个 SolidBase 站点。
+---
+
+## 快速开始
+
+```bash
+bun add @sanguogege/calendar
+bun add @sanguogege/calendar-ui @sanguogege/calendar-ui-lunar
+```
+
+- 只要日期换算：用 `@sanguogege/calendar`
+- 只要公历 UI：用 `@sanguogege/calendar-ui`
+- 要农历 UI：再加上 `@sanguogege/calendar-ui-lunar`

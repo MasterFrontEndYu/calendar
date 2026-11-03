@@ -1,5 +1,4 @@
 import type { CalendarDay } from "../types";
-import { subtitleOf } from "../utils/calendar";
 import { node } from "../utils/dom";
 
 /**
@@ -20,7 +19,7 @@ export const createDayCell = function (): HTMLButtonElement {
 };
 
 /** 更新格子的日期内容；同一日期不重复写文本，只刷新状态 */
-export const setDay = function (cell: HTMLButtonElement, day: CalendarDay): void {
+export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknown>): void {
   const key = `${day.year}-${day.month}-${day.day}`;
 
   if (cell.dataset.date !== key) {
@@ -29,29 +28,32 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay): void
     const tag = cell.querySelector(".cui__day-tag") as HTMLElement;
     const num = cell.querySelector(".cui__day-num") as HTMLElement;
     const sub = cell.querySelector(".cui__day-sub") as HTMLElement;
+    const badge = day.badge;
 
-    const mark = day.lunar?.ban ? "班" : day.lunar?.xiu ? "休" : "";
-    const subtitle = subtitleOf(day);
+    tag.textContent = badge?.text ?? "";
+    tag.hidden = badge === null;
 
-    tag.textContent = mark;
-    tag.hidden = mark === "";
-    tag.classList.toggle("is-xiu", mark === "休");
-    tag.classList.toggle("is-ban", mark === "班");
+    if (badge?.tone !== undefined) {
+      tag.dataset.tone = badge.tone;
+      cell.dataset.tone = badge.tone;
+    } else {
+      delete tag.dataset.tone;
+      delete cell.dataset.tone;
+    }
 
     num.textContent = String(day.day);
-    sub.textContent = subtitle;
-    cell.setAttribute("aria-label", [key, mark, subtitle].filter((part) => part !== "").join(" "));
+    sub.textContent = day.subtitle;
+    cell.setAttribute("aria-label", day.ariaLabel);
   }
 
   setDayState(cell, day);
 };
 
 /** 只更新状态类，不动文本；选中、hover 预览这类高频操作走这里 */
-export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay): void {
+export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay<unknown>): void {
   cell.classList.toggle("is-outside", !day.inCurrentMonth);
   cell.classList.toggle("is-today", day.isToday);
   cell.classList.toggle("is-selected", day.isSelected);
-  cell.classList.toggle("is-rest", day.lunar?.xiu === true);
   cell.tabIndex = day.inCurrentMonth ? 0 : -1;
 
   if (day.isSelected) cell.setAttribute("aria-pressed", "true");
