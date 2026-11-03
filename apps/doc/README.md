@@ -12,11 +12,34 @@ vp dev        # http://localhost:3000
 ## 构建
 
 ```bash
-vp build      # 静态产物输出到 dist/client
-vp preview    # 本地预览构建结果
+# 在仓库根目录：先构建 calendar / calendar-ui / lunar，再构建文档
+vp run -r build
+
+# 在 apps/doc 里预览构建结果
+vp preview
 ```
 
-SolidBase 会在构建时预渲染 `src/routes` 下的页面；`dist/client` 可以直接部署到任意静态托管。
+SolidBase 会在构建时预渲染 `src/routes` 下的页面；`apps/doc/dist/client` 可以直接部署到任意静态托管。
+
+## GitHub Pages
+
+仓库自带 [.github/workflows/docs.yml](../../.github/workflows/docs.yml)：
+
+- 在仓库 `Settings → Pages → Build and deployment` 里把 Source 设为 **GitHub Actions**；
+- push 到 `master`（或手动 Run workflow）会构建全部 workspace 包，然后部署 `apps/doc/dist/client`；
+- 项目站点地址是 `https://sanguogege.github.io/calendar/`。
+
+对应的 base 在 [vite.config.ts](vite.config.ts) 里：
+
+```ts
+const base = command === "build" ? "/calendar/" : "/";
+```
+
+- 本地 dev 用 `/`；
+- GitHub Pages 生产构建用 `/calendar/`；
+- 如果仓库改名、改成用户站点或自定义域名，把 `/calendar/` 改成对应的基路径（用户站点/自定义域名通常是 `/`）。
+
+构建必须是 `vp run -r build`，不能只构建 `apps/doc`：文档站依赖 `@sanguogege/calendar-ui` 和 `-lunar` 的 `dist`，这两个目录不在 git 里。
 
 ## 结构
 

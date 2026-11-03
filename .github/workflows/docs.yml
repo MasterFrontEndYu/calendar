@@ -1,0 +1,60 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "apps/doc/**"
+      - "packages/**"
+      - "package.json"
+      - "bun.lock"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # 装 vp / Node / bun，并执行 vp install
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version: "24"
+          cache: true
+
+      # 先构建 workspace 包，再构建文档站；doc 的生产构建会读取
+      # @sanguogege/calendar-ui / -lunar 的 dist。
+      - name: Build
+        run: vp run -r build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/doc/dist/client
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
