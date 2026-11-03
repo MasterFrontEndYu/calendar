@@ -27,6 +27,7 @@
     "@solidjs/testing-library": "^1.0.0-beta.3",
     "@solidjs/vite-plugin": "^3.0.0-next.54",
     "@testing-library/jest-dom": "^7.0.0",
+    "@types/node": "catalog:",
     "eslint-plugin-solid": "~0.18.1",
     "filesystem-routing": "0.4.0",
     "jsdom": "^25.0.1",

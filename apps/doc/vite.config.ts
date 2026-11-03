@@ -1,3 +1,4 @@
+import process from "node:process";
 import { createSolidBase } from "@kobalte/solidbase/config";
 import defaultTheme from "@kobalte/solidbase/default-theme";
 import solid from "@solidjs/vite-plugin";
@@ -6,9 +7,11 @@ import { defineConfig } from "vite-plus";
 const solidBase = createSolidBase(defaultTheme);
 
 export default defineConfig(({ command }) => {
-  // GitHub Pages 项目站点是 https://<user>.github.io/calendar/
-  // 本地 dev 仍然使用根路径。
-  const base = command === "build" ? "/calendar/" : "/";
+  // 部署基路径由 DOC_BASE 决定：
+  // - GitHub Pages 项目站点：/calendar/（workflow 里设置）
+  // - Netlify / 本地：/
+  // 本地 dev 始终使用根路径。
+  const base = command === "build" ? (process.env.DOC_BASE ?? "/") : "/";
 
   return {
     base,

@@ -1,0 +1,14 @@
+[build]
+command = "bun install --frozen-lockfile && ./node_modules/.bin/vp run -r build"
+publish = "apps/doc/dist/client"
+
+[build.environment]
+NODE_VERSION = "22"
+BUN_VERSION = "1.4.4"
+# Netlify 部署在站点根路径；GitHub Pages 在 workflow 里设为 /calendar/
+DOC_BASE = "/"
+
+[[headers]]
+for = "/assets/*"
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"

@@ -29,17 +29,49 @@ SolidBase 会在构建时预渲染 `src/routes` 下的页面；`apps/doc/dist/cl
 - push 到 `master`（或手动 Run workflow）会构建全部 workspace 包，然后部署 `apps/doc/dist/client`；
 - 项目站点地址是 `https://sanguogege.github.io/calendar/`。
 
-对应的 base 在 [vite.config.ts](vite.config.ts) 里：
+GitHub workflow 的 Build 步骤设置了：
 
-```ts
-const base = command === "build" ? "/calendar/" : "/";
+```yaml
+env:
+  DOC_BASE: /calendar/
 ```
 
-- 本地 dev 用 `/`；
-- GitHub Pages 生产构建用 `/calendar/`；
-- 如果仓库改名、改成用户站点或自定义域名，把 `/calendar/` 改成对应的基路径（用户站点/自定义域名通常是 `/`）。
+[vite.config.ts](vite.config.ts) 用这个环境变量决定 base：
+
+```ts
+const base = command === "build" ? (process.env.DOC_BASE ?? "/") : "/";
+```
+
+- 本地 dev 始终用 `/`；
+- 默认构建（不设 `DOC_BASE`）用 `/`，适合 Netlify / 用户站点 / 自定义域名；
+- GitHub Pages 项目站点用 `/calendar/`；
+- 如果仓库改名或绑定自定义域名，改 workflow 里的 `DOC_BASE` 即可。
 
 构建必须是 `vp run -r build`，不能只构建 `apps/doc`：文档站依赖 `@sanguogege/calendar-ui` 和 `-lunar` 的 `dist`，这两个目录不在 git 里。
+
+## Netlify
+
+仓库根目录的 [netlify.toml](../../netlify.toml) 已经配好：
+
+```toml
+[build]
+command = "bun install --frozen-lockfile && ./node_modules/.bin/vp run -r build"
+publish = "apps/doc/dist/client"
+
+[build.environment]
+NODE_VERSION = "22"
+BUN_VERSION = "1.4.4"
+DOC_BASE = "/"
+```
+
+Netlify 上：
+
+1. 连接同一个仓库；
+2. Base directory 留空（仓库根目录）；
+3. Build command / Publish directory 直接使用 `netlify.toml` 里的值；
+4. 部署后站点在域名根路径，`DOC_BASE=/` 保证资源链接不带 `/calendar/`。
+
+GitHub Pages 和 Netlify 可以同时存在：它们各自构建，区别只在 `DOC_BASE`。两边的 `404.html` 都会生成；不需要 SPA fallback，也不要加 `/* /index.html 200` 重定向。
 
 ## 结构
 

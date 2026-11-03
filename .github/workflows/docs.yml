@@ -39,6 +39,8 @@ jobs:
       # @sanguogege/calendar-ui / -lunar 的 dist。
       - name: Build
         run: vp run -r build
+        env:
+          DOC_BASE: /calendar/
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
