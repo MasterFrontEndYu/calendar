@@ -27,7 +27,7 @@ describe("默认 converter", () => {
   it("setHolidays 改的是默认 converter 自己的状态", () => {
     calendar.setHolidays({ setFestival: { sFtv: { "0405": ["测试"] } } });
 
-    expect(calendar.solarToLunar(2026, 4, 5).Gljr).toContain("测试");
-    expect(calendar.createConverter().solarToLunar(2026, 4, 5).Gljr).not.toContain("测试");
+    expect(calendar.solarToLunar(2026, 4, 5).gljr).toContain("测试");
+    expect(calendar.createConverter().solarToLunar(2026, 4, 5).gljr).not.toContain("测试");
   });
 });

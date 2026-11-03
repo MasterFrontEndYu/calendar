@@ -80,11 +80,11 @@ export const firstWeekdayOf = function (year: number, month: number): number {
 export const subtitleOf = function (day: CalendarDay): string {
   const lunar = day.lunar;
   if (!lunar) return "";
-  if (lunar.Term) return lunar.Term;
-  if (lunar.Nljr.length > 0) return lunar.Nljr[0] as string;
-  if (lunar.Gljr.length > 0) return lunar.Gljr[0] as string;
-  if (lunar.lDay === 1) return lunar.LMonthCn;
-  return lunar.LDayCn;
+  if (lunar.term) return lunar.term;
+  if (lunar.nljr.length > 0) return lunar.nljr[0] as string;
+  if (lunar.gljr.length > 0) return lunar.gljr[0] as string;
+  if (lunar.lDay === 1) return lunar.lMonthCn;
+  return lunar.lDayCn;
 };
 
 /** 生成 42 格的基础数据（含农历），这一步最贵，所以缓存 */
@@ -106,7 +106,7 @@ const buildBaseDays = function (
       day: date.getDate(),
       date,
       inCurrentMonth,
-      lunar: inCurrentMonth ? lunarOf(date, source) : null,
+      lunar: lunarOf(date, source),
     });
   }
   return days;

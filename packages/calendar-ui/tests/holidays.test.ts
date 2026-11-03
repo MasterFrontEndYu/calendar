@@ -18,7 +18,7 @@ const dayOf = function (days: CalendarDay[], year: number, month: number, day: n
 };
 
 const festivalsOf = function (source: DaySource, month: number, day: number): readonly string[] {
-  return dayOf(build(source, month), 2026, month, day)?.lunar?.Gljr ?? [];
+  return dayOf(build(source, month), 2026, month, day)?.lunar?.gljr ?? [];
 };
 
 describe("resolveDaySource", () => {

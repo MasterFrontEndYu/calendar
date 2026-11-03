@@ -55,9 +55,13 @@ export function createCalendar(
       state.year = day.year;
       state.month = day.month;
     }
+
     // 点选不换月，只需要刷新状态类，不必重建格子
-    grid.updateState(currentDays());
-    options.onSelect?.(day);
+    const days = currentDays();
+    grid.updateState(days);
+
+    // 回调用更新后的对象，保证 isSelected 是本次点击的结果
+    options.onSelect?.(days.find((item) => sameDay(item.date, day.date)) ?? day);
   };
 
   const grid = createGrid({ onSelect: handleSelect });

@@ -9,7 +9,7 @@
   ### 破坏性变更
   - 非法入参一律抛异常：越界日期、不存在的日期（如 2 月 30 日）、只传部分参数、闰月不匹配，都改抛 `RangeError`；不再静默回退成“今天”、不再自动进位、`lunarToSolar` 不再返回 `-1`。
   - `gzYear` 改为以立春为界，与 `gzMonth` 口径一致；同一时刻不会再出现“乙巳年 + 庚寅月”这种不存在的组合。需要按正月初一换年的用新增的 `gzYearLunar`。
-  - `Xiu` 现在表示“是否休息”，包含周末并扣除调休补班日；新增 `dayOfWeek` 字段。
+  - `xiu` / `ban` 完全由 rest.json 的放假日 / 补班日列表决定，不再自动包含周末；新增 `dayOfWeek` 字段。
   - `setRest` 由“整年覆盖”改为“按年、按列表合并”。
   - 新增 `resetHolidays()`、`getHolidays()`；`setHolidays(config, { replace: true })` 可丢弃内置数据。
 

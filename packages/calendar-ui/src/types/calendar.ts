@@ -18,7 +18,7 @@ export interface CalendarDay {
   isToday: boolean;
   /** 是否当前选中 */
   isSelected: boolean;
-  /** @sanguogege/calendar 的换算结果，补位格为 null */
+  /** @sanguogege/calendar 的换算结果；超出 1900-2100 支持范围时为 null */
   lunar: LunarResult | null;
 }
 

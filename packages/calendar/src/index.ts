@@ -155,24 +155,24 @@ const computeLunar = function (
 
   const restState = restOf(config.restIndex, sy, sm, sd);
   const isBan = restState === 2;
-  // 0=普通日、1=放假、2=补班，三者互斥；只有普通日才回落到周六/周日
-  const isXiu = restState === 1 || (restState === 0 && (dayOfWeek === 0 || dayOfWeek === 6));
+  // 0=普通日、1=放假、2=补班，三者互斥；xiu / ban 只由 rest.json 决定，与周末无关
+  const isXiu = restState === 1;
 
   const dayCyclical = utc / DAY_MS - (sd - 1) + 25567 + 10;
   const gzDayOffset = dayCyclical + sd - 1;
   const ganzhiYear = sm > 2 || (sm === 2 && sd >= lichunDay) ? sy : sy - 1;
 
   return {
-    Xiu: isXiu,
-    Ban: isBan,
-    Gljr: solarFestivals(sy, sm, sd, config.sFtv),
-    Nljr: lunarFestivals(year, month, day, config.lFtv),
+    xiu: isXiu,
+    ban: isBan,
+    gljr: solarFestivals(sy, sm, sd, config.sFtv),
+    nljr: lunarFestivals(year, month, day, config.lFtv),
     lYear: year,
     lMonth: month,
     lDay: day,
-    Animal: getAnimal(year),
-    LMonthCn: (isLeap ? "闰" : "") + toChinaMonth(month),
-    LDayCn: toChinaDay(day),
+    animal: getAnimal(year),
+    lMonthCn: (isLeap ? "闰" : "") + toChinaMonth(month),
+    lDayCn: toChinaDay(day),
     cYear: sy,
     cMonth: sm,
     cDay: sd,
@@ -189,7 +189,7 @@ const computeLunar = function (
     nWeek: dayOfWeek === 0 ? 7 : dayOfWeek,
     dayOfWeek,
     ncWeek: "星期" + toChinaNum(dayOfWeek),
-    Term: term,
+    term,
     astro: toAstro(sm, sd),
   };
 };
@@ -280,7 +280,7 @@ const createConverterAPI = function (getConfig: () => ResolvedConfig): CalendarC
  * @throws TypeError 配置格式不合法（含具体字段路径）
  * @example
  * const converter = calendar.createConverter({ setRest: { 2027: { xiu: ["0101"] } } });
- * converter.solarToLunar(2027, 1, 1).Xiu; // true
+ * converter.solarToLunar(2027, 1, 1).xiu; // true
  */
 const createConverter = function (
   config: HolidayConfig = {},

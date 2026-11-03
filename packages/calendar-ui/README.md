@@ -11,7 +11,7 @@ import "@sanguogege/calendar-ui/style.css";
 const instance = createCalendar(container, {
   weekStartsOn: 1, // 0 周日 / 1 周一（默认）
   locale: "zh-CN", // 或 "en-US" / 自定义语言包
-  onSelect: (day) => console.log(day.year, day.month, day.day, day.lunar?.Nljr),
+  onSelect: (day) => console.log(day.year, day.month, day.day, day.lunar?.nljr),
 });
 
 instance.nextMonth();
@@ -32,6 +32,16 @@ instance.destroy();
 | `replaceHolidays` | `boolean`                               | 为 `true` 时忽略内置节日 / 调休数据，只使用 `holidays` |
 | `onSelect`        | `(day: CalendarDay) => void`            | 选中某一天时触发                                       |
 | `onMonthChange`   | `(year: number, month: number) => void` | 切换月份时触发                                         |
+
+## 休 / 班标记
+
+日期格左上角会根据 `day.lunar` 显示标记（数据来自 `@sanguogege/calendar` 的 `rest.json`，与周末无关）：
+
+- `lunar.xiu === true` → 「休」
+- `lunar.ban === true` → 「班」
+- 两者都为 `false` → 不显示
+
+颜色可用 `--cui-rest`（休）和 `--cui-accent`（班）覆盖。
 
 ## 多套节假日配置
 

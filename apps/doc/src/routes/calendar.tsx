@@ -12,8 +12,9 @@ export default function CalendarPage() {
     if (!host) return;
     const instance = createCalendar(host, {
       onSelect: (day) => {
-        const lunar = day.lunar ? `${day.lunar.LMonthCn}${day.lunar.LDayCn}` : "";
-        const festivals = day.lunar ? [...day.lunar.Nljr, ...day.lunar.Gljr].join(" / ") : "";
+        console.log("onSelect", day);
+        const lunar = day.lunar ? `${day.lunar.lMonthCn}${day.lunar.lDayCn}` : "";
+        const festivals = day.lunar ? [...day.lunar.nljr, ...day.lunar.gljr].join(" / ") : "";
         setPicked(
           `${day.year}-${day.month}-${day.day} ${lunar}${festivals ? ` · ${festivals}` : ""}`,
         );

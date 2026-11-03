@@ -12,7 +12,7 @@ describe("公历转农历", () => {
   it("1900-01-31 是农历数据起点", () => {
     const r = calendar.solarToLunar(1900, 1, 31);
     expect([r.lYear, r.lMonth, r.lDay, r.isLeap]).toEqual([1900, 1, 1, false]);
-    expect([r.LMonthCn, r.LDayCn]).toEqual(["正月", "初一"]);
+    expect([r.lMonthCn, r.lDayCn]).toEqual(["正月", "初一"]);
   });
 
   it("已知春节日期", () => {
@@ -130,12 +130,12 @@ describe("节气", () => {
       冬至: [12, 22],
     };
     for (const [name, [m, d]] of Object.entries(expected)) {
-      expect(calendar.solarToLunar(2026, m, d).Term).toBe(name);
+      expect(calendar.solarToLunar(2026, m, d).term).toBe(name);
     }
   });
 
-  it("非节气日 Term 为 null", () => {
-    expect(calendar.solarToLunar(2026, 10, 31).Term).toBeNull();
+  it("非节气日 term 为 null", () => {
+    expect(calendar.solarToLunar(2026, 10, 31).term).toBeNull();
   });
 });
 
@@ -150,7 +150,7 @@ describe("节日", () => {
         eve.getUTCMonth() + 1,
         eve.getUTCDate(),
       );
-      expect(r.Nljr, `${year}`).toContain("除夕");
+      expect(r.nljr, `${year}`).toContain("除夕");
     }
   });
 
@@ -167,16 +167,16 @@ describe("节日", () => {
       [2027, 11, 25, "感恩节"],
     ];
     for (const [y, m, d, name] of expected) {
-      expect(calendar.solarToLunar(y, m, d).Gljr, `${y}-${m}-${d}`).toContain(name);
+      expect(calendar.solarToLunar(y, m, d).gljr, `${y}-${m}-${d}`).toContain(name);
     }
   });
 
   it("内置节日数据没有写错日期", () => {
-    expect(calendar.solarToLunar(2026, 5, 8).Gljr).toContain("世界微笑日");
-    expect(calendar.solarToLunar(2026, 10, 1).Gljr).not.toContain("世界微笑日");
+    expect(calendar.solarToLunar(2026, 5, 8).gljr).toContain("世界微笑日");
+    expect(calendar.solarToLunar(2026, 10, 1).gljr).not.toContain("世界微笑日");
     // 寒衣节是农历十月初一
-    expect(calendar.solarToLunar(2026, 11, 9).Nljr).toContain("寒衣节");
-    expect(calendar.solarToLunar(2026, 10, 1).Gljr[0]).toBe("国庆节");
+    expect(calendar.solarToLunar(2026, 11, 9).nljr).toContain("寒衣节");
+    expect(calendar.solarToLunar(2026, 10, 1).gljr[0]).toBe("国庆节");
   });
 });
 

@@ -21,8 +21,8 @@ const today = calendar.solarToLunar();
 
 // 传参：指定公历日期
 const day = calendar.solarToLunar(2026, 4, 5);
-console.log(day.LMonthCn + day.LDayCn); // 二月十八
-console.log(day.Term); // 清明
+console.log(day.lMonthCn + day.lDayCn); // 二月十八
+console.log(day.term); // 清明
 console.log(day.gzYear, day.gzMonth, day.gzDay); // 丙午 壬辰 己酉
 ```
 
@@ -62,17 +62,17 @@ calendar.lunarToSolar(2020, 4, 1, true); // 2020-05-23（闰四月）
 | `cYear` / `cMonth` / `cDay` | number         | 公历年 / 月 / 日                                 |
 | `lYear` / `lMonth` / `lDay` | number         | 农历年 / 月 / 日                                 |
 | `isLeap`                    | boolean        | 是否闰月                                         |
-| `LMonthCn` / `LDayCn`       | string         | 农历月 / 日中文，如 `"闰四月"`、`"廿一"`         |
-| `Animal`                    | string         | 生肖，以农历年为准                               |
+| `lMonthCn` / `lDayCn`       | string         | 农历月 / 日中文，如 `"闰四月"`、`"廿一"`         |
+| `animal`                    | string         | 生肖，以农历年为准                               |
 | `gzYear`                    | string         | 干支年，**以立春为界**，与 `gzMonth` 口径一致    |
-| `gzYearLunar`               | string         | 干支年，以正月初一为界，与 `Animal` 口径一致     |
+| `gzYearLunar`               | string         | 干支年，以正月初一为界，与 `animal` 口径一致     |
 | `gzMonth` / `gzDay`         | string         | 干支月（以节气为界）/ 干支日                     |
 | `gzHour`                    | string[]       | 当天十二个时辰的干支                             |
-| `Term`                      | string \| null | 节气名，非节气日为 `null`                        |
+| `term`                      | string \| null | 节气名，非节气日为 `null`                        |
 | `astro`                     | string         | 星座，如 `"摩羯座"`                              |
-| `Gljr` / `Nljr`             | string[]       | 公历节日 / 农历节日                              |
-| `Xiu`                       | boolean        | 是否休息：周末或法定节假日，且不是补班日         |
-| `Ban`                       | boolean        | 是否调休补班                                     |
+| `gljr` / `nljr`             | string[]       | 公历节日 / 农历节日                              |
+| `xiu`                       | boolean        | 是否在 rest.json 的 `xiu` 列表中；与周末无关     |
+| `ban`                       | boolean        | 是否在 rest.json 的 `ban` 列表中                 |
 | `isToday`                   | boolean        | 是否今天（按运行环境本地时区）                   |
 | `nWeek`                     | number         | 星期 1-7，**周日为 7**                           |
 | `dayOfWeek`                 | number         | 星期 0-6，**周日为 0**，与 `solarFirstWeek` 一致 |
@@ -80,7 +80,7 @@ calendar.lunarToSolar(2020, 4, 1, true); // 2020-05-23（闰四月）
 
 ## 节假日与调休
 
-内置数据只包含 **2020、2021** 两年的法定节假日安排，2022 年及以后请按年注入（国务院办公厅每年 11 月左右发布次年安排）。
+内置数据目前只包含 **2026** 年的法定节假日安排（依据国务院办公厅 2025 年 11 月 4 日发布的[《关于 2026 年部分节假日安排的通知》](https://www.gov.cn/zhengce/content/202511/content_7047090.htm)）。2027 年的安排国务院办公厅尚未发布，发布后请按年注入（通常每年 11 月发布次年安排）。
 
 ```ts
 calendar.setHolidays({
@@ -99,7 +99,7 @@ calendar.setHolidays({
 - `resetHolidays()`：恢复到内置数据。
 - `getHolidays()`：取当前配置的深拷贝，可直接再传给 `setHolidays()`。
 
-**休息语义**：`Xiu = 周末或法定节假日，且不是补班日`。补班日（`ban`）即使落在周末也是工作日。某个年份没有注入数据时，只按周末计算，不会报错。
+**休息语义**：`xiu` / `ban` 完全由 `rest.json` 的 `xiu` / `ban` 决定，与星期几无关。普通周末不会自动算作休息；需要把某天视为休息，就把对应 `MMDD` 写进该年的 `xiu`。某年没有数据时，`xiu` 和 `ban` 都为 `false`。
 
 **不需要写进数据的节日**：`除夕`（腊月最后一天）、`母亲节`（5 月第 2 个周日）、`父亲节`（6 月第 3 个周日）、`感恩节`（11 月第 4 个周四）由规则计算，写死在数据里反而会错年份。
 
@@ -123,12 +123,12 @@ const hongKong = calendar.createConverter({
   setRest: { 2027: { xiu: ["0101"] } },
 });
 
-mainland.solarToLunar(2027, 1, 4).Ban; // true
-hongKong.solarToLunar(2027, 1, 4).Ban; // false
+mainland.solarToLunar(2027, 1, 4).ban; // true
+hongKong.solarToLunar(2027, 1, 4).ban; // false
 
 // 与全局配置互不影响
 calendar.setHolidays({ setRest: { 2027: { ban: ["0101"] } } });
-hongKong.solarToLunar(2027, 1, 1).Xiu; // 仍然是 true
+hongKong.solarToLunar(2027, 1, 1).xiu; // 仍然是 true
 ```
 
 - 2.x 只导出默认 converter：`calendar.solarToLunar`、`calendar.createConverter`、`calendar.utils` 都挂在这一个对象上，没有具名函数导出；
@@ -195,7 +195,7 @@ calendar.utils.toHourGanZhi(40); // ["甲子", "乙丑", ...]
 1. 非法入参一律抛异常，不再 `return -1`、不再静默取今天、不再自动进位（如 `2024-02-30` 不再变成 3 月 1 日）。
 2. `lunarToSolar` 不再返回 `-1`。
 3. `gzYear` 改为以**立春**为界，与 `gzMonth` 一致；需要按正月初一换年的用新增的 `gzYearLunar`。
-4. `Xiu` 现在包含周末，并扣除调休补班日；新增 `dayOfWeek`。
+4. `xiu` / `ban` 改为完全由 `rest.json` 的 `xiu` / `ban` 决定，不再自动包含周末；新增 `dayOfWeek`。
 5. `setRest` 由“整年覆盖”改为“按年按列表合并”。
 6. 除夕、母亲节、父亲节、感恩节改为规则计算，数据文件里已移除对应写法。
 7. 修复星座名（`摩羯座`、`天秤座`）与星座边界日期。
@@ -221,6 +221,7 @@ calendar.utils.toHourGanZhi(40); // ["甲子", "乙丑", ...]
 
 - `MMDD` 必须是四位，月份 01-12、日期 01-31；
 - `setRest` 的年份范围 1900-2100，`xiu` / `ban` 缺省时按空数组处理；
+- `xiu` / `ban` 是 `xiu` / `ban` 的唯一依据，周末不参与计算；
 - 写错格式会在 `setHolidays()` 调用处立刻抛 `TypeError`，不会等到查询时才出现 `undefined`。
 
 ## License

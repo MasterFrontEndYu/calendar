@@ -10,7 +10,12 @@ import { node } from "../utils/dom";
 export const createDayCell = function (): HTMLButtonElement {
   const cell = node("button", "cui__day");
   cell.type = "button";
-  cell.append(node("span", "cui__day-num"), node("span", "cui__day-sub"));
+
+  const tag = node("span", "cui__day-tag");
+  tag.hidden = true;
+  tag.setAttribute("aria-hidden", "true");
+
+  cell.append(tag, node("span", "cui__day-num"), node("span", "cui__day-sub"));
   return cell;
 };
 
@@ -21,13 +26,21 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay): void
   if (cell.dataset.date !== key) {
     cell.dataset.date = key;
 
-    const num = cell.firstElementChild as HTMLElement;
-    const sub = cell.lastElementChild as HTMLElement;
+    const tag = cell.querySelector(".cui__day-tag") as HTMLElement;
+    const num = cell.querySelector(".cui__day-num") as HTMLElement;
+    const sub = cell.querySelector(".cui__day-sub") as HTMLElement;
+
+    const mark = day.lunar?.ban ? "班" : day.lunar?.xiu ? "休" : "";
     const subtitle = subtitleOf(day);
+
+    tag.textContent = mark;
+    tag.hidden = mark === "";
+    tag.classList.toggle("is-xiu", mark === "休");
+    tag.classList.toggle("is-ban", mark === "班");
 
     num.textContent = String(day.day);
     sub.textContent = subtitle;
-    cell.setAttribute("aria-label", `${key} ${subtitle}`.trim());
+    cell.setAttribute("aria-label", [key, mark, subtitle].filter((part) => part !== "").join(" "));
   }
 
   setDayState(cell, day);
@@ -38,7 +51,7 @@ export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay):
   cell.classList.toggle("is-outside", !day.inCurrentMonth);
   cell.classList.toggle("is-today", day.isToday);
   cell.classList.toggle("is-selected", day.isSelected);
-  cell.classList.toggle("is-rest", day.lunar?.Xiu === true);
+  cell.classList.toggle("is-rest", day.lunar?.xiu === true);
   cell.tabIndex = day.inCurrentMonth ? 0 : -1;
 
   if (day.isSelected) cell.setAttribute("aria-pressed", "true");

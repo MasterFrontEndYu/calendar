@@ -68,14 +68,14 @@ export interface SetHolidayOptions {
  * 公历转农历 / 农历转公历的完整结果
  */
 export interface LunarResult {
-  /** 当天是否休息：周末或法定节假日，且不是调休补班日 */
-  Xiu: boolean;
-  /** 当天是否调休补班 */
-  Ban: boolean;
+  /** 是否在 rest.json 的放假日列表（xiu）中；与周末无关 */
+  xiu: boolean;
+  /** 是否在 rest.json 的调休补班日列表（ban）中 */
+  ban: boolean;
   /** 公历节日，例如 ["元旦"]；没有节日时是共享的只读空数组 */
-  Gljr: readonly string[];
+  gljr: readonly string[];
   /** 农历节日，例如 ["春节"]；没有节日时是共享的只读空数组 */
-  Nljr: readonly string[];
+  nljr: readonly string[];
   /** 农历年 */
   lYear: number;
   /** 农历月，1-12 */
@@ -83,11 +83,11 @@ export interface LunarResult {
   /** 农历日，1-30 */
   lDay: number;
   /** 生肖，以农历年为准 */
-  Animal: string;
+  animal: string;
   /** 农历月中文名，例如 "正月"、"闰四月" */
-  LMonthCn: string;
+  lMonthCn: string;
   /** 农历日中文名，例如 "初一" */
-  LDayCn: string;
+  lDayCn: string;
   /** 公历年 */
   cYear: number;
   /** 公历月，1-12 */
@@ -96,7 +96,7 @@ export interface LunarResult {
   cDay: number;
   /** 干支年，以立春为界，与 gzMonth 口径一致 */
   gzYear: string;
-  /** 干支年，以正月初一为界，与 Animal 口径一致 */
+  /** 干支年，以正月初一为界，与 animal 口径一致 */
   gzYearLunar: string;
   /** 干支月，以节气为界 */
   gzMonth: string;
@@ -115,7 +115,7 @@ export interface LunarResult {
   /** 星期中文，例如 "星期日" */
   ncWeek: string;
   /** 节气名，当天不是节气时为 null */
-  Term: string | null;
+  term: string | null;
   /** 星座，例如 "摩羯座" */
   astro: string;
 }

@@ -87,6 +87,7 @@
 
 /* 日期格 */
 .cui__day {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -119,6 +120,34 @@
   font-size: 11px;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* 左上角的休 / 班标记 */
+.cui__day-tag {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.cui__day-tag[hidden] {
+  display: none;
+}
+
+.cui__day-tag.is-xiu {
+  color: var(--cui-rest);
+}
+
+.cui__day-tag.is-ban {
+  color: var(--cui-accent);
+}
+
+.cui__day.is-selected .cui__day-tag {
+  color: currentColor;
+  opacity: 0.9;
 }
 
 /* 状态 */
