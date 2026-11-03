@@ -36,6 +36,8 @@ describe("demo components", () => {
     flush();
 
     expect(container.querySelectorAll(".cui")).toHaveLength(1);
+    expect(container.querySelectorAll('.cui__day-tag[data-tone="rest"]')).not.toHaveLength(0);
+    expect(container.querySelectorAll('.cui__day-tag[data-tone="work"]')).not.toHaveLength(0);
     expect(container.textContent).toContain("六月公司日");
   });
 });

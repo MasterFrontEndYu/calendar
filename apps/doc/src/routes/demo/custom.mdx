@@ -3,40 +3,71 @@ title: 第三方适配器
 ---
 
 import CustomCalendar from "../../components/demo/CustomCalendar";
+import CompanyRestTable from "../../components/demo/CompanyRestTable";
 
 # 第三方适配器
 
-这个示例完全不使用 `@sanguogege/calendar`。节假日和调休来自本地方法 `getCompanyRest()`，再通过公开的 `CalendarAdapter` 接到纯公历核心上。
+这个示例完全不使用 `@sanguogege/calendar`。节假日和调休写成和 `setRest` 相同的数据形状，另外用 `names` 提供副标题：
+
+```ts
+{
+  2026: {
+    xiu: ["0101", "0501", "0605", "1001"],
+    ban: ["0613"],
+    names: { "0101": "公司元旦", "0605": "六月公司日" }
+  }
+}
+```
+
+再通过公开的 `CalendarAdapter` 接到纯公历核心上。
 
 <CustomCalendar />
 
-## 1. 返回节假日 / 调休的方法
+## 数据
+
+页面直接按 `COMPANY_REST` 渲染：
+
+<CompanyRestTable />
+
+## 1. 节假日 / 调休数据
 
 ```ts
 export interface CompanyRest {
-  name: string;
+  date: string;
   type: "holiday" | "makeup";
+  subtitle: string;
 }
 
+export const COMPANY_REST = {
+  2026: {
+    xiu: ["0101", "0501", "0605", "1001"],
+    ban: ["0613"],
+    names: {
+      "0101": "公司元旦",
+      "0501": "公司劳动节",
+      "0605": "六月公司日",
+      "0613": "公司日补班",
+      "1001": "公司国庆",
+    },
+  },
+};
+
+const pad = (value: number) => String(value).padStart(2, "0");
+
 export function getCompanyRest(date: Date): CompanyRest | null {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const weekday = date.getDay();
+  const year = COMPANY_REST[String(date.getFullYear())];
+  if (!year) return null;
 
-  // 固定日期：1/1、5/1、10/1
-  const fixed = FIXED[`${pad(month)}-${pad(day)}`];
-  if (fixed) return fixed;
+  const mmdd = `${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
+  const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const subtitle = year.names?.[mmdd];
 
-  // 六月第一个周五：公司日
-  if (month === 6 && weekday === 5 && day <= 7) {
-    return { name: "六月公司日", type: "holiday" };
+  if (year.ban?.includes(mmdd)) {
+    return { date: day, type: "makeup", subtitle: subtitle ?? "公司补班" };
   }
-
-  // 六月第二个周六：公司日补班
-  if (month === 6 && weekday === 6 && day > 7 && day <= 14) {
-    return { name: "公司日补班", type: "makeup" };
+  if (year.xiu?.includes(mmdd)) {
+    return { date: day, type: "holiday", subtitle: subtitle ?? "公司假日" };
   }
-
   return null;
 }
 ```
@@ -52,7 +83,7 @@ const adapter: CalendarAdapter<CompanyRest> = {
       if (!rest) return null;
 
       return {
-        subtitle: rest.name,
+        subtitle: rest.subtitle,
         badge:
           rest.type === "holiday" ? { text: "休", tone: "rest" } : { text: "班", tone: "work" },
         data: rest,
@@ -67,4 +98,4 @@ const instance = createCalendar(host, {
 });
 ```
 
-核心只负责渲染 `subtitle` 和 `badge`；第三方数据源、缓存、接口请求都可以放在适配器里。
+核心只负责渲染 `subtitle` 和 `badge`；`xiu` / `ban` 的查询、副标题数据、缓存和接口请求都可以放在第三方适配器里。

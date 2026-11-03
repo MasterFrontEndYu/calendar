@@ -4,7 +4,7 @@ title: 简介
 
 # calendar
 
-一套围绕中国日历的工具集：
+一套围绕中国日历的工具集，拆成“换算核心 / 纯公历 UI / 农历适配器”三层：
 
 | 包                              | 作用                               | 运行时依赖                 |
 | ------------------------------- | ---------------------------------- | -------------------------- |
@@ -12,15 +12,66 @@ title: 简介
 | `@sanguogege/calendar-ui`       | 纯公历 DOM 日历核心                | 零依赖                     |
 | `@sanguogege/calendar-ui-lunar` | 把 `calendar` 接进 UI 的官方适配器 | `calendar` + `calendar-ui` |
 
+## 安装
+
+```bash
+# 只要日期换算
+bun add @sanguogege/calendar
+
+# 纯公历 UI
+bun add @sanguogege/calendar-ui
+
+# 要农历 UI
+bun add @sanguogege/calendar-ui @sanguogege/calendar-ui-lunar
+```
+
+## 按场景选择
+
+| 场景                      | 入口                                           |
+| ------------------------- | ---------------------------------------------- |
+| 只需要日期数据            | `@sanguogege/calendar`                         |
+| 只需要公历日历组件        | `@sanguogege/calendar-ui`                      |
+| 要农历、节气、节日、休班  | `@sanguogege/calendar-ui-lunar`                |
+| 有自己的历法 / 节假日接口 | 自己实现 `CalendarAdapter`，传给 `calendar-ui` |
+
 ## 设计原则
 
 - **核心只做换算**：`calendar` 不碰 DOM，也不依赖框架。
-- **UI 核心默认纯公历**：不装农历包、不 import 农历代码，bundle 里就没有农历数据。
+- **UI 核心默认纯公历**：不装农历包、不 import 农历代码，默认 bundle 里没有农历数据。
 - **公共适配器接口**：`CalendarAdapter` 是公开的，第三方可以接自己的历法或节假日源。
 - **配置按实例固定**：需要多套节假日时用 `createConverter`，互不影响。
 
+## 最小的两个例子
+
+```ts
+// 只换算
+import calendar from "@sanguogege/calendar";
+
+const day = calendar.solarToLunar(2026, 10, 1);
+console.log(day.lMonthCn, day.lDayCn, day.term, day.gljr);
+```
+
+```ts
+// 纯公历 UI
+import { createCalendar } from "@sanguogege/calendar-ui";
+import "@sanguogege/calendar-ui/style.css";
+
+const instance = createCalendar(container, {
+  onSelect: (day) => console.log(day.year, day.month, day.day, day.data),
+});
+```
+
+`calendar` 只导出默认 converter；`calendar-ui` 默认不依赖 `calendar`。
+
 ## 下一步
 
-- [calendar 核心](/guide/calendar)：换算、节气、节日与调休。
-- [calendar-ui](/guide/calendar-ui)：纯公历组件和适配器接口。
+- [calendar 核心](/guide/calendar)：`solarToLunar`、`lunarToSolar`、节日、调休、`createConverter`。
+- [calendar-ui](/guide/calendar-ui)：`createCalendar`、`CalendarOptions`、`CalendarInstance`、样式。
 - [农历适配器](/guide/lunar)：把 `@sanguogege/calendar` 接到 UI 上。
+- [第三方适配器](/guide/adapter)：实现公开的 `CalendarAdapter`，接自己的数据源。
+
+## 演示
+
+- [纯公历 · 多实例](/demo/plain)
+- [官方农历适配器](/demo/lunar)
+- [第三方适配器](/demo/custom)

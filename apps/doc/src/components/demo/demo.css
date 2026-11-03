@@ -12,3 +12,22 @@
   color: var(--sb-text-2, inherit);
   font-size: 0.9rem;
 }
+
+.demo-table {
+  width: 100%;
+  margin: 1rem 0 1.5rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.demo-table th,
+.demo-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid rgb(127 127 127 / 20%);
+  text-align: left;
+}
+
+.demo-table th {
+  color: var(--sb-text-2, inherit);
+  font-weight: 600;
+}

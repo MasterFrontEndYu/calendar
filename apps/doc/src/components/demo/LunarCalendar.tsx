@@ -24,6 +24,7 @@ export default function LunarCalendar(props: LunarCalendarProps) {
       initialDate: custom ? new Date(2026, 0, 1) : new Date(2026, 9, 1),
       holidays: custom ? CUSTOM_HOLIDAYS : undefined,
       onSelect: (day) => {
+        console.log("day", day);
         const lunar = day.data ? `${day.data.lMonthCn}${day.data.lDayCn}` : "";
         const state = day.data?.ban ? "班" : day.data?.xiu ? "休" : "";
         setPicked(`${day.year}-${day.month}-${day.day} ${lunar} ${state}`);

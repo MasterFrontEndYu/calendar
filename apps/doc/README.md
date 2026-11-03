@@ -55,6 +55,7 @@ src/
       calendar.mdx         calendar 核心
       calendar-ui.mdx      纯公历 UI
       lunar.mdx            农历适配器
+      adapter.mdx          第三方适配器接口
     demo/
       index.mdx            演示总览
       plain.mdx            纯公历 · 多实例
@@ -66,6 +67,7 @@ src/
       PlainCalendar.tsx    纯公历实例
       LunarCalendar.tsx    官方农历实例
       CustomCalendar.tsx   第三方适配器实例
+      CompanyRestTable.tsx 第三方 xiu / ban 数据表
       demo.css             演示布局
     NotFound.tsx           404 内容 + httpStatus(404)
   demo/

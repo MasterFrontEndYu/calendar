@@ -27,40 +27,112 @@ const instance = createCalendar(container, {
 });
 ```
 
-接口和纯公历入口一致，只是 `day.data` 变成完整的 `LunarResult`。
+接口和纯公历入口完全一致，只是 imports 换了一个，`day.data` 变成完整的 `LunarResult`。
 
 ## 选项
 
-| 选项              | 类型            | 说明                                        |
-| ----------------- | --------------- | ------------------------------------------- |
-| `holidays`        | `HolidayConfig` | 本实例的节日 / 调休配置                     |
-| `replaceHolidays` | `boolean`       | 为 `true` 时忽略内置数据，只使用 `holidays` |
+`LunarCalendarOptions` 继承 `CalendarOptions<LunarResult>`，额外支持：
 
-其余选项（`initialDate`、`weekStartsOn`、`locale`、`header`、`renderHeader`、`onSelect`、`onMonthChange`）与 `calendar-ui` 相同。
+| 选项              | 类型            | 默认    | 说明                                        |
+| ----------------- | --------------- | ------- | ------------------------------------------- |
+| `holidays`        | `HolidayConfig` | -       | 本实例的节日 / 调休配置                     |
+| `replaceHolidays` | `boolean`       | `false` | 为 `true` 时忽略内置数据，只使用 `holidays` |
+
+其余选项与 `calendar-ui` 相同：
+
+| 选项            | 说明                                          |
+| --------------- | --------------------------------------------- |
+| `initialDate`   | 初始日期，默认今天                            |
+| `weekStartsOn`  | 0 周日 / 1 周一                               |
+| `locale`        | `"zh-CN"` / `"en-US"` / 自定义语言包          |
+| `header`        | 是否显示头部                                  |
+| `renderHeader`  | 自定义头部                                    |
+| `onSelect`      | 选中回调，`day.data` 是 `LunarResult \| null` |
+| `onMonthChange` | 换月回调                                      |
+
+## day.data
+
+`day.data` 是 `@sanguogege/calendar` 的完整 `LunarResult`：
+
+| 字段                                         | 说明                      |
+| -------------------------------------------- | ------------------------- |
+| `lYear` / `lMonth` / `lDay`                  | 农历年 / 月 / 日          |
+| `lMonthCn` / `lDayCn`                        | 农历月 / 日中文           |
+| `isLeap`                                     | 是否闰月                  |
+| `animal`                                     | 生肖                      |
+| `xiu` / `ban`                                | 是否在放假日 / 补班日列表 |
+| `gljr` / `nljr`                              | 公历 / 农历节日           |
+| `term`                                       | 节气名，非节气日为 `null` |
+| `gzYear` / `gzMonth` / `gzDay` / `gzHour`    | 干支                      |
+| `cYear` / `cMonth` / `cDay`                  | 公历年 / 月 / 日          |
+| `isToday` / `nWeek` / `dayOfWeek` / `ncWeek` | 今天与星期                |
+| `astro`                                      | 星座                      |
+
+完整字段表见 [calendar 核心](/guide/calendar#返回值-lunarresult)。
+
+`day.data` 在 `1900-01-31 ~ 2100-12-31` 之外为 `null`。
 
 ## 副标题与标记
 
 - `subtitle` 优先级：节气 > 农历节日 > 公历节日 > 农历日；
 - `badge`：`xiu` 显示「休」，`ban` 显示「班」；
-- 两者都来自 `rest.json`，普通周末不会自动显示休。
+- 普通周末不会自动显示休；`xiu` / `ban` 只来自配置数据；
+- `rest` 标记会让副标题变红。
 
 ```ts
 day.data?.xiu; // 是否在放假日列表
 day.data?.ban; // 是否在调休补班列表
+day.data?.nljr; // 农历节日
+day.data?.term; // 节气
 ```
 
-`day.data` 在 `1900-01-31 ~ 2100-12-31` 之外为 `null`。
+判断周末请用 `day.dayOfWeek` / `day.nWeek`，不要用 `xiu`。
 
 ## 多套配置
 
 ```ts
-const mainland = createCalendar(hostA, { holidays: mainlandHolidays });
-const hongKong = createCalendar(hostB, { holidays: hongKongHolidays });
+const mainland = createCalendar(hostA, {
+  holidays: mainlandHolidays,
+});
+const hongKong = createCalendar(hostB, {
+  holidays: hongKongHolidays,
+});
 ```
 
 - `holidays` 在 `createCalendar()` 时校验并固定；
-- 多个实例传同一个配置对象时会共享月份缓存；
-- 不传 `holidays` 时使用全局 `setHolidays()`。
+- 不同配置对象得到不同的 converter 和月份缓存；
+- 多个实例传**同一个配置对象**时会共享月份缓存；
+- 不传 `holidays` 时使用全局 `setHolidays()` 的配置；月份一旦缓存，之后再改全局配置不会自动刷新已缓存月份，建议在创建实例前设置全局配置。
+
+## 直接使用适配器
+
+如果不想用包装入口，也可以把适配器传给核心：
+
+```ts
+import { createCalendar } from "@sanguogege/calendar-ui";
+import { createLunarAdapter } from "@sanguogege/calendar-ui-lunar";
+
+const adapter = createLunarAdapter({
+  holidays: {
+    setRest: { 2027: { xiu: ["0101", "0102"], ban: ["0104"] } },
+  },
+});
+
+const instance = createCalendar(container, {
+  adapter,
+  onSelect: (day) => day.data?.gljr,
+});
+```
+
+`createLunarAdapter(options)` 返回 `CalendarAdapter<LunarResult>`，可以和其他自定义逻辑组合。
+
+## 与自定义适配器的关系
+
+官方农历适配器只是 `CalendarAdapter` 的一个实现：
+
+- 核心默认是纯公历；
+- 需要农历时通过 `holidays` / `createLunarAdapter()` 注入；
+- 你也可以写自己的适配器接公司接口，见[第三方适配器](/guide/adapter)。
 
 ## 只做换算，不用 UI
 
@@ -70,6 +142,7 @@ const hongKong = createCalendar(hostB, { holidays: hongKongHolidays });
 import calendar from "@sanguogege/calendar";
 
 calendar.solarToLunar(2026, 10, 1).gljr;
+calendar.createConverter({ ... }).solarToLunar(2027, 1, 1).xiu;
 ```
 
 详见 [calendar 核心](/guide/calendar)。

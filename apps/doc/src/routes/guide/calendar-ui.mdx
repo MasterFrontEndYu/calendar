@@ -27,9 +27,40 @@ const instance = createCalendar(container, {
     console.log(day.data); // 默认 null
   },
 });
+
+instance.nextMonth();
+instance.destroy();
 ```
 
-不传 `adapter` 时，`CalendarDay` 只有公历信息：
+## CalendarOptions
+
+```ts
+interface CalendarOptions<TData = null> {
+  initialDate?: Date;
+  weekStartsOn?: WeekStartsOn;
+  locale?: CalendarLocale | CalendarLocaleName;
+  header?: boolean;
+  renderHeader?: HeaderRenderer;
+  adapter?: CalendarAdapter<TData>;
+  onSelect?: (day: CalendarDay<TData>) => void;
+  onMonthChange?: (year: number, month: number) => void;
+}
+```
+
+| 选项            | 类型                                   | 默认      | 说明                              |
+| --------------- | -------------------------------------- | --------- | --------------------------------- |
+| `initialDate`   | `Date`                                 | 今天      | 初始展示和选中的日期              |
+| `weekStartsOn`  | `0 \| 1`                               | `1`       | 0 周日，1 周一                    |
+| `locale`        | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"` | 界面语言或自定义语言包            |
+| `header`        | `boolean`                              | `true`    | 是否显示默认头部                  |
+| `renderHeader`  | `HeaderRenderer`                       | -         | 自定义头部，替换默认的 `‹ 标题 ›` |
+| `adapter`       | `CalendarAdapter<TData>`               | -         | 装饰适配器；不传就是纯公历        |
+| `onSelect`      | `(day: CalendarDay<TData>) => void`    | -         | 点击/`select()` 选中日期时触发    |
+| `onMonthChange` | `(year, month) => void`                | -         | 调用 `setMonth` / 前后翻月时触发  |
+
+`createCalendar` 的泛型从 `adapter` / `onSelect` 推导；不传 adapter 时 `TData` 是 `null`。
+
+## CalendarDay
 
 ```ts
 interface CalendarDay<TData = null> {
@@ -46,6 +77,68 @@ interface CalendarDay<TData = null> {
   ariaLabel: string;
 }
 ```
+
+| 字段                     | 说明                                         |
+| ------------------------ | -------------------------------------------- |
+| `year` / `month` / `day` | 公历年 / 月 / 日；`month` 是 1-12            |
+| `date`                   | 本地时区的 `Date`                            |
+| `inCurrentMonth`         | 是否属于当前展示月份；`false` 是上下月补位格 |
+| `isToday`                | 是否今天                                     |
+| `isSelected`             | 是否当前选中                                 |
+| `subtitle`               | 日期下方副标题；纯公历为空字符串             |
+| `badge`                  | 左上角标记，见下                             |
+| `data`                   | 适配器透传的数据；纯公历为 `null`            |
+| `ariaLabel`              | 无障碍名称，适配器可以用 `ariaLabel` 覆盖    |
+
+## CalendarBadge 与 tone
+
+```ts
+interface CalendarBadge {
+  text: string;
+  tone?: string;
+}
+```
+
+- `text` 是实际显示的文字，任意字符串；
+- `tone` 会写到 `data-tone`，核心不解释含义；
+- 默认主题只给 `rest` / `work` 两套颜色：
+
+```css
+.cui__day-tag[data-tone="rest"] {
+  color: var(--cui-rest);
+}
+
+.cui__day-tag[data-tone="work"] {
+  color: var(--cui-accent);
+}
+```
+
+- 其他 `tone` 会照常渲染 `data-tone`，但没有内置颜色，需要自己加 CSS；
+- `badge` 为 `null` 时整个标记隐藏。
+
+自定义 tone：
+
+```css
+.cui__day-tag[data-tone="company"] {
+  color: #0a7;
+}
+```
+
+## CalendarInstance
+
+| 成员                                               | 说明                                              |
+| -------------------------------------------------- | ------------------------------------------------- |
+| `el`                                               | 日历根元素                                        |
+| `setMonth(year, month)`                            | 跳到某年某月，会触发 `onMonthChange`              |
+| `getMonth()`                                       | 当前年月 `{ year, month }`                        |
+| `prevMonth()` / `nextMonth()`                      | 前后翻月                                          |
+| `select(date)`                                     | 选中日期，会切换到该日期所在月份并触发 `onSelect` |
+| `getSelected()`                                    | 当前选中的 `Date` 拷贝，未选中为 `null`           |
+| `show()` / `hide()` / `toggle()`                   | 整个日历的显示状态                                |
+| `isVisible()`                                      | 是否可见                                          |
+| `showHeader()` / `hideHeader()` / `toggleHeader()` | 头部显示状态                                      |
+| `isHeaderVisible()`                                | 头部是否可见                                      |
+| `destroy()`                                        | 移除 DOM 与事件监听                               |
 
 ## 适配器接口
 
@@ -70,31 +163,66 @@ interface DayDecoration<TData> {
 ```
 
 - `subtitle` 渲染在日期下方；
-- `badge` 渲染在左上角，`tone` 写到 `data-tone`，内置 `rest` / `work` 两种颜色；
+- `badge` 渲染在左上角；
 - `data` 会原样出现在 `onSelect` 的 `day.data` 上；
 - 没有装饰的位置返回 `null`。
 
-示例：
+完整的属性、调用时机、缓存和第三方实现方式见[第三方适配器](/guide/adapter)。
+
+## 自定义头部
 
 ```ts
-const adapter: CalendarAdapter<{ note: string }> = {
-  id: "my-calendar",
-  decorateMonth({ days }) {
-    return days.map((date) => {
-      if (date.month === 10 && date.day === 1) {
-        return {
-          subtitle: "国庆节",
-          badge: { text: "休", tone: "rest" },
-          data: { note: "holiday" },
-        };
-      }
-      return null;
-    });
+const instance = createCalendar(container, {
+  renderHeader: ({ year, month, prevMonth, nextMonth, locale }) => {
+    const el = document.createElement("div");
+    el.textContent = `${year} 年 ${month} 月`;
+    return el;
   },
-};
-
-createCalendar(container, { adapter });
+});
 ```
+
+`HeaderRenderContext`：
+
+| 字段                          | 说明       |
+| ----------------------------- | ---------- |
+| `year` / `month`              | 当前年月   |
+| `locale`                      | 当前语言包 |
+| `prevMonth()` / `nextMonth()` | 切换月份   |
+
+`renderHeader` 返回的 `HTMLElement` 会替换默认头部；每次换月都会重新调用。
+
+## 语言包
+
+```ts
+interface CalendarLocale {
+  name: string;
+  weekdays: readonly string[];
+  weekdaysLong: readonly string[];
+  monthTitle(year: number, month: number): string;
+  prevMonth: string;
+  nextMonth: string;
+}
+```
+
+内置 `zh-CN` / `en-US`，也可以直接传自定义对象。
+
+## 样式变量
+
+```css
+.cui {
+  --cui-bg: #ffffff;
+  --cui-fg: #1f2328;
+  --cui-muted: #8b949e;
+  --cui-border: #e6e8eb;
+  --cui-accent: #2563eb;
+  --cui-accent-fg: #ffffff;
+  --cui-rest: #e5484d;
+  --cui-hover: #f3f4f6;
+  --cui-radius: 10px;
+}
+```
+
+暗色模式由样式表内置，`rest` 标记和副标题颜色都走变量。
 
 ## 纯公历的 bundle 边界
 
@@ -103,15 +231,9 @@ createCalendar(container, { adapter });
 - 官方实现：[农历适配器](/guide/lunar)
 - 第三方：实现 `decorateMonth`，传入 `adapter` 即可
 
-## 样式变量
+## 无障碍与 SSR
 
-```css
-.cui {
-  --cui-accent: #2563eb;
-  --cui-rest: #e5484d;
-  --cui-bg: #ffffff;
-  --cui-fg: #1f2328;
-}
-```
-
-标记和副标题的颜色都走 CSS 变量，暗色模式由样式表内置。
+- 每个日期格是 `<button>`，带 `aria-label` / `aria-pressed`；
+- 补位格 `tabIndex` 为 -1，只有当前月可键盘聚焦；
+- `createCalendar` 只操作传入的容器，可在 SSR 中安全预渲染空壳，客户端挂载；
+- 所有实例互相独立，重复调用 `createCalendar` 不会共享状态。

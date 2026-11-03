@@ -33,6 +33,7 @@ export default defineConfig(({ command }) => {
                   { title: "calendar 核心", link: "/calendar" },
                   { title: "calendar-ui", link: "/calendar-ui" },
                   { title: "农历适配器", link: "/lunar" },
+                  { title: "第三方适配器", link: "/adapter" },
                 ],
               },
             ],

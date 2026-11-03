@@ -1,43 +1,55 @@
 /** 第三方节假日数据源：不依赖 @sanguogege/calendar */
-export interface CompanyRest {
-  /** 显示名称 */
-  name: string;
-  /** holiday = 放假，makeup = 补班 */
-  type: "holiday" | "makeup";
+export type CompanyRestType = "holiday" | "makeup";
+
+/** 和 setRest 相同的形状：按年列出放假 / 补班的 MMDD，names 提供副标题 */
+export interface CompanyRestConfig {
+  [year: string]: {
+    xiu?: string[];
+    ban?: string[];
+    names?: Record<string, string>;
+  };
 }
 
-const FIXED: Record<string, CompanyRest> = {
-  "01-01": { name: "公司元旦", type: "holiday" },
-  "05-01": { name: "公司劳动节", type: "holiday" },
-  "10-01": { name: "公司国庆", type: "holiday" },
+export const COMPANY_REST: CompanyRestConfig = {
+  2026: {
+    xiu: ["0101", "0501", "0605", "1001"],
+    ban: ["0613"],
+    names: {
+      "0101": "公司元旦",
+      "0501": "公司劳动节",
+      "0605": "六月公司日",
+      "0613": "公司日补班",
+      "1001": "公司国庆",
+    },
+  },
 };
+
+export interface CompanyRest {
+  /** YYYY-MM-DD */
+  date: string;
+  type: CompanyRestType;
+  /** 格子副标题 */
+  subtitle: string;
+}
 
 const pad = function (value: number): string {
   return String(value).padStart(2, "0");
 };
 
-/**
- * 第三方接口：返回某一天的节假日 / 调休信息
- *
- * 规则可以来自接口、数据库或公司配置；这里用一个固定表和两条规则演示。
- */
+/** 第三方接口：按日期返回节假日 / 调休数据 */
 export function getCompanyRest(date: Date): CompanyRest | null {
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const weekday = date.getDay();
+  const year = COMPANY_REST[String(date.getFullYear())];
+  if (!year) return null;
 
-  const fixed = FIXED[`${pad(month)}-${pad(day)}`];
-  if (fixed) return fixed;
+  const mmdd = `${pad(date.getMonth() + 1)}${pad(date.getDate())}`;
+  const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const subtitle = year.names?.[mmdd];
 
-  // 六月第一个周五：公司日
-  if (month === 6 && weekday === 5 && day <= 7) {
-    return { name: "六月公司日", type: "holiday" };
+  if (year.ban?.includes(mmdd)) {
+    return { date: day, type: "makeup", subtitle: subtitle ?? "公司补班" };
   }
-
-  // 六月第二个周六：公司日补班
-  if (month === 6 && weekday === 6 && day > 7 && day <= 14) {
-    return { name: "公司日补班", type: "makeup" };
+  if (year.xiu?.includes(mmdd)) {
+    return { date: day, type: "holiday", subtitle: subtitle ?? "公司假日" };
   }
-
   return null;
 }
