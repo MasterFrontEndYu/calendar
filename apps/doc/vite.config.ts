@@ -15,7 +15,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "指南", link: "/guide" },
-          { text: "演示", link: "/calendar" },
+          { text: "演示", link: "/demo" },
         ],
         sidebar: {
           "/guide": [
@@ -27,6 +27,18 @@ export default defineConfig({
                 { title: "calendar 核心", link: "/calendar" },
                 { title: "calendar-ui", link: "/calendar-ui" },
                 { title: "农历适配器", link: "/lunar" },
+              ],
+            },
+          ],
+          "/demo": [
+            {
+              title: "演示",
+              collapsed: false,
+              items: [
+                { title: "总览", link: "/" },
+                { title: "纯公历 · 多实例", link: "/plain" },
+                { title: "官方农历适配器", link: "/lunar" },
+                { title: "第三方适配器", link: "/custom" },
               ],
             },
           ],

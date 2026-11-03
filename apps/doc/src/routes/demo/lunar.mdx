@@ -1,0 +1,37 @@
+---
+title: 官方农历适配器
+---
+
+import LunarCalendar from "../../components/demo/LunarCalendar";
+
+# 官方农历适配器
+
+两个实例都来自 `@sanguogege/calendar-ui-lunar`：左边使用内置 2026 数据，右边注入自己的节日和休班配置。
+
+## 内置数据
+
+<LunarCalendar variant="builtin" />
+
+```ts
+import { createCalendar } from "@sanguogege/calendar-ui-lunar";
+
+const builtin = createCalendar(hostA, {
+  initialDate: new Date(2026, 9, 1),
+});
+```
+
+## 自定义 holidays
+
+<LunarCalendar variant="custom" />
+
+```ts
+const custom = createCalendar(hostB, {
+  initialDate: new Date(2026, 0, 1),
+  holidays: {
+    setFestival: { sFtv: { "0105": ["公司年会"] } },
+    setRest: { 2026: { xiu: ["0105"], ban: ["0106"] } },
+  },
+});
+```
+
+`holidays` 在创建时固定，两个实例的配置互不影响。`day.data` 是完整的 `LunarResult`。

@@ -1,0 +1,14 @@
+.demo-calendar {
+  max-width: 420px;
+  margin: 1rem 0 1.5rem;
+}
+
+.demo-calendar .cui {
+  max-width: none;
+}
+
+.demo-result {
+  margin: 0.5rem 0 0;
+  color: var(--sb-text-2, inherit);
+  font-size: 0.9rem;
+}

@@ -1,0 +1,70 @@
+---
+title: 第三方适配器
+---
+
+import CustomCalendar from "../../components/demo/CustomCalendar";
+
+# 第三方适配器
+
+这个示例完全不使用 `@sanguogege/calendar`。节假日和调休来自本地方法 `getCompanyRest()`，再通过公开的 `CalendarAdapter` 接到纯公历核心上。
+
+<CustomCalendar />
+
+## 1. 返回节假日 / 调休的方法
+
+```ts
+export interface CompanyRest {
+  name: string;
+  type: "holiday" | "makeup";
+}
+
+export function getCompanyRest(date: Date): CompanyRest | null {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const weekday = date.getDay();
+
+  // 固定日期：1/1、5/1、10/1
+  const fixed = FIXED[`${pad(month)}-${pad(day)}`];
+  if (fixed) return fixed;
+
+  // 六月第一个周五：公司日
+  if (month === 6 && weekday === 5 && day <= 7) {
+    return { name: "六月公司日", type: "holiday" };
+  }
+
+  // 六月第二个周六：公司日补班
+  if (month === 6 && weekday === 6 && day > 7 && day <= 14) {
+    return { name: "公司日补班", type: "makeup" };
+  }
+
+  return null;
+}
+```
+
+## 2. 映射成 CalendarAdapter
+
+```ts
+const adapter: CalendarAdapter<CompanyRest> = {
+  id: "company-holidays",
+  decorateMonth({ days }) {
+    return days.map((date) => {
+      const rest = getCompanyRest(date.date);
+      if (!rest) return null;
+
+      return {
+        subtitle: rest.name,
+        badge:
+          rest.type === "holiday" ? { text: "休", tone: "rest" } : { text: "班", tone: "work" },
+        data: rest,
+      };
+    });
+  },
+};
+
+const instance = createCalendar(host, {
+  initialDate: new Date(2026, 5, 1),
+  adapter,
+});
+```
+
+核心只负责渲染 `subtitle` 和 `badge`；第三方数据源、缓存、接口请求都可以放在适配器里。
