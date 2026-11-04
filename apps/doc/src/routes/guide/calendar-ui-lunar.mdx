@@ -1,0 +1,98 @@
+---
+title: calendar-ui-lunar
+---
+
+# calendar-ui-lunar
+
+`calendar-ui` 的官方农历适配器。
+
+```bash
+bun add @sanguogege/calendar-ui @sanguogege/calendar-ui-lunar
+```
+
+```ts
+import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
+import "@sanguogege/calendar-ui/style.css";
+
+const instance = createCalendarLunar(container, {
+  initialDate: "2026-10-01",
+  onSelect: (day) => {
+    day.subtitle; // "国庆节"
+    day.badge; // { text: "休", tone: "rest" }
+    day.data?.lMonthCn; // "八月"
+  },
+});
+```
+
+交互演示见 [calendar-ui-lunar 演示](/calendar-ui-lunar)。
+
+## LunarCalendarOptions
+
+继承 `CalendarOptions<LunarResult>`，额外支持：
+
+| 选项              | 类型            | 默认    | 说明                            |
+| ----------------- | --------------- | ------- | ------------------------------- |
+| `holidays`        | `HolidayConfig` | -       | 本实例的节日 / 调休配置         |
+| `replaceHolidays` | `boolean`       | `false` | 忽略内置数据，只使用 `holidays` |
+
+其余选项与 `calendar-ui` 完全一致：`mode`、`months`、`collapsible`、`minDate`、`maxDate`、`disabledDates`、`theme`、动画、`subtitle` 等。
+
+```ts
+createCalendarLunar(container, {
+  initialDate: "2026-01-01",
+  holidays: {
+    setFestival: { sFtv: { "0105": ["公司年会"] } },
+    setRest: { 2026: { xiu: ["0105"], ban: ["0106"] } },
+  },
+});
+```
+
+配置在创建时固定，实例之间互不影响；不传 `holidays` 时使用内置数据。
+
+## 副标题与标记
+
+- `subtitle` 优先级：节气 > 农历节日 > 公历节日 > 农历日；
+- `badge`：`xiu` 显示休，`ban` 显示班；
+- 普通周末不会自动显示休；
+- 用户 `CalendarOptions.subtitle` 仍然优先于 adapter 的 subtitle。
+
+## day.data
+
+`day.data` 是完整的 `LunarResult`：
+
+| 字段                                         | 说明             |
+| -------------------------------------------- | ---------------- |
+| `lYear` / `lMonth` / `lDay`                  | 农历年 / 月 / 日 |
+| `lMonthCn` / `lDayCn`                        | 农历月 / 日中文  |
+| `isLeap`                                     | 是否闰月         |
+| `animal`                                     | 生肖             |
+| `xiu` / `ban`                                | 放假 / 补班      |
+| `gljr` / `nljr`                              | 公历 / 农历节日  |
+| `term`                                       | 节气             |
+| `gzYear` / `gzMonth` / `gzDay` / `gzHour`    | 干支             |
+| `cYear` / `cMonth` / `cDay`                  | 公历年 / 月 / 日 |
+| `isToday` / `dayOfWeek` / `nWeek` / `ncWeek` | 今天与星期       |
+| `astro`                                      | 星座             |
+
+`day.data` 在 `1900-01-31 ~ 2100-12-31` 之外为 `null`。
+
+## createLunarAdapter
+
+不想用包装入口时，可以把适配器直接传给核心：
+
+```ts
+import { createCalendarUI } from "@sanguogege/calendar-ui";
+import { createLunarAdapter } from "@sanguogege/calendar-ui-lunar";
+
+const adapter = createLunarAdapter({
+  holidays: { setRest: { 2027: { xiu: ["0101"], ban: ["0104"] } } },
+});
+
+const instance = createCalendarUI(container, { adapter });
+```
+
+`createLunarAdapter(options)` 返回 `CalendarAdapter<LunarResult>`。
+
+## 与 calendar-ui 的关系
+
+纯公历、多实例、范围、折叠、主题、动画等基础能力都在 [calendar-ui 指南](/guide/calendar-ui) 和 [calendar-ui 演示](/calendar-ui) 中展示，这里只写农历相关部分。

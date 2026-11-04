@@ -4,13 +4,11 @@ title: calendar-ui
 
 # calendar-ui
 
-`@sanguogege/calendar-ui` 是纯 DOM 的公历日历核心，**零运行时依赖**，不 import 任何农历或节假日库。
+纯 DOM、零依赖的公历日历核心。
 
 ```bash
 bun add @sanguogege/calendar-ui
 ```
-
-## 基本用法
 
 ```ts
 import { createCalendarUI } from "@sanguogege/calendar-ui";
@@ -18,19 +16,12 @@ import "@sanguogege/calendar-ui/style.css";
 
 const instance = createCalendarUI(container, {
   initialDate: "2026-10-01",
-  weekStartsOn: 1,
-  locale: "zh-CN",
-  onSelect: (day) => {
-    console.log(day.year, day.month, day.day);
-    console.log(day.subtitle); // 默认 ""
-    console.log(day.badge); // 默认 null
-    console.log(day.data); // 默认 null
-  },
+  theme: "auto",
+  onSelect: (day) => console.log(day.year, day.month, day.day),
 });
-
-instance.nextMonth();
-instance.destroy();
 ```
+
+交互演示见 [calendar-ui 演示](/calendar-ui)。
 
 ## CalendarOptions
 
@@ -49,172 +40,46 @@ interface CalendarOptions<TData = null> {
   monthTransitionEasing?: string;
   collapseTransitionDuration?: number;
   collapseTransitionEasing?: string;
-  subtitle?: SubtitleRenderer;
   weekStartsOn?: WeekStartsOn;
   locale?: CalendarLocale | CalendarLocaleName;
   theme?: CalendarTheme;
   header?: boolean;
   renderHeader?: HeaderRenderer;
   adapter?: CalendarAdapter<TData>;
+  subtitle?: SubtitleRenderer;
   onSelect?: (day: CalendarDay<TData>) => void;
   onRangeChange?: (range: CalendarRange) => void;
   onMonthChange?: (year: number, month: number) => void;
 }
 ```
 
-| 选项                         | 类型                                   | 默认       | 说明                              |
-| ---------------------------- | -------------------------------------- | ---------- | --------------------------------- |
-| `initialDate`                | `CalendarDateInput`                    | 今天       | 初始日期；越界时夹到最近可选日    |
-| `minDate`                    | `CalendarDateInput`                    | -          | 最小可选日期（包含）              |
-| `maxDate`                    | `CalendarDateInput`                    | -          | 最大可选日期（包含）              |
-| `disabledDates`              | `readonly CalendarDateInput[]`         | `[]`       | 禁止选中的日期，按本地年月日比较  |
-| `mode`                       | `"single" \| "range"`                  | `"single"` | 单选或范围选择                    |
-| `months`                     | `1 \| 2`                               | `1`        | 范围模式显示月数；2 为相邻两月    |
-| `collapsible`                | `boolean`                              | `false`    | 开启底部折叠箭头                  |
-| `defaultCollapsed`           | `boolean`                              | `false`    | 初始是否折叠                      |
-| `monthTransition`            | `"none" \| "slide"`                    | `"slide"`  | 翻月横移动画                      |
-| `monthTransitionDuration`    | `number`                               | `220`      | 翻月动画时长，ms                  |
-| `monthTransitionEasing`      | `string`                               | `"ease"`   | 翻月动画缓动                      |
-| `collapseTransitionDuration` | `number`                               | `200`      | 折叠高度动画时长，ms              |
-| `collapseTransitionEasing`   | `string`                               | `"ease"`   | 折叠高度动画缓动                  |
-| `subtitle`                   | `SubtitleRenderer`                     | -          | 自定义副标题，优先于 adapter      |
-| `weekStartsOn`               | `0 \| 1`                               | `1`        | 0 周日，1 周一                    |
-| `locale`                     | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"`  | 界面语言或自定义语言包            |
-| `theme`                      | `"light" \| "dark" \| "auto"`          | `"auto"`   | 主题；auto 跟随 data-theme / 系统 |
-| `header`                     | `boolean`                              | `true`     | 是否显示默认头部                  |
-| `renderHeader`               | `HeaderRenderer`                       | -          | 自定义头部，替换默认的 `‹ 标题 ›` |
-| `adapter`                    | `CalendarAdapter<TData>`               | -          | 装饰适配器；不传就是纯公历        |
-| `onSelect`                   | `(day: CalendarDay<TData>) => void`    | -          | 点击/`select()` 选中日期时触发    |
-| `onRangeChange`              | `(range: CalendarRange) => void`       | -          | 范围变化时触发                    |
-| `onMonthChange`              | `(year, month) => void`                | -          | 调用 `setMonth` / 前后翻月时触发  |
-
-`createCalendarUI` 的泛型从 `adapter` / `onSelect` 推导；不传 adapter 时 `TData` 是 `null`。
-
-## CalendarDay
-
-```ts
-interface CalendarDay<TData = null> {
-  year: number;
-  month: number;
-  day: number;
-  date: Date;
-  inCurrentMonth: boolean;
-  isToday: boolean;
-  isSelected: boolean;
-  isDisabled: boolean;
-  isRangeStart: boolean;
-  isRangeEnd: boolean;
-  isInRange: boolean;
-  subtitle: string;
-  badge: CalendarBadge | null;
-  data: TData | null;
-  ariaLabel: string;
-}
-```
-
-| 字段                     | 说明                                         |
-| ------------------------ | -------------------------------------------- |
-| `year` / `month` / `day` | 公历年 / 月 / 日；`month` 是 1-12            |
-| `date`                   | 本地时区的 `Date`                            |
-| `inCurrentMonth`         | 是否属于当前展示月份；`false` 是上下月补位格 |
-| `isToday`                | 是否今天                                     |
-| `isSelected`             | 是否当前选中；范围模式下起终点为 `true`      |
-| `isDisabled`             | 是否被 min/max 或 disabledDates 禁止         |
-| `isRangeStart`           | 是否范围起点                                 |
-| `isRangeEnd`             | 是否范围终点                                 |
-| `isInRange`              | 是否在范围内（含起终点）                     |
-| `subtitle`               | 日期下方副标题；纯公历为空字符串             |
-| `badge`                  | 左上角标记，见下                             |
-| `data`                   | 适配器透传的数据；纯公历为 `null`            |
-| `ariaLabel`              | 无障碍名称，适配器可以用 `ariaLabel` 覆盖    |
-
-## CalendarBadge 与 tone
-
-```ts
-interface CalendarBadge {
-  text: string;
-  tone?: string;
-}
-```
-
-- `text` 是实际显示的文字，任意字符串；
-- `tone` 会写到 `data-tone`，核心不解释含义；
-- 默认主题只给 `rest` / `work` 两套颜色：
-
-```css
-.cui__day-tag[data-tone="rest"] {
-  color: var(--cui-rest);
-}
-
-.cui__day-tag[data-tone="work"] {
-  color: var(--cui-accent);
-}
-```
-
-- 其他 `tone` 会照常渲染 `data-tone`，但没有内置颜色，需要自己加 CSS；
-- `badge` 为 `null` 时整个标记隐藏。
-
-自定义 tone：
-
-```css
-.cui__day-tag[data-tone="company"] {
-  color: #0a7;
-}
-```
-
-## 自定义 subtitle
-
-```ts
-const instance = createCalendarUI(container, {
-  subtitle: (day) => {
-    if (day.month === 10 && day.day === 1) return "国庆";
-    return null; // 回退到 adapter.subtitle
-  },
-});
-```
-
-优先级：
-
-1. `options.subtitle` 返回字符串（包括空字符串）；
-2. `adapter` 的 `DayDecoration.subtitle`；
-3. 空字符串。
-
-说明：
-
-- `subtitle` 接收 `CalendarDate`（`year/month/day/date/inCurrentMonth`），每个展示日期都会调用一次；
-- 返回 `null` / `undefined` 时回退到 adapter 的 subtitle；
-- 返回 `""` 表示明确不显示，不会回退；
-- adapter 是插件级数据源，用户传入的 `subtitle` 优先；
-- `onSelect` 的 `day.subtitle` 是最终结果。
-
-## CalendarInstance
-
-| 成员                                               | 说明                                              |
-| -------------------------------------------------- | ------------------------------------------------- |
-| `el`                                               | 日历根元素                                        |
-| `setMonth(year, month)`                            | 跳到某年某月，会触发 `onMonthChange`              |
-| `getMonth()`                                       | 当前年月 `{ year, month }`                        |
-| `prevMonth()` / `nextMonth()`                      | 前后翻月                                          |
-| `select(date)`                                     | 选中日期，会切换到该日期所在月份并触发 `onSelect` |
-| `getSelected()`                                    | 单选选中的 `Date`；范围模式返回起点               |
-| `getRange()`                                       | 当前范围 `{ start, end }`                         |
-| `setRange(start, end?)`                            | 设置范围，反向自动交换；`end` 省略表示只选起点    |
-| `clearRange()`                                     | 清空范围                                          |
-| `show()` / `hide()` / `toggle()`                   | 整个日历的显示状态                                |
-| `isVisible()`                                      | 是否可见                                          |
-| `showHeader()` / `hideHeader()` / `toggleHeader()` | 头部显示状态                                      |
-| `isHeaderVisible()`                                | 头部是否可见                                      |
-| `collapse()` / `expand()` / `toggleCollapsed()`    | 折叠 / 展开 / 切换折叠状态                        |
-| `isCollapsed()`                                    | 是否处于折叠状态                                  |
-| `getMinDate()` / `setMinDate(date)`                | 读取 / 设置最小可选日期，传 `null` 取消           |
-| `getMaxDate()` / `setMaxDate(date)`                | 读取 / 设置最大可选日期，传 `null` 取消           |
-| `getTheme()`                                       | 当前主题                                          |
-| `setTheme(theme)`                                  | 切换主题，只改 `data-theme`，不重建 DOM           |
-| `destroy()`                                        | 移除 DOM 与事件监听                               |
+| 选项                         | 类型                                   | 默认       | 说明                           |
+| ---------------------------- | -------------------------------------- | ---------- | ------------------------------ |
+| `initialDate`                | `CalendarDateInput`                    | 今天       | 初始日期；越界时夹到最近可选日 |
+| `minDate`                    | `CalendarDateInput`                    | -          | 最小可选日期（包含）           |
+| `maxDate`                    | `CalendarDateInput`                    | -          | 最大可选日期（包含）           |
+| `disabledDates`              | `readonly CalendarDateInput[]`         | `[]`       | 禁止选中的日期                 |
+| `mode`                       | `"single" \| "range"`                  | `"single"` | 单选 / 范围                    |
+| `months`                     | `1 \| 2`                               | `1`        | 范围模式显示月数               |
+| `collapsible`                | `boolean`                              | `false`    | 开启底部折叠箭头               |
+| `defaultCollapsed`           | `boolean`                              | `false`    | 初始折叠                       |
+| `monthTransition`            | `"none" \| "slide"`                    | `"slide"`  | 翻月动画                       |
+| `monthTransitionDuration`    | `number`                               | `220`      | 翻月时长，ms                   |
+| `monthTransitionEasing`      | `string`                               | `"ease"`   | 翻月缓动                       |
+| `collapseTransitionDuration` | `number`                               | `200`      | 折叠时长，ms                   |
+| `collapseTransitionEasing`   | `string`                               | `"ease"`   | 折叠缓动                       |
+| `weekStartsOn`               | `0 \| 1`                               | `1`        | 0 周日，1 周一                 |
+| `locale`                     | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"`  | 界面语言                       |
+| `theme`                      | `"light" \| "dark" \| "auto"`          | `"auto"`   | 主题                           |
+| `header`                     | `boolean`                              | `true`     | 是否显示头部                   |
+| `renderHeader`               | `HeaderRenderer`                       | -          | 自定义头部                     |
+| `adapter`                    | `CalendarAdapter<TData>`               | -          | 装饰适配器                     |
+| `subtitle`                   | `SubtitleRenderer`                     | -          | 自定义副标题，优先于 adapter   |
+| `onSelect`                   | `(day) => void`                        | -          | 选中日期                       |
+| `onRangeChange`              | `(range) => void`                      | -          | 范围变化                       |
+| `onMonthChange`              | `(year, month) => void`                | -          | 换月                           |
 
 ## 日期输入
-
-`initialDate`、`minDate`、`maxDate`、`disabledDates`、`select()` 和 setter 都接受 `CalendarDateInput`：
 
 ```ts
 type CalendarDateInput = Date | string;
@@ -229,195 +94,139 @@ type CalendarDateInput = Date | string;
 2026/10/1
 ```
 
-- 必须用同一种分隔符，`2026-10/01` 不合法；
-- 按本地年月日解析，不经过 `new Date(string)`，没有时区歧义；
-- 不存在的日期（如 `2026-02-30`）会抛 `RangeError`；
-- 格式错误会抛 `TypeError`；
-- 输出仍然是 `Date`：`day.date`、`getSelected()`、`getMinDate()` 等返回 `Date`。
-
-```ts
-createCalendarUI(container, {
-  initialDate: "2026-10-01",
-  minDate: "2026/10/5",
-  maxDate: "2026-10-20",
-});
-
-instance.select("2026-10-15");
-instance.setMinDate("2026/10/6");
-```
+按本地年月日解析；不存在的日期抛 `RangeError`，格式错误抛 `TypeError`。
 
 ## 日期约束
 
-三个选项可以单独用，也可以组合：
-
 ```ts
-const instance = createCalendarUI(container, {
-  initialDate: "2026-10-10",
-  minDate: "2026-10-5",
+createCalendarUI(container, {
+  minDate: "2026-10-05",
   maxDate: "2026-10-20",
   disabledDates: ["2026-10-12"],
 });
 ```
 
-| 选项            | 行为                             |
-| --------------- | -------------------------------- |
-| `minDate`       | 最小可选日期，包含当天           |
-| `maxDate`       | 最大可选日期，包含当天           |
-| `disabledDates` | 任意不可选日期，按本地年月日比较 |
-
-规则：
-
-- 边界外、`disabledDates` 中的日期会渲染为 disabled，不能点击或键盘选中；
-- `CalendarDay.isDisabled` 为 `true`，`aria-disabled="true"`；
-- 初始日期越界时夹到边界；如果边界日期也被禁用，会向最近的可选日期查找；
-- 翻月到边界月份时按钮禁用，`setMonth()` 越界会夹到边界月份；
-- `select()` 传入越界或禁用日期时直接忽略，不触发 `onSelect`；
-- `minDate > maxDate`、无效日期会抛错；所有日期都不可选时抛 `RangeError`。
-
-`disabledDates` 只接受数组，不提供 `(date) => boolean` predicate；数组已经能表达“禁止点击”，也更容易序列化和调试。
-
-运行时调整：
-
-```ts
-instance.setMinDate("2026-10-15");
-instance.setMaxDate("2026-10-20");
-instance.getMinDate();
-instance.getMaxDate();
-
-instance.setMinDate(null); // 取消最小日期
-```
-
-setter 会重新校验，并把当前选中日期调整到最近的可用日期；失败时保持原状态不变。
+- 边界包含当天；
+- 边界外、禁用日期不可点击、不可键盘选中、不可被 `select()` 选中；
+- 初始日期越界或被禁用时，选择最近的可选日期；
+- 翻月按钮到边界月份禁用，`setMonth()` 越界夹到边界；
+- `minDate > maxDate` 抛 `RangeError`；
+- `disabledDates` 保持数组，不提供 predicate 函数。
 
 ## 范围选择
 
-单视图 range：
-
 ```ts
 const instance = createCalendarUI(container, {
   mode: "range",
-  initialDate: "2026-10-01",
-  onRangeChange: (range) => {
-    console.log(range.start, range.end);
-  },
-});
-```
-
-- 第一次点击设置起点，第二次点击设置终点；
-- 第二次点击早于起点时**自动交换**；
-- 起点和终点同一天是合法范围；
-- 第三次点击重新开始一个新范围；
-- `onSelect` 每次点击仍会触发，`day.isRangeStart` / `isRangeEnd` / `isInRange` 可直接用；
-- 禁用日期不能作为起点或终点，点击会被忽略。
-
-双视图：
-
-```ts
-const instance = createCalendarUI(container, {
-  mode: "range",
-  months: 2, // 相邻两个月
   initialDate: "2026-10-15",
+  onRangeChange: (range) => console.log(range),
 });
 ```
 
-- `months` 默认 `1`，范围模式可设为 `2`；
-- `2` 时默认显示当前月和下一个月，翻月同时移动两列；
-- 移动端自动改为上下排列；
-- 只读接口：
-
-```ts
-instance.getRange(); // { start: Date | null, end: Date | null }
-instance.setRange("2026-10-20", "2026-10-05"); // 自动交换
-instance.setRange("2026-10-05"); // 只设起点
-instance.clearRange();
-```
-
-`setRange()` 不会触发 `onSelect`，但会触发 `onRangeChange`。
+- 第一次点击起点，第二次终点；
+- 终点早于起点自动交换；
+- 第三次点击重新开始；
+- `months: 2` 显示相邻两月，范围可跨月；
+- 禁用日期不能作为端点；
+- `onSelect` 仍会触发。
 
 ## 折叠
 
-默认展开，只有设置 `collapsible: true` 才出现底部上下箭头：
-
 ```ts
 const instance = createCalendarUI(container, {
   collapsible: true,
-  initialDate: "2026-10-15",
+  defaultCollapsed: false,
 });
 ```
 
-- 展开时箭头是 `⌃`，点击折叠；
-- 折叠时箭头是 `⌄`，点击展开；
-- 折叠后只显示当前选中日期所在行；
-- 选中日期变化时，折叠行跟着移动；
-- 范围模式折叠时同时显示起点行和终点行；两个端点同一周时只显示一行；
-- 双视图折叠时，每个月份只显示属于该月的端点行；
-- `defaultCollapsed: true` 可以默认折叠，但仍然默认 `false`。
+- 默认展开，`collapsible: true` 才有底部单状态箭头；
+- 折叠显示当前选中行；
+- 范围折叠显示起点行和终点行；同一周只显示一行；
+- 双视图每个月只显示属于该月的端点行。
+
+## 主题
 
 ```ts
-instance.collapse();
-instance.expand();
-instance.toggleCollapsed();
-instance.isCollapsed();
+createCalendarUI(container, { theme: "auto" });
+instance.setTheme("dark");
 ```
 
-未开启 `collapsible` 时这些方法无效，也不会渲染箭头。
+- `light` / `dark` / `auto`；
+- `auto` 跟随最近的祖先 `data-theme`，没有则跟随系统；
+- `setTheme()` 只改 `data-theme`，不重建 DOM。
 
 ## 动画
 
-翻月和折叠动画都可以配置：
-
 ```ts
-const instance = createCalendarUI(container, {
+createCalendarUI(container, {
   monthTransition: "slide",
   monthTransitionDuration: 220,
   monthTransitionEasing: "ease",
-
-  collapsible: true,
   collapseTransitionDuration: 200,
   collapseTransitionEasing: "ease",
 });
 ```
 
-| 选项                         | 作用                                      |
-| ---------------------------- | ----------------------------------------- |
-| `monthTransition`            | `"slide"`（默认）翻月横移；`"none"` 关闭  |
-| `monthTransitionDuration`    | 翻月时长，默认 `220` ms                   |
-| `monthTransitionEasing`      | 翻月缓动，默认 `"ease"`                   |
-| `collapseTransitionDuration` | 折叠高度动画时长，默认 `200` ms；`0` 关闭 |
-| `collapseTransitionEasing`   | 折叠缓动，默认 `"ease"`                   |
+- 翻月：旧月份向左/右滑出，新月份从另一侧滑入，两页连续移动；
+- 折叠：行高、透明度、间距过渡；
+- `prefers-reduced-motion: reduce` 下关闭；
+- 可通过 CSS 变量覆盖。
 
-实现方式：
+## subtitle
 
-- 翻月时新月份从左侧/右侧进入，方向由上一月/下一月决定；
-- 折叠时 `.cui__week` 的 `max-height`、`opacity`、`margin` 一起过渡；
-- 时长/缓动写到 `.cui` 的 CSS 变量，外部也可以覆盖：
-
-```css
-.cui {
-  --cui-month-duration: 220ms;
-  --cui-month-easing: ease;
-  --cui-collapse-duration: 200ms;
-  --cui-collapse-easing: ease;
-}
+```ts
+createCalendarUI(container, {
+  subtitle: (day) => {
+    if (day.month === 10 && day.day === 1) return "国庆";
+    return null;
+  },
+});
 ```
 
-- `prefers-reduced-motion: reduce` 下自动关闭过渡；
-- 首次渲染不会播放折叠动画；`defaultCollapsed` 直接呈现最终状态。
+优先级：用户 subtitle 字符串 > adapter subtitle > 空字符串。返回 `null` / `undefined` 回退 adapter，返回 `""` 明确隐藏。
 
-## 适配器接口
+## CalendarDay
 
-农历、节假日、月相之类的业务信息通过公开的 `CalendarAdapter` 注入：
+| 字段                                        | 说明             |
+| ------------------------------------------- | ---------------- |
+| `year` / `month` / `day`                    | 公历年 / 月 / 日 |
+| `date`                                      | 本地 `Date`      |
+| `inCurrentMonth`                            | 是否当前月       |
+| `isToday` / `isSelected`                    | 今天 / 选中      |
+| `isDisabled`                                | 是否被约束禁止   |
+| `isRangeStart` / `isRangeEnd` / `isInRange` | 范围状态         |
+| `subtitle`                                  | 最终副标题       |
+| `badge`                                     | 左上角标记       |
+| `data`                                      | 适配器透传数据   |
+| `ariaLabel`                                 | 无障碍名称       |
+
+## CalendarInstance
+
+| 成员                                                                     | 说明                       |
+| ------------------------------------------------------------------------ | -------------------------- |
+| `el`                                                                     | 根元素                     |
+| `setMonth(year, month)`                                                  | 跳到某月                   |
+| `getMonth()`                                                             | 当前年月                   |
+| `prevMonth()` / `nextMonth()`                                            | 前后翻月                   |
+| `select(date)`                                                           | 选中日期                   |
+| `getSelected()`                                                          | 单选选中；范围模式返回起点 |
+| `getRange()` / `setRange()` / `clearRange()`                             | 范围                       |
+| `getMinDate()` / `setMinDate()`                                          | 最小日期                   |
+| `getMaxDate()` / `setMaxDate()`                                          | 最大日期                   |
+| `collapse()` / `expand()` / `toggleCollapsed()` / `isCollapsed()`        | 折叠                       |
+| `show()` / `hide()` / `toggle()` / `isVisible()`                         | 显示状态                   |
+| `showHeader()` / `hideHeader()` / `toggleHeader()` / `isHeaderVisible()` | 头部状态                   |
+| `getTheme()` / `setTheme()`                                              | 主题                       |
+| `destroy()`                                                              | 销毁                       |
+
+## CalendarAdapter
 
 ```ts
 interface CalendarAdapter<TData = unknown> {
   readonly id: string;
   decorateMonth(input: MonthInput): ReadonlyArray<DayDecoration<TData> | null>;
 }
-```
 
-`decorateMonth` 每次拿到 42 个日期，返回同长度的装饰数组：
-
-```ts
 interface DayDecoration<TData> {
   subtitle?: string;
   badge?: { text: string; tone?: string };
@@ -426,158 +235,4 @@ interface DayDecoration<TData> {
 }
 ```
 
-- `subtitle` 渲染在日期下方；
-- `badge` 渲染在左上角；
-- `data` 会原样出现在 `onSelect` 的 `day.data` 上；
-- 没有装饰的位置返回 `null`。
-
-完整的属性、调用时机、缓存和第三方实现方式见[第三方适配器](/guide/adapter)。
-
-## 自定义头部
-
-```ts
-const instance = createCalendarUI(container, {
-  renderHeader: ({ year, month, prevMonth, nextMonth, locale }) => {
-    const el = document.createElement("div");
-    el.textContent = `${year} 年 ${month} 月`;
-    return el;
-  },
-});
-```
-
-`HeaderRenderContext`：
-
-| 字段                          | 说明       |
-| ----------------------------- | ---------- |
-| `year` / `month`              | 当前年月   |
-| `locale`                      | 当前语言包 |
-| `prevMonth()` / `nextMonth()` | 切换月份   |
-
-`renderHeader` 返回的 `HTMLElement` 会替换默认头部；每次换月都会重新调用。
-
-## 语言包
-
-```ts
-interface CalendarLocale {
-  name: string;
-  weekdays: readonly string[];
-  weekdaysLong: readonly string[];
-  monthTitle(year: number, month: number): string;
-  prevMonth: string;
-  nextMonth: string;
-}
-```
-
-内置 `zh-CN` / `en-US`，也可以直接传自定义对象。
-
-## 主题
-
-内置 `light`、`dark` 和 `auto`：
-
-```ts
-const instance = createCalendarUI(container, {
-  theme: "auto", // 默认
-});
-
-instance.getTheme(); // "auto"
-
-// 显式覆盖
-instance.setTheme("dark");
-instance.setTheme("light");
-instance.setTheme("auto"); // 回到自动
-```
-
-- 主题写在根元素 `.cui[data-theme="light|dark|auto"]`；
-- `setTheme()` 只改 `data-theme`，不会重建 DOM，也不会触发 `onSelect`；
-- `auto` 的优先级：
-  1. 最近的祖先 `[data-theme="dark"]`；
-  2. 最近的祖先 `[data-theme="light"]`；
-  3. 没有祖先主题时，跟随 `prefers-color-scheme`；
-- `color-scheme` 会跟着切换，原生滚动条、表单控件也会同步。
-
-所以页面级主题可以直接这样写：
-
-```html
-<html data-theme="dark">
-  <!-- 日历会跟着变深 -->
-</html>
-```
-
-```ts
-createCalendarUI(container, {
-  // 不传 theme，默认 auto
-});
-```
-
-需要强制某个日历不受页面影响时：
-
-```ts
-createCalendarUI(container, { theme: "light" });
-```
-
-两套主题的变量：
-
-```css
-.cui {
-  --cui-bg: #ffffff;
-  --cui-fg: #1f2328;
-  --cui-muted: #8b949e;
-  --cui-border: #e6e8eb;
-  --cui-accent: #2563eb;
-  --cui-accent-fg: #ffffff;
-  --cui-rest: #e5484d;
-  --cui-hover: #f3f4f6;
-  --cui-radius: 10px;
-}
-
-.cui[data-theme="dark"] {
-  --cui-bg: #161b22;
-  --cui-fg: #e6edf3;
-  --cui-muted: #8b949e;
-  --cui-border: #30363d;
-  --cui-accent: #1f6feb;
-  --cui-accent-fg: #ffffff;
-  --cui-rest: #ff7b72;
-  --cui-hover: #21262d;
-}
-```
-
-`auto` 的 `data-theme="auto"` 本身不带颜色，颜色由祖先 `[data-theme]` 或系统媒体查询决定；外部可以覆盖任一变量换色：
-
-```css
-.cui[data-theme="dark"] {
-  --cui-accent: #7c3aed;
-}
-```
-
-## 样式变量
-
-两套主题都只改变量，不改变布局和尺寸：
-
-| 变量              | 作用                          |
-| ----------------- | ----------------------------- |
-| `--cui-bg`        | 背景                          |
-| `--cui-fg`        | 主文字                        |
-| `--cui-muted`     | 星期、副标题                  |
-| `--cui-border`    | 边框                          |
-| `--cui-accent`    | 选中、今天、焦点、`work` 标记 |
-| `--cui-accent-fg` | 选中格文字                    |
-| `--cui-rest`      | `rest` 标记和副标题           |
-| `--cui-hover`     | 悬停背景                      |
-| `--cui-radius`    | 圆角                          |
-
-`rest` 标记和副标题颜色都走变量，暗色主题不需要额外选择器。
-
-## 纯公历的 bundle 边界
-
-默认入口没有 `@sanguogege/calendar` 依赖，也不含 `LunarInfo`、`TermInfo`、节日 JSON。需要农历时换适配器入口：
-
-- 官方实现：[农历适配器](/guide/lunar)
-- 第三方：实现 `decorateMonth`，传入 `adapter` 即可
-
-## 无障碍与 SSR
-
-- 每个日期格是 `<button>`，带 `aria-label` / `aria-pressed`；
-- 补位格 `tabIndex` 为 -1，只有当前月可键盘聚焦；
-- `createCalendarUI` 只操作传入的容器，可在 SSR 中安全预渲染空壳，客户端挂载；
-- 所有实例互相独立，重复调用 `createCalendarUI` 不会共享状态。
+`decorateMonth` 每次拿到 42 个日期，返回按索引对齐的装饰数组；没有装饰返回 `null`。第三方适配器演示见 [第三方适配器](/calendar-ui/custom)。

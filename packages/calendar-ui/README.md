@@ -103,7 +103,7 @@ const instance = createCalendarUI(container, {
 });
 ```
 
-- 翻月：新月份从左侧/右侧滑入，方向由上一月/下一月决定；
+- 翻月：旧月份向左/右滑出，新月份从另一侧滑入，两页首尾相接；
 - 折叠：行高、透明度和间距一起过渡；
 - 首次渲染不播放折叠动画；
 - `prefers-reduced-motion: reduce` 下关闭过渡；

@@ -4,6 +4,7 @@ import { describe, expect, it } from "vite-plus/test";
 import CustomCalendar from "../src/components/demo/CustomCalendar";
 import CollapseCalendar from "../src/components/demo/CollapseCalendar";
 import LunarCalendar from "../src/components/demo/LunarCalendar";
+import MonthTransitionCalendar from "../src/components/demo/MonthTransitionCalendar";
 import PlainCalendar from "../src/components/demo/PlainCalendar";
 import RangeCalendar from "../src/components/demo/RangeCalendar";
 
@@ -18,6 +19,19 @@ describe("demo components", () => {
     flush();
 
     expect(container.querySelectorAll(".cui")).toHaveLength(2);
+  });
+
+  it("month transition demo renders calendars", () => {
+    const { container } = render(() => (
+      <div>
+        <MonthTransitionCalendar />
+        <MonthTransitionCalendar duration={600} easing="linear" />
+      </div>
+    ));
+    flush();
+
+    expect(container.querySelectorAll(".cui")).toHaveLength(2);
+    expect(container.textContent).toContain("当前：2026-10");
   });
 
   it("lunar renders built-in and custom configurations", () => {

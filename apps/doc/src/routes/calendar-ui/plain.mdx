@@ -1,14 +1,14 @@
 ---
-title: 纯公历 · 多实例
+title: 基础与多实例
 ---
 
 import PlainCalendar from "../../components/demo/PlainCalendar";
 
-# 纯公历 · 多实例
+# 基础与多实例
 
-同一个页面创建两个互不影响的实例。它们只使用 `@sanguogege/calendar-ui`，不加载农历数据。
+同一个页面可以创建多个互不影响的日历实例。
 
-## 实例 A：2026 年 10 月
+## 默认实例
 
 <PlainCalendar year={2026} month={10} weekStartsOn={1} locale="zh-CN" />
 
@@ -21,7 +21,7 @@ const a = createCalendarUI(hostA, {
 });
 ```
 
-## 实例 B：2026 年 12 月 · 深色主题
+## 深色实例
 
 <PlainCalendar year={2026} month={12} weekStartsOn={0} locale="en-US" theme="dark" />
 
@@ -35,4 +35,6 @@ const b = createCalendarUI(hostB, {
 });
 ```
 
-两个实例的 `initialDate`、`weekStartsOn`、`locale`、`theme` 完全独立；`destroy()` 也只影响自己。
+两个实例的初始月份、周起始、语言、主题完全独立；`destroy()` 也只影响自己。
+
+完整选项见 [calendar-ui 指南](/guide/calendar-ui)。

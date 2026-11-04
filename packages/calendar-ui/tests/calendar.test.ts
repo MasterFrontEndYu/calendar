@@ -418,9 +418,33 @@ describe("动画配置", () => {
     });
 
     instance.nextMonth();
-    expect(instance.el.querySelector(".cui__grid")?.classList.contains("is-month-next")).toBe(
+    expect(instance.el.querySelector(".cui__grid")?.classList.contains("is-month-in-next")).toBe(
       false,
     );
+
+    instance.destroy();
+  });
+
+  it("slide 会添加对应的翻月动画类", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+      monthTransition: "slide",
+    });
+    const grid = instance.el.querySelector(".cui__grid")!;
+
+    instance.nextMonth();
+    expect(grid.classList.contains("is-month-in-next")).toBe(true);
+    expect(grid.classList.contains("is-month-in-prev")).toBe(false);
+    expect(
+      instance.el.querySelector(".is-month-clone")?.classList.contains("is-month-out-next"),
+    ).toBe(true);
+
+    instance.prevMonth();
+    expect(grid.classList.contains("is-month-in-prev")).toBe(true);
+    expect(grid.classList.contains("is-month-in-next")).toBe(false);
+    expect(
+      instance.el.querySelector(".is-month-clone")?.classList.contains("is-month-out-prev"),
+    ).toBe(true);
 
     instance.destroy();
   });

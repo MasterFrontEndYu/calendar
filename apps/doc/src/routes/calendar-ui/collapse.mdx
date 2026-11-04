@@ -1,0 +1,38 @@
+---
+title: 折叠
+---
+
+import CollapseCalendar from "../../components/demo/CollapseCalendar";
+
+# 折叠
+
+`collapsible: true` 时，底部出现单状态上下箭头。默认展开。
+
+## 单选
+
+<CollapseCalendar mode="single" />
+
+```ts
+const instance = createCalendarUI(host, {
+  collapsible: true,
+  initialDate: "2026-10-15",
+});
+```
+
+点击其他日期，折叠行会跟随；底部箭头切换展开/折叠。
+
+## 范围
+
+<CollapseCalendar mode="range" />
+
+```ts
+const instance = createCalendarUI(host, {
+  mode: "range",
+  collapsible: true,
+  initialDate: "2026-10-15",
+});
+```
+
+范围折叠时同时显示起点行和终点行；两个端点同一周时只显示一行。
+
+完整折叠 API 见 [calendar-ui 指南](/guide/calendar-ui)。

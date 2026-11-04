@@ -168,10 +168,7 @@
   flex-direction: column;
   gap: 0;
   contain: layout paint;
-  transition:
-    transform var(--cui-month-duration, 220ms) var(--cui-month-easing, ease),
-    opacity var(--cui-month-duration, 220ms) var(--cui-month-easing, ease);
-  will-change: transform, opacity;
+  will-change: transform;
 }
 
 .cui__week {
@@ -204,25 +201,85 @@
   display: none;
 }
 
-.cui__grid.is-month-next {
-  transform: translateX(100%);
-  opacity: 0.35;
+.cui__viewport {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.cui__grid.is-month-prev {
-  transform: translateX(-100%);
-  opacity: 0.35;
+.cui__grid.is-month-clone {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cui__grid.is-month-in-next {
+  animation: cui-month-in-next var(--cui-month-duration, 220ms) var(--cui-month-easing, ease) both;
+}
+
+.cui__grid.is-month-in-prev {
+  animation: cui-month-in-prev var(--cui-month-duration, 220ms) var(--cui-month-easing, ease) both;
+}
+
+.cui__grid.is-month-out-next {
+  animation: cui-month-out-next var(--cui-month-duration, 220ms) var(--cui-month-easing, ease) both;
+}
+
+.cui__grid.is-month-out-prev {
+  animation: cui-month-out-prev var(--cui-month-duration, 220ms) var(--cui-month-easing, ease) both;
+}
+
+@keyframes cui-month-in-next {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes cui-month-out-next {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes cui-month-in-prev {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes cui-month-out-prev {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .cui--no-animation .cui__grid,
 .cui--no-animation .cui__week {
   transition: none;
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cui__grid,
   .cui__week {
     transition: none;
+    animation: none;
   }
 }
 

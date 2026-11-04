@@ -1,0 +1,38 @@
+---
+title: 范围选择
+---
+
+import RangeCalendar from "../../components/demo/RangeCalendar";
+
+# 范围选择
+
+第一次点击选起点，第二次选终点；终点早于起点会自动交换。
+
+## 单视图
+
+<RangeCalendar months={1} />
+
+```ts
+const instance = createCalendarUI(host, {
+  mode: "range",
+  months: 1,
+  initialDate: "2026-10-15",
+  onRangeChange: (range) => console.log(range),
+});
+```
+
+## 双视图
+
+`months: 2` 显示相邻两个月，范围可以跨月：
+
+<RangeCalendar months={2} />
+
+```ts
+const instance = createCalendarUI(host, {
+  mode: "range",
+  months: 2,
+  initialDate: "2026-10-15",
+});
+```
+
+`getRange()` / `setRange()` / `clearRange()` 的用法见 [calendar-ui 指南](/guide/calendar-ui)。

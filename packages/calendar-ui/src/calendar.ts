@@ -397,19 +397,41 @@ export function createCalendarUI<TData = null>(
   }
 
   let monthAnimationToken = 0;
+  let monthOldLayers: HTMLElement[] = [];
 
   function clearMonthAnimation(): void {
     panels.forEach((panel) => {
-      panel.grid.el.classList.remove("is-month-next", "is-month-prev");
+      panel.grid.el.classList.remove(
+        "is-month-in-next",
+        "is-month-in-prev",
+        "is-month-out-next",
+        "is-month-out-prev",
+      );
+    });
+    monthOldLayers.forEach((layer) => layer.remove());
+    monthOldLayers = [];
+  }
+
+  function captureMonthSnapshot(): void {
+    clearMonthAnimation();
+    panels.forEach((panel) => {
+      const clone = panel.grid.el.cloneNode(true) as HTMLElement;
+      clone.classList.add("is-month-clone");
+      clone.setAttribute("aria-hidden", "true");
+      clone.querySelectorAll("button").forEach((button) => {
+        button.tabIndex = -1;
+      });
+      panel.viewport.append(clone);
+      monthOldLayers.push(clone);
     });
   }
 
   function animateMonth(direction: 1 | -1): void {
-    clearMonthAnimation();
-    // 先清掉旧动画类，强制一次布局，保证连续翻月也能重新触发过渡
-    void panels[0]?.grid.el.offsetWidth;
-    panels.forEach((panel) => {
-      panel.grid.el.classList.add(direction === 1 ? "is-month-next" : "is-month-prev");
+    panels.forEach((panel, index) => {
+      const oldLayer = monthOldLayers[index];
+      void panel.viewport.offsetWidth;
+      panel.grid.el.classList.add(direction === 1 ? "is-month-in-next" : "is-month-in-prev");
+      oldLayer?.classList.add(direction === 1 ? "is-month-out-next" : "is-month-out-prev");
     });
   }
 
@@ -431,23 +453,23 @@ export function createCalendarUI<TData = null>(
     if (nextIndex === currentIndex) return;
 
     const direction = nextIndex > currentIndex ? 1 : -1;
-    const shouldAnimate = monthTransition === "slide" && monthDuration > 0;
+    const reduceMotion =
+      typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const shouldAnimate = monthTransition === "slide" && monthDuration > 0 && !reduceMotion;
+
+    if (shouldAnimate) captureMonthSnapshot();
+    else clearMonthAnimation();
 
     state.year = next.year;
     state.month = next.month;
+    render();
 
     if (shouldAnimate) {
       animateMonth(direction);
-      render();
-
       const token = ++monthAnimationToken;
-      const remove = () => {
+      setTimeout(() => {
         if (token === monthAnimationToken) clearMonthAnimation();
-      };
-      if (typeof requestAnimationFrame === "function") requestAnimationFrame(remove);
-      else setTimeout(remove, 0);
-    } else {
-      render();
+      }, monthDuration + 80);
     }
 
     options.onMonthChange?.(state.year, state.month);
@@ -480,10 +502,16 @@ export function createCalendarUI<TData = null>(
   }
 
   const panelEls: HTMLElement[] = [];
-  const panels = Array.from({ length: monthCount }, () => ({
-    weekdays: createWeekdays(weekStartsOn, locale),
-    grid: createGrid<TData>({ onSelect: handleSelect }),
-  }));
+  const panels = Array.from({ length: monthCount }, () => {
+    const viewport = node("div", "cui__viewport");
+    const grid = createGrid<TData>({ onSelect: handleSelect });
+    viewport.append(grid.el);
+    return {
+      weekdays: createWeekdays(weekStartsOn, locale),
+      viewport,
+      grid,
+    };
+  });
 
   const header = createHeader({
     year: state.year,
@@ -503,13 +531,13 @@ export function createCalendarUI<TData = null>(
   header.el.hidden = options.header === false;
 
   if (monthCount === 1) {
-    root.append(header.el, panels[0]!.weekdays.el, panels[0]!.grid.el);
+    root.append(header.el, panels[0]!.weekdays.el, panels[0]!.viewport);
   } else {
     const monthsEl = node("div", "cui__months");
     panels.forEach((panel) => {
       const monthEl = node("div", "cui__month");
       monthEl.setAttribute("role", "group");
-      monthEl.append(panel.weekdays.el, panel.grid.el);
+      monthEl.append(panel.weekdays.el, panel.viewport);
       monthsEl.append(monthEl);
       panelEls.push(monthEl);
     });

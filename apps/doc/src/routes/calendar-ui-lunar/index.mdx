@@ -1,0 +1,35 @@
+---
+title: calendar-ui-lunar 演示
+---
+
+import LunarCalendar from "../../components/demo/LunarCalendar";
+
+# calendar-ui-lunar 演示
+
+官方农历适配器。纯公历、多实例、范围、折叠等基础演示已经在 [calendar-ui](/calendar-ui) 展示，这里只展示农历相关部分。
+
+## 内置数据
+
+<LunarCalendar variant="builtin" />
+
+```ts
+import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
+import "@sanguogege/calendar-ui/style.css";
+
+const instance = createCalendarLunar(container, {
+  initialDate: "2026-10-01",
+  onSelect: (day) => {
+    day.subtitle; // "国庆节"
+    day.badge; // { text: "休", tone: "rest" }
+    day.data?.lMonthCn; // "八月"
+  },
+});
+```
+
+- 副标题优先级：节气 > 农历节日 > 公历节日 > 农历日；
+- `xiu` 显示休，`ban` 显示班；
+- `day.data` 是完整 `LunarResult`。
+
+[自定义 holidays](/calendar-ui-lunar/custom)
+
+完整选项和 `day.data` 字段见 [calendar-ui-lunar 指南](/guide/calendar-ui-lunar)。

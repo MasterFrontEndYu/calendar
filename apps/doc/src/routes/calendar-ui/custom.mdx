@@ -1,0 +1,37 @@
+---
+title: 第三方适配器
+---
+
+import CustomCalendar from "../../components/demo/CustomCalendar";
+import CompanyRestTable from "../../components/demo/CompanyRestTable";
+
+# 第三方适配器
+
+不使用 `@sanguogege/calendar`，自己实现一个 `CalendarAdapter`。
+
+<CustomCalendar />
+
+<CompanyRestTable />
+
+```ts
+const adapter: CalendarAdapter<CompanyRest> = {
+  id: "company-holidays",
+  decorateMonth({ days }) {
+    return days.map((date) => {
+      const rest = getCompanyRest(date.date);
+      if (!rest) return null;
+
+      return {
+        subtitle: rest.subtitle,
+        badge:
+          rest.type === "holiday" ? { text: "休", tone: "rest" } : { text: "班", tone: "work" },
+        data: rest,
+      };
+    });
+  },
+};
+
+createCalendarUI(container, { adapter });
+```
+
+适配器接口和 `DayDecoration` 见 [calendar-ui 指南](/guide/calendar-ui)。

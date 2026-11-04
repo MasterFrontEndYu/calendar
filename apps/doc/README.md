@@ -83,22 +83,25 @@ src/
   routes/                  只放 .mdx
     index.mdx              首页（layout: home）
     guide/
-      index.mdx            简介
-      calendar.mdx         calendar 核心
-      calendar-ui.mdx      纯公历 UI
-      lunar.mdx            农历适配器
-      adapter.mdx          第三方适配器接口
-    demo/
+      index.mdx            指南总览
+      calendar.mdx         calendar 完整 API
+      calendar-ui.mdx      calendar-ui 完整 API
+      calendar-ui-lunar.mdx calendar-ui-lunar 完整 API
+    calendar-ui/
       index.mdx            演示总览
-      plain.mdx            纯公历 · 多实例
-      range.mdx            单视图 / 双视图范围
-      lunar.mdx            官方农历适配器
+      plain.mdx            基础与多实例
+      range.mdx            范围选择
+      collapse.mdx         折叠
       custom.mdx           第三方适配器
+    calendar-ui-lunar/
+      index.mdx            内置农历演示
+      custom.mdx           自定义 holidays
     [...404].mdx           404（渲染 NotFound 组件）
   components/
     demo/
       PlainCalendar.tsx    纯公历实例
       RangeCalendar.tsx    范围选择实例
+      CollapseCalendar.tsx 折叠实例
       LunarCalendar.tsx    官方农历实例
       CustomCalendar.tsx   第三方适配器实例
       CompanyRestTable.tsx 第三方 xiu / ban 数据表
@@ -112,7 +115,7 @@ tests/
 vite.config.ts             SolidBase / Solid 插件与主题配置
 ```
 
-侧边栏、导航和社交链接在 `vite.config.ts` 的 `themeConfig` 中配置；页面标题和落款信息用 Markdown frontmatter。
+顶部导航在 `vite.config.ts` 的 `themeConfig.nav` 中配置：指南、calendar-ui、calendar-ui-lunar。左侧栏在 `themeConfig.sidebar` 中按 `/guide`、`/calendar-ui`、`/calendar-ui-lunar` 分组。
 
 演示代码放在 `components/demo`，路由只负责组合；每个实例下面紧跟对应的代码块。第三方数据方法放在 `src/demo/company-holidays.ts`。
 

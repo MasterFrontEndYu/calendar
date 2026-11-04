@@ -1,0 +1,27 @@
+---
+title: 自定义 holidays
+---
+
+import LunarCalendar from "../../components/demo/LunarCalendar";
+
+# 自定义 holidays
+
+每个实例可以带自己的节日 / 调休配置，互不影响。
+
+<LunarCalendar variant="custom" />
+
+```ts
+const instance = createCalendarLunar(container, {
+  initialDate: "2026-01-01",
+  holidays: {
+    setFestival: { sFtv: { "0105": ["公司年会"] } },
+    setRest: { 2026: { xiu: ["0105"], ban: ["0106"] } },
+  },
+});
+```
+
+- `holidays` 在创建时校验并固定；
+- `replaceHolidays: true` 时忽略内置数据；
+- 配置相同的对象可以共享月份缓存。
+
+完整 `HolidayConfig` 见 [calendar-ui-lunar 指南](/guide/calendar-ui-lunar)。

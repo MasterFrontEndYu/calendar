@@ -24,33 +24,43 @@ export default defineConfig(({ command }) => {
         themeConfig: {
           nav: [
             { text: "指南", link: "/guide" },
-            { text: "演示", link: "/demo" },
+            { text: "calendar-ui", link: "/calendar-ui" },
+            { text: "calendar-ui-lunar", link: "/calendar-ui-lunar" },
           ],
           sidebar: {
             "/guide": [
               {
-                title: "开始",
+                title: "指南",
                 collapsed: false,
                 items: [
-                  { title: "简介", link: "/" },
-                  { title: "calendar 核心", link: "/calendar" },
+                  { title: "总览", link: "/" },
+                  { title: "calendar", link: "/calendar" },
                   { title: "calendar-ui", link: "/calendar-ui" },
-                  { title: "农历适配器", link: "/lunar" },
-                  { title: "第三方适配器", link: "/adapter" },
+                  { title: "calendar-ui-lunar", link: "/calendar-ui-lunar" },
                 ],
               },
             ],
-            "/demo": [
+            "/calendar-ui": [
               {
                 title: "演示",
                 collapsed: false,
                 items: [
                   { title: "总览", link: "/" },
-                  { title: "纯公历 · 多实例", link: "/plain" },
+                  { title: "基础与多实例", link: "/plain" },
+                  { title: "翻月动画", link: "/transition" },
                   { title: "范围选择", link: "/range" },
                   { title: "折叠", link: "/collapse" },
-                  { title: "官方农历适配器", link: "/lunar" },
                   { title: "第三方适配器", link: "/custom" },
+                ],
+              },
+            ],
+            "/calendar-ui-lunar": [
+              {
+                title: "演示",
+                collapsed: false,
+                items: [
+                  { title: "总览", link: "/" },
+                  { title: "自定义 holidays", link: "/custom" },
                 ],
               },
             ],

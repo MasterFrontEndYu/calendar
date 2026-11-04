@@ -1,0 +1,54 @@
+---
+title: 翻月动画
+---
+
+import MonthTransitionCalendar from "../../components/demo/MonthTransitionCalendar";
+
+# 翻月动画
+
+点击日历左右箭头翻月，旧月份会向一侧滑出，新月份从另一侧滑入，两页首尾相接。
+
+## 默认动画
+
+<MonthTransitionCalendar />
+
+```ts
+const instance = createCalendarUI(host, {
+  initialDate: "2026-10-15",
+  monthTransition: "slide",
+  monthTransitionDuration: 220,
+  monthTransitionEasing: "ease",
+  onMonthChange: (year, month) => {
+    console.log(year, month);
+  },
+});
+```
+
+## 慢速 + linear
+
+把时长和缓动改大，能更明显看到横移过程：
+
+<MonthTransitionCalendar duration={600} easing="linear" />
+
+```ts
+const instance = createCalendarUI(host, {
+  initialDate: "2026-10-15",
+  monthTransition: "slide",
+  monthTransitionDuration: 600,
+  monthTransitionEasing: "linear",
+});
+```
+
+## 关闭动画
+
+```ts
+createCalendarUI(host, {
+  monthTransition: "none",
+});
+```
+
+- 默认 `slide`，220ms，`ease`；
+- `prefers-reduced-motion: reduce` 下自动关闭；
+- 时长、缓动也可以通过 `.cui` 的 `--cui-month-duration`、`--cui-month-easing` 覆盖。
+
+完整选项见 [calendar-ui 指南](/guide/calendar-ui)。

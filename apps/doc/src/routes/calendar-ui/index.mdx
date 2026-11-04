@@ -1,0 +1,33 @@
+---
+title: calendar-ui 演示
+---
+
+import PlainCalendar from "../../components/demo/PlainCalendar";
+
+# calendar-ui 演示
+
+纯公历、零依赖的日历核心。下面按 API 分组展示：
+
+- [基础与多实例](/calendar-ui/plain)
+- [翻月动画](/calendar-ui/transition)
+- [范围选择](/calendar-ui/range)
+- [折叠](/calendar-ui/collapse)
+- [第三方适配器](/calendar-ui/custom)
+
+## 最小示例
+
+<PlainCalendar year={2026} month={10} />
+
+```ts
+import { createCalendarUI } from "@sanguogege/calendar-ui";
+import "@sanguogege/calendar-ui/style.css";
+
+const instance = createCalendarUI(container, {
+  initialDate: "2026-10-01",
+  onSelect: (day) => {
+    console.log(day.year, day.month, day.day);
+  },
+});
+```
+
+完整选项和方法见 [calendar-ui 指南](/guide/calendar-ui)。
