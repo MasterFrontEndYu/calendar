@@ -17,6 +17,7 @@ export type {
   HeaderRenderContext,
   HeaderRenderer,
   MonthInput,
+  SubtitleRenderer,
   WeekStartsOn,
   YearMonth,
 } from "./types";

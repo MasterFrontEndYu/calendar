@@ -49,6 +49,7 @@ interface CalendarOptions<TData = null> {
   monthTransitionEasing?: string;
   collapseTransitionDuration?: number;
   collapseTransitionEasing?: string;
+  subtitle?: SubtitleRenderer;
   weekStartsOn?: WeekStartsOn;
   locale?: CalendarLocale | CalendarLocaleName;
   theme?: CalendarTheme;
@@ -76,6 +77,7 @@ interface CalendarOptions<TData = null> {
 | `monthTransitionEasing`      | `string`                               | `"ease"`   | 翻月动画缓动                      |
 | `collapseTransitionDuration` | `number`                               | `200`      | 折叠高度动画时长，ms              |
 | `collapseTransitionEasing`   | `string`                               | `"ease"`   | 折叠高度动画缓动                  |
+| `subtitle`                   | `SubtitleRenderer`                     | -          | 自定义副标题，优先于 adapter      |
 | `weekStartsOn`               | `0 \| 1`                               | `1`        | 0 周日，1 周一                    |
 | `locale`                     | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"`  | 界面语言或自定义语言包            |
 | `theme`                      | `"light" \| "dark" \| "auto"`          | `"auto"`   | 主题；auto 跟随 data-theme / 系统 |
@@ -159,6 +161,31 @@ interface CalendarBadge {
   color: #0a7;
 }
 ```
+
+## 自定义 subtitle
+
+```ts
+const instance = createCalendarUI(container, {
+  subtitle: (day) => {
+    if (day.month === 10 && day.day === 1) return "国庆";
+    return null; // 回退到 adapter.subtitle
+  },
+});
+```
+
+优先级：
+
+1. `options.subtitle` 返回字符串（包括空字符串）；
+2. `adapter` 的 `DayDecoration.subtitle`；
+3. 空字符串。
+
+说明：
+
+- `subtitle` 接收 `CalendarDate`（`year/month/day/date/inCurrentMonth`），每个展示日期都会调用一次；
+- 返回 `null` / `undefined` 时回退到 adapter 的 subtitle；
+- 返回 `""` 表示明确不显示，不会回退；
+- adapter 是插件级数据源，用户传入的 `subtitle` 优先；
+- `onSelect` 的 `day.subtitle` 是最终结果。
 
 ## CalendarInstance
 

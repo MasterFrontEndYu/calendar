@@ -36,6 +36,7 @@ instance.destroy();
 | `monthTransitionEasing`      | `string`                                | 翻月缓动，默认 `"ease"`           |
 | `collapseTransitionDuration` | `number`                                | 折叠时长，默认 `200` ms           |
 | `collapseTransitionEasing`   | `string`                                | 折叠缓动，默认 `"ease"`           |
+| `subtitle`                   | `SubtitleRenderer`                      | 自定义副标题，优先于 adapter      |
 | `weekStartsOn`               | `0 \| 1`                                | 一周从哪天开始，默认 1            |
 | `locale`                     | `CalendarLocale \| CalendarLocaleName`  | 界面语言，默认 `"zh-CN"`          |
 | `theme`                      | `"light" \| "dark" \| "auto"`           | 主题，默认 `"auto"`               |
@@ -107,6 +108,19 @@ const instance = createCalendarUI(container, {
 - 首次渲染不播放折叠动画；
 - `prefers-reduced-motion: reduce` 下关闭过渡；
 - 也可以通过 `.cui` 的 `--cui-month-duration`、`--cui-collapse-duration` 等 CSS 变量覆盖。
+
+## 自定义 subtitle
+
+```ts
+const instance = createCalendarUI(container, {
+  subtitle: (day) => (day.month === 10 && day.day === 1 ? "国庆" : null),
+});
+```
+
+- 用户 `subtitle` 优先于 `adapter.subtitle`；
+- 返回 `null` / `undefined` 时回退 adapter；
+- 返回 `""` 时明确隐藏；
+- `onSelect` 的 `day.subtitle` 是最终值。
 
 ## 日期输入
 

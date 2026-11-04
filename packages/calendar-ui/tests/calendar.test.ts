@@ -106,6 +106,45 @@ describe("createCalendarUI 纯公历", () => {
   });
 });
 
+describe("自定义 subtitle", () => {
+  it("用户 subtitle 优先于 adapter，null/undefined 回退，空字符串保留", () => {
+    const adapter: CalendarAdapter<null> = {
+      id: "subtitle",
+      decorateMonth({ days }) {
+        return days.map((date) =>
+          date.month === 10 && (date.day === 1 || date.day === 2 || date.day === 3)
+            ? { subtitle: `adapter-${date.day}` }
+            : null,
+        );
+      },
+    };
+
+    let picked: CalendarDay | null = null;
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-01",
+      adapter,
+      subtitle: (day) => {
+        if (day.day === 1) return "用户-1";
+        if (day.day === 2) return null;
+        if (day.day === 3) return "";
+        return undefined;
+      },
+      onSelect: (day) => {
+        picked = day;
+      },
+    });
+
+    expect(subtitleOf(instance.el, "2026-10-1")).toBe("用户-1");
+    expect(subtitleOf(instance.el, "2026-10-2")).toBe("adapter-2");
+    expect(subtitleOf(instance.el, "2026-10-3")).toBe("");
+
+    cellOf(instance.el, "2026-10-1").click();
+    expect(picked!.subtitle).toBe("用户-1");
+
+    instance.destroy();
+  });
+});
+
 describe("范围选择", () => {
   it("单视图：两次点击完成范围，反向选择自动交换", () => {
     let picked: CalendarDay | null = null;

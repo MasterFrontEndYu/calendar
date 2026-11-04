@@ -48,7 +48,10 @@ export const buildDays = function <TData = null>(
   return dates.map((date, index) => {
     const decoration = decorations[index] ?? null;
     const badge = decoration?.badge ?? null;
-    const subtitle = decoration?.subtitle ?? "";
+    const adapterSubtitle = decoration?.subtitle ?? "";
+    const customSubtitle = options.subtitle?.(date);
+    const subtitle =
+      customSubtitle === null || customSubtitle === undefined ? adapterSubtitle : customSubtitle;
     const key = `${date.year}-${date.month}-${date.day}`;
     const isDisabled = options.isDisabled?.(date.date) ?? false;
     const rangeStart = options.rangeStart ?? null;

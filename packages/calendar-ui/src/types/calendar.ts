@@ -23,6 +23,9 @@ export interface CalendarRange {
   end: Date | null;
 }
 
+/** 自定义副标题：返回 null/undefined 时回退到 adapter 的 subtitle */
+export type SubtitleRenderer = (day: CalendarDate) => string | null | undefined;
+
 /** 规范后的年月 */
 export interface YearMonth {
   year: number;
@@ -176,6 +179,8 @@ export interface CalendarOptions<TData = null> {
   collapseTransitionDuration?: number;
   /** 折叠高度动画缓动，默认 "ease" */
   collapseTransitionEasing?: string;
+  /** 自定义副标题；优先于 adapter.subtitle，返回 null/undefined 时回退 */
+  subtitle?: SubtitleRenderer;
   /** 是否显示头部，默认 true */
   header?: boolean;
   /** 自定义头部，替换默认的 ‹ 标题 › */

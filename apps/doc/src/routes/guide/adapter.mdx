@@ -105,6 +105,8 @@ interface DayDecoration<TData = unknown> {
 | `data`      | 透传给 `onSelect` 的数据，核心不解释               |
 | `ariaLabel` | 覆盖默认无障碍名称；不传时由日期、标记、副标题拼接 |
 
+`CalendarOptions.subtitle` 优先于 adapter 的 `subtitle`；adapter 只提供插件级的默认副标题，用户显式设置时以用户为准。
+
 返回数组必须和 `input.days` **按索引对齐**：
 
 ```ts

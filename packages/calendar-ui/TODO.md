@@ -1,6 +1,6 @@
 # calendar-ui 功能备忘录
 
-> 状态：日期约束、范围选择、折叠、动画已完成；subtitle 待实现。
+> 状态：日期约束、范围选择、折叠、动画、subtitle 均已完成。
 >
 > 范围：`@sanguogege/calendar-ui` 核心；`calendar-ui-lunar` 只做适配，不重复实现。
 >
@@ -254,22 +254,20 @@ interface CalendarOptions {
 
 ### 2.5 自定义 subtitle，并在点击时返回
 
+**状态：已完成。**
+
 **目标**：除了 adapter 提供的 subtitle，允许直接自定义 subtitle，并在 `onSelect` 的 `day.subtitle` 中拿到。
 
-现状：
+行为：
 
-- adapter 已能返回 `subtitle`；
-- `CalendarDay.subtitle` 已存在，`onSelect` 已能拿到。
+- `options.subtitle` 接收 `CalendarDate`，每个展示日期调用一次；
+- 优先级：`options.subtitle` 字符串 > `adapter.subtitle` > 空字符串；
+- 返回 `null` / `undefined` 时回退到 adapter；
+- 返回 `""` 时明确不显示，不回退；
+- `onSelect` 的 `day.subtitle` 是最终结果；
+- adapter 属于插件级数据源，用户 subtitle 优先。
 
-待补：
-
-- 允许通过 options 直接提供 subtitle 函数，不强制写 adapter；
-- 明确优先级：option subtitle > adapter subtitle，或 adapter > option（待定）；
-- subtitle 可以依赖日期、选中状态、范围状态、主题以外的数据；
-- `onSelect` / `onRangeChange` 返回的 `day` 必须带最终 subtitle；
-- 不能影响 `ariaLabel` 的默认拼接逻辑，除非显式传 `ariaLabel`。
-
-候选 API：
+API：
 
 ```ts
 interface CalendarOptions {
@@ -281,8 +279,8 @@ interface CalendarOptions {
 
 - 自定义 subtitle 渲染在日期下方；
 - 点击返回的 `day.subtitle` 与渲染一致；
-- 与 adapter 同时存在时行为明确；
-- 空字符串/null 不显示。
+- 与 adapter 同时存在时用户优先；
+- 空字符串表示隐藏，null/undefined 表示回退。
 
 ---
 
@@ -334,12 +332,11 @@ interface CalendarInstance {
 2. ✅ **范围选择**：单视图 range + 双视图，已完成；
 3. ✅ **折叠 + 当前行**：已完成（折叠高度动画仍待做）；
 4. ✅ **翻月 / 折叠动画**：已完成，支持时长和缓动配置；
-5. **subtitle 选项**：最后补纯展示 API，风险最低。
+5. ✅ **subtitle 选项**：已完成，用户 subtitle 优先于 adapter。
 
 ## 待确认问题
 
-- subtitle 与 adapter subtitle 的优先级？
-- 移动端双日历的断点和布局？
+- 暂无。
 
 ## 测试清单
 
@@ -350,6 +347,6 @@ interface CalendarInstance {
 - [x] min/max 单独、组合、边界、翻月禁用；
 - [x] disabledDates 单日、跨月、键盘；
 - [x] disabledDates 作为 range 端点；
-- [ ] subtitle 自定义、点击返回、与 adapter 组合；
+- [x] subtitle 自定义、点击返回、与 adapter 组合；
 - [x] 主题 light/dark/auto 下新增状态的对比度（基础样式）；
 - [x] 键盘与屏幕阅读器描述（禁用状态）。

@@ -234,6 +234,7 @@ export function createCalendarUI<TData = null>(
       locale,
       adapter,
       isDisabled,
+      subtitle: options.subtitle,
     });
   };
 
@@ -564,6 +565,7 @@ export function createCalendarUI<TData = null>(
           locale,
           adapter,
           isDisabled,
+          subtitle: options.subtitle,
         });
         const day = days.find((item) => sameDay(item.date, target));
         if (day) options.onSelect?.(withRangeFields(day));
