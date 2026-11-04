@@ -166,6 +166,16 @@ export interface CalendarOptions<TData = null> {
   collapsible?: boolean;
   /** 初始是否折叠，默认 false；仅在 collapsible 为 true 时生效 */
   defaultCollapsed?: boolean;
+  /** 翻月动画，默认 "slide"；设为 "none" 关闭 */
+  monthTransition?: "none" | "slide";
+  /** 翻月动画时长，单位 ms，默认 220 */
+  monthTransitionDuration?: number;
+  /** 翻月动画缓动，默认 "ease" */
+  monthTransitionEasing?: string;
+  /** 折叠高度动画时长，单位 ms，默认 200；设为 0 关闭 */
+  collapseTransitionDuration?: number;
+  /** 折叠高度动画缓动，默认 "ease" */
+  collapseTransitionEasing?: string;
   /** 是否显示头部，默认 true */
   header?: boolean;
   /** 自定义头部，替换默认的 ‹ 标题 › */

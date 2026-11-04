@@ -1,6 +1,6 @@
 # calendar-ui 功能备忘录
 
-> 状态：日期约束、范围选择、折叠已完成；翻月动画、subtitle 待实现。
+> 状态：日期约束、范围选择、折叠、动画已完成；subtitle 待实现。
 >
 > 范围：`@sanguogege/calendar-ui` 核心；`calendar-ui-lunar` 只做适配，不重复实现。
 >
@@ -22,32 +22,28 @@
 
 ### 1.1 上 / 下月横移动画
 
-**目标**：切换月份时，旧月份和新月份横向滑动，而不是瞬间替换。
+**状态：已完成。**
+
+**目标**：切换月份时，新月份横向进入，而不是瞬间替换。
 
 行为：
 
-- 下一月：新月份从右侧进入，旧月份向左退出；
-- 上一月：新月份从左侧进入，旧月份向右退出；
+- 下一月：新月份从右侧进入；
+- 上一月：新月份从左侧进入；
 - 只移动网格区域，头部、星期表头保持不动；
-- 动画结束后再更新按钮可用状态、当前月标题等；
-- 连续快速翻月时不能出现两个旧网格叠加或位置错乱；
-- 支持 `prefers-reduced-motion: reduce`，此时直接切换、无动画。
+- 连续快速翻月会重新触发动画，不会叠加多个旧网格；
+- 支持 `prefers-reduced-motion: reduce`，此时直接切换、无动画；
+- 当前实现是“新月份滑入”，没有做旧月份的独立离场层。
 
-候选 API：
+API：
 
 ```ts
 interface CalendarOptions {
-  monthTransition?: "none" | "slide";
-  monthTransitionDuration?: number; // ms
+  monthTransition?: "none" | "slide"; // 默认 slide
+  monthTransitionDuration?: number; // 默认 220ms
+  monthTransitionEasing?: string; // 默认 ease
 }
 ```
-
-实现要点：
-
-- 用 CSS transform + 两个并排的月视图，或复制当前 42 格做离场层；
-- 动画期间锁定翻月按钮，或把连续操作合并到下一帧；
-- 不要用 `setTimeout` 驱动状态，优先 `transitionend` / `animationend`，并做超时兜底；
-- 动画期间保持键盘焦点和 `aria-live` 稳定。
 
 验收：
 
@@ -58,6 +54,8 @@ interface CalendarOptions {
 
 ### 1.2 折叠：只显示当前选中行
 
+**状态：已完成（高度过渡）。**
+
 **目标**：日历可以折叠成一行，只显示当前选中日期所在的那一周；展开后恢复完整 42 格。
 
 行为：
@@ -65,18 +63,21 @@ interface CalendarOptions {
 - 默认选中日期（`initialDate`，不传就是今天）所在行作为折叠行；
 - 折叠时隐藏其他行，保留星期表头和当前行；
 - 选中日期变化后，折叠行跟随移动到新选中日期所在周；
-- 展开 / 折叠有高度或透明度过渡；
+- 展开 / 折叠通过 `max-height`、`opacity`、`margin` 过渡；
 - 折叠状态下仍可左右翻月、选中日期；
-- 如果当前选中日期不在展示月份，需要先切到对应月份，或明确禁止折叠；
+- 范围模式显示起点行和终点行；
+- 双视图每个月份只显示属于该月的端点行；
 - 与 1.1 的横移动画组合时，先完成翻月，再更新折叠行；
 - reduced motion 下直接显示/隐藏。
 
-候选 API：
+API：
 
 ```ts
 interface CalendarOptions {
-  collapsible?: boolean; // 是否允许折叠
-  defaultCollapsed?: boolean; // 初始是否折叠
+  collapsible?: boolean; // 是否允许折叠，默认 false
+  defaultCollapsed?: boolean; // 初始是否折叠，默认 false
+  collapseTransitionDuration?: number; // 默认 200ms
+  collapseTransitionEasing?: string; // 默认 ease
 }
 
 interface CalendarInstance {
@@ -232,7 +233,8 @@ interface CalendarInstance {
 - 与 `minDate` / `maxDate` 同时存在时，任一条件不满足即不可选；
 - 数组会内部去重，查询使用 `Set<number>`；
 - `CalendarDay.isDisabled` 暴露给 `onSelect`；
-- range 模式尚未实现，之后需要禁止禁用日作为起点/终点。
+- range 模式不能把禁用日作为起点/终点；
+- 已决定保持数组形式，不引入 `(date) => boolean` predicate：数组已经能表达“禁止点击”，也更容易序列化和调试。
 
 候选 API：
 
@@ -295,14 +297,18 @@ type MonthTransition = "none" | "slide";
 interface CalendarOptions<TData = null> {
   mode?: CalendarMode;
   months?: 1 | 2;
-  minDate?: Date;
-  maxDate?: Date;
-  disabledDates?: readonly Date[];
+  minDate?: CalendarDateInput;
+  maxDate?: CalendarDateInput;
+  disabledDates?: readonly CalendarDateInput[];
   collapsible?: boolean;
   defaultCollapsed?: boolean;
   monthTransition?: MonthTransition;
+  monthTransitionDuration?: number;
+  monthTransitionEasing?: string;
+  collapseTransitionDuration?: number;
+  collapseTransitionEasing?: string;
   subtitle?: (day: CalendarDate) => string | null | undefined;
-  onRangeChange?: (range: { start: Date | null; end: Date | null }) => void;
+  onRangeChange?: (range: CalendarRange) => void;
 }
 
 interface CalendarInstance {
@@ -311,8 +317,8 @@ interface CalendarInstance {
   toggleCollapsed(): void;
   isCollapsed(): boolean;
 
-  getRange(): { start: Date | null; end: Date | null };
-  setRange(start: Date | null, end?: Date | null): void;
+  getRange(): CalendarRange;
+  setRange(start: CalendarDateInput | null, end?: CalendarDateInput | null): void;
   clearRange(): void;
 
   setMinDate(date: Date | null): void;
@@ -327,19 +333,17 @@ interface CalendarInstance {
 1. ✅ **日期约束**：`minDate` / `maxDate` / `disabledDates`，已完成；
 2. ✅ **范围选择**：单视图 range + 双视图，已完成；
 3. ✅ **折叠 + 当前行**：已完成（折叠高度动画仍待做）；
-4. **翻月动画**：在状态稳定后加过渡，避免和范围/折叠互相干扰；
+4. ✅ **翻月 / 折叠动画**：已完成，支持时长和缓动配置；
 5. **subtitle 选项**：最后补纯展示 API，风险最低。
 
 ## 待确认问题
 
-- `disabledDates` 是否也支持 predicate（函数），还是保持数组？
 - subtitle 与 adapter subtitle 的优先级？
-- 动画时长、缓动、是否允许配置？
 - 移动端双日历的断点和布局？
 
 ## 测试清单
 
-- [ ] 翻月方向、连续快速翻月、reduced motion；
+- [x] 翻月方向、连续快速翻月、reduced motion；
 - [x] 折叠默认行、选中换行、展开/折叠状态；
 - [x] range 两次点击、反向选择、同一天、跨月；
 - [x] 双视图月份同步、选中同步、移动端布局（基础）；

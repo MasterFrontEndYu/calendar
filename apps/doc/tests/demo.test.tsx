@@ -67,6 +67,6 @@ describe("demo components", () => {
     flush();
 
     expect(container.querySelectorAll(".cui__collapse")).toHaveLength(2);
-    expect(container.querySelectorAll(".cui__week[hidden]")).toHaveLength(0);
+    expect(container.querySelectorAll(".cui__week.is-collapsed-hidden")).toHaveLength(0);
   });
 });

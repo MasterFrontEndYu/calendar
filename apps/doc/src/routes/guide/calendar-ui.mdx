@@ -44,6 +44,11 @@ interface CalendarOptions<TData = null> {
   months?: 1 | 2;
   collapsible?: boolean;
   defaultCollapsed?: boolean;
+  monthTransition?: "none" | "slide";
+  monthTransitionDuration?: number;
+  monthTransitionEasing?: string;
+  collapseTransitionDuration?: number;
+  collapseTransitionEasing?: string;
   weekStartsOn?: WeekStartsOn;
   locale?: CalendarLocale | CalendarLocaleName;
   theme?: CalendarTheme;
@@ -56,25 +61,30 @@ interface CalendarOptions<TData = null> {
 }
 ```
 
-| 选项               | 类型                                   | 默认       | 说明                              |
-| ------------------ | -------------------------------------- | ---------- | --------------------------------- |
-| `initialDate`      | `CalendarDateInput`                    | 今天       | 初始日期；越界时夹到最近可选日    |
-| `minDate`          | `CalendarDateInput`                    | -          | 最小可选日期（包含）              |
-| `maxDate`          | `CalendarDateInput`                    | -          | 最大可选日期（包含）              |
-| `disabledDates`    | `readonly CalendarDateInput[]`         | `[]`       | 禁止选中的日期，按本地年月日比较  |
-| `mode`             | `"single" \| "range"`                  | `"single"` | 单选或范围选择                    |
-| `months`           | `1 \| 2`                               | `1`        | 范围模式显示月数；2 为相邻两月    |
-| `collapsible`      | `boolean`                              | `false`    | 开启底部折叠箭头                  |
-| `defaultCollapsed` | `boolean`                              | `false`    | 初始是否折叠                      |
-| `weekStartsOn`     | `0 \| 1`                               | `1`        | 0 周日，1 周一                    |
-| `locale`           | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"`  | 界面语言或自定义语言包            |
-| `theme`            | `"light" \| "dark" \| "auto"`          | `"auto"`   | 主题；auto 跟随 data-theme / 系统 |
-| `header`           | `boolean`                              | `true`     | 是否显示默认头部                  |
-| `renderHeader`     | `HeaderRenderer`                       | -          | 自定义头部，替换默认的 `‹ 标题 ›` |
-| `adapter`          | `CalendarAdapter<TData>`               | -          | 装饰适配器；不传就是纯公历        |
-| `onSelect`         | `(day: CalendarDay<TData>) => void`    | -          | 点击/`select()` 选中日期时触发    |
-| `onRangeChange`    | `(range: CalendarRange) => void`       | -          | 范围变化时触发                    |
-| `onMonthChange`    | `(year, month) => void`                | -          | 调用 `setMonth` / 前后翻月时触发  |
+| 选项                         | 类型                                   | 默认       | 说明                              |
+| ---------------------------- | -------------------------------------- | ---------- | --------------------------------- |
+| `initialDate`                | `CalendarDateInput`                    | 今天       | 初始日期；越界时夹到最近可选日    |
+| `minDate`                    | `CalendarDateInput`                    | -          | 最小可选日期（包含）              |
+| `maxDate`                    | `CalendarDateInput`                    | -          | 最大可选日期（包含）              |
+| `disabledDates`              | `readonly CalendarDateInput[]`         | `[]`       | 禁止选中的日期，按本地年月日比较  |
+| `mode`                       | `"single" \| "range"`                  | `"single"` | 单选或范围选择                    |
+| `months`                     | `1 \| 2`                               | `1`        | 范围模式显示月数；2 为相邻两月    |
+| `collapsible`                | `boolean`                              | `false`    | 开启底部折叠箭头                  |
+| `defaultCollapsed`           | `boolean`                              | `false`    | 初始是否折叠                      |
+| `monthTransition`            | `"none" \| "slide"`                    | `"slide"`  | 翻月横移动画                      |
+| `monthTransitionDuration`    | `number`                               | `220`      | 翻月动画时长，ms                  |
+| `monthTransitionEasing`      | `string`                               | `"ease"`   | 翻月动画缓动                      |
+| `collapseTransitionDuration` | `number`                               | `200`      | 折叠高度动画时长，ms              |
+| `collapseTransitionEasing`   | `string`                               | `"ease"`   | 折叠高度动画缓动                  |
+| `weekStartsOn`               | `0 \| 1`                               | `1`        | 0 周日，1 周一                    |
+| `locale`                     | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"`  | 界面语言或自定义语言包            |
+| `theme`                      | `"light" \| "dark" \| "auto"`          | `"auto"`   | 主题；auto 跟随 data-theme / 系统 |
+| `header`                     | `boolean`                              | `true`     | 是否显示默认头部                  |
+| `renderHeader`               | `HeaderRenderer`                       | -          | 自定义头部，替换默认的 `‹ 标题 ›` |
+| `adapter`                    | `CalendarAdapter<TData>`               | -          | 装饰适配器；不传就是纯公历        |
+| `onSelect`                   | `(day: CalendarDay<TData>) => void`    | -          | 点击/`select()` 选中日期时触发    |
+| `onRangeChange`              | `(range: CalendarRange) => void`       | -          | 范围变化时触发                    |
+| `onMonthChange`              | `(year, month) => void`                | -          | 调用 `setMonth` / 前后翻月时触发  |
 
 `createCalendarUI` 的泛型从 `adapter` / `onSelect` 推导；不传 adapter 时 `TData` 是 `null`。
 
@@ -237,6 +247,8 @@ const instance = createCalendarUI(container, {
 - `select()` 传入越界或禁用日期时直接忽略，不触发 `onSelect`；
 - `minDate > maxDate`、无效日期会抛错；所有日期都不可选时抛 `RangeError`。
 
+`disabledDates` 只接受数组，不提供 `(date) => boolean` predicate；数组已经能表达“禁止点击”，也更容易序列化和调试。
+
 运行时调整：
 
 ```ts
@@ -322,6 +334,48 @@ instance.isCollapsed();
 ```
 
 未开启 `collapsible` 时这些方法无效，也不会渲染箭头。
+
+## 动画
+
+翻月和折叠动画都可以配置：
+
+```ts
+const instance = createCalendarUI(container, {
+  monthTransition: "slide",
+  monthTransitionDuration: 220,
+  monthTransitionEasing: "ease",
+
+  collapsible: true,
+  collapseTransitionDuration: 200,
+  collapseTransitionEasing: "ease",
+});
+```
+
+| 选项                         | 作用                                      |
+| ---------------------------- | ----------------------------------------- |
+| `monthTransition`            | `"slide"`（默认）翻月横移；`"none"` 关闭  |
+| `monthTransitionDuration`    | 翻月时长，默认 `220` ms                   |
+| `monthTransitionEasing`      | 翻月缓动，默认 `"ease"`                   |
+| `collapseTransitionDuration` | 折叠高度动画时长，默认 `200` ms；`0` 关闭 |
+| `collapseTransitionEasing`   | 折叠缓动，默认 `"ease"`                   |
+
+实现方式：
+
+- 翻月时新月份从左侧/右侧进入，方向由上一月/下一月决定；
+- 折叠时 `.cui__week` 的 `max-height`、`opacity`、`margin` 一起过渡；
+- 时长/缓动写到 `.cui` 的 CSS 变量，外部也可以覆盖：
+
+```css
+.cui {
+  --cui-month-duration: 220ms;
+  --cui-month-easing: ease;
+  --cui-collapse-duration: 200ms;
+  --cui-collapse-easing: ease;
+}
+```
+
+- `prefers-reduced-motion: reduce` 下自动关闭过渡；
+- 首次渲染不会播放折叠动画；`defaultCollapsed` 直接呈现最终状态。
 
 ## 适配器接口
 

@@ -14,6 +14,7 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 420px;
+  overflow: hidden;
   padding: 12px;
   border: 1px solid var(--cui-border);
   border-radius: var(--cui-radius);
@@ -165,18 +166,64 @@
 .cui__grid {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
   contain: layout paint;
+  transition:
+    transform var(--cui-month-duration, 220ms) var(--cui-month-easing, ease),
+    opacity var(--cui-month-duration, 220ms) var(--cui-month-easing, ease);
+  will-change: transform, opacity;
 }
 
 .cui__week {
   display: grid;
+  min-height: 0;
+  max-height: 200px;
+  margin-bottom: 4px;
+  overflow: hidden;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
+  opacity: 1;
+  transition:
+    max-height var(--cui-collapse-duration, 200ms) var(--cui-collapse-easing, ease),
+    opacity var(--cui-collapse-duration, 200ms) var(--cui-collapse-easing, ease),
+    margin-bottom var(--cui-collapse-duration, 200ms) var(--cui-collapse-easing, ease);
+}
+
+.cui__week:last-child {
+  margin-bottom: 0;
+}
+
+.cui__week.is-collapsed-hidden {
+  max-height: 0;
+  margin-bottom: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .cui__week[hidden] {
   display: none;
+}
+
+.cui__grid.is-month-next {
+  transform: translateX(100%);
+  opacity: 0.35;
+}
+
+.cui__grid.is-month-prev {
+  transform: translateX(-100%);
+  opacity: 0.35;
+}
+
+.cui--no-animation .cui__grid,
+.cui--no-animation .cui__week {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cui__grid,
+  .cui__week {
+    transition: none;
+  }
 }
 
 .cui__weekday {

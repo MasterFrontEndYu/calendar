@@ -93,6 +93,43 @@ export function createCalendarUI<TData = null>(
   let theme = options.theme ?? "auto";
   const today = new Date();
 
+  const monthTransition = options.monthTransition ?? "slide";
+  if (monthTransition !== "none" && monthTransition !== "slide") {
+    throw new TypeError('[calendar-ui] monthTransition 必须是 "none" 或 "slide"');
+  }
+
+  const readDuration = function (
+    value: number | undefined,
+    fallback: number,
+    path: string,
+  ): number {
+    const duration = value ?? fallback;
+    if (!Number.isFinite(duration) || duration < 0) {
+      throw new TypeError(`[calendar-ui] ${path} 必须是大于等于 0 的数字`);
+    }
+    return duration;
+  };
+
+  const monthDuration = readDuration(
+    options.monthTransitionDuration,
+    220,
+    "monthTransitionDuration",
+  );
+  const monthEasing = options.monthTransitionEasing ?? "ease";
+  if (typeof monthEasing !== "string" || monthEasing.trim() === "") {
+    throw new TypeError("[calendar-ui] monthTransitionEasing 必须是非空字符串");
+  }
+
+  const collapseDuration = readDuration(
+    options.collapseTransitionDuration,
+    200,
+    "collapseTransitionDuration",
+  );
+  const collapseEasing = options.collapseTransitionEasing ?? "ease";
+  if (typeof collapseEasing !== "string" || collapseEasing.trim() === "") {
+    throw new TypeError("[calendar-ui] collapseTransitionEasing 必须是非空字符串");
+  }
+
   const mode: CalendarMode = options.mode ?? "single";
   if (mode !== "single" && mode !== "range") {
     throw new TypeError("[calendar-ui] mode 必须是 single 或 range");
@@ -173,6 +210,10 @@ export function createCalendarUI<TData = null>(
 
   const root = node("div", "cui");
   root.dataset.theme = theme;
+  root.style.setProperty("--cui-month-duration", `${monthDuration}ms`);
+  root.style.setProperty("--cui-month-easing", monthEasing);
+  root.style.setProperty("--cui-collapse-duration", `${collapseDuration}ms`);
+  root.style.setProperty("--cui-collapse-easing", collapseEasing);
   if (monthCount === 2) root.classList.add("cui--range");
 
   const monthOf = function (offset = 0): { year: number; month: number } {
@@ -354,6 +395,23 @@ export function createCalendarUI<TData = null>(
     options.onSelect?.(days.find((item) => sameDay(item.date, day.date)) ?? day);
   }
 
+  let monthAnimationToken = 0;
+
+  function clearMonthAnimation(): void {
+    panels.forEach((panel) => {
+      panel.grid.el.classList.remove("is-month-next", "is-month-prev");
+    });
+  }
+
+  function animateMonth(direction: 1 | -1): void {
+    clearMonthAnimation();
+    // 先清掉旧动画类，强制一次布局，保证连续翻月也能重新触发过渡
+    void panels[0]?.grid.el.offsetWidth;
+    panels.forEach((panel) => {
+      panel.grid.el.classList.add(direction === 1 ? "is-month-next" : "is-month-prev");
+    });
+  }
+
   function goTo(year: number, month: number): void {
     let next = normalizeMonth(year, month);
 
@@ -367,11 +425,30 @@ export function createCalendarUI<TData = null>(
       if (monthIndexOf(next.year, next.month) > maxFirst) next = monthFromIndex(maxFirst);
     }
 
-    if (next.year === state.year && next.month === state.month) return;
+    const currentIndex = monthIndexOf(state.year, state.month);
+    const nextIndex = monthIndexOf(next.year, next.month);
+    if (nextIndex === currentIndex) return;
+
+    const direction = nextIndex > currentIndex ? 1 : -1;
+    const shouldAnimate = monthTransition === "slide" && monthDuration > 0;
 
     state.year = next.year;
     state.month = next.month;
-    render();
+
+    if (shouldAnimate) {
+      animateMonth(direction);
+      render();
+
+      const token = ++monthAnimationToken;
+      const remove = () => {
+        if (token === monthAnimationToken) clearMonthAnimation();
+      };
+      if (typeof requestAnimationFrame === "function") requestAnimationFrame(remove);
+      else setTimeout(remove, 0);
+    } else {
+      render();
+    }
+
     options.onMonthChange?.(state.year, state.month);
   }
 
@@ -445,8 +522,10 @@ export function createCalendarUI<TData = null>(
     root.append(collapseButton);
   }
 
+  root.classList.add("cui--no-animation");
   container.appendChild(root);
   render();
+  root.classList.remove("cui--no-animation");
 
   return {
     el: root,

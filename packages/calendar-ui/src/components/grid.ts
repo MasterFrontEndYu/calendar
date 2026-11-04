@@ -56,7 +56,11 @@ export const createGrid = function <TData = null>(options: GridOptions<TData>): 
     setVisibleRows: (rows: readonly number[] | null) => {
       const visible = rows === null ? null : new Set(rows);
       rowEls.forEach((row, index) => {
-        row.hidden = visible !== null && !visible.has(index);
+        const hidden = visible !== null && !visible.has(index);
+        row.classList.toggle("is-collapsed-hidden", hidden);
+        row.toggleAttribute("inert", hidden);
+        if (hidden) row.setAttribute("aria-hidden", "true");
+        else row.removeAttribute("aria-hidden");
       });
     },
     destroy: () => el.removeEventListener("click", onClick),
