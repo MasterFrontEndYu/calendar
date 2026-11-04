@@ -13,10 +13,10 @@ bun add @sanguogege/calendar-ui
 ## 基本用法
 
 ```ts
-import { createCalendar } from "@sanguogege/calendar-ui";
+import { createCalendarUI } from "@sanguogege/calendar-ui";
 import "@sanguogege/calendar-ui/style.css";
 
-const instance = createCalendar(container, {
+const instance = createCalendarUI(container, {
   initialDate: new Date(2026, 9, 1),
   weekStartsOn: 1,
   locale: "zh-CN",
@@ -58,7 +58,7 @@ interface CalendarOptions<TData = null> {
 | `onSelect`      | `(day: CalendarDay<TData>) => void`    | -         | 点击/`select()` 选中日期时触发    |
 | `onMonthChange` | `(year, month) => void`                | -         | 调用 `setMonth` / 前后翻月时触发  |
 
-`createCalendar` 的泛型从 `adapter` / `onSelect` 推导；不传 adapter 时 `TData` 是 `null`。
+`createCalendarUI` 的泛型从 `adapter` / `onSelect` 推导；不传 adapter 时 `TData` 是 `null`。
 
 ## CalendarDay
 
@@ -172,7 +172,7 @@ interface DayDecoration<TData> {
 ## 自定义头部
 
 ```ts
-const instance = createCalendar(container, {
+const instance = createCalendarUI(container, {
   renderHeader: ({ year, month, prevMonth, nextMonth, locale }) => {
     const el = document.createElement("div");
     el.textContent = `${year} 年 ${month} 月`;
@@ -235,5 +235,5 @@ interface CalendarLocale {
 
 - 每个日期格是 `<button>`，带 `aria-label` / `aria-pressed`；
 - 补位格 `tabIndex` 为 -1，只有当前月可键盘聚焦；
-- `createCalendar` 只操作传入的容器，可在 SSR 中安全预渲染空壳，客户端挂载；
-- 所有实例互相独立，重复调用 `createCalendar` 不会共享状态。
+- `createCalendarUI` 只操作传入的容器，可在 SSR 中安全预渲染空壳，客户端挂载；
+- 所有实例互相独立，重复调用 `createCalendarUI` 不会共享状态。

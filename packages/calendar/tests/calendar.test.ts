@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
-import calendar from "../src/index.ts";
+import createCalendar, { utils } from "../src/index.ts";
+
+const calendar = createCalendar();
 
 const DAY_MS = 86400000;
 const START = Date.UTC(1900, 0, 31);
@@ -211,41 +213,41 @@ describe("干支", () => {
 
 describe("工具函数", () => {
   it("星座名称与边界", () => {
-    expect(calendar.utils.toAstro(1, 19)).toBe("摩羯座");
-    expect(calendar.utils.toAstro(1, 20)).toBe("水瓶座");
-    expect(calendar.utils.toAstro(4, 19)).toBe("白羊座");
-    expect(calendar.utils.toAstro(4, 20)).toBe("金牛座");
-    expect(calendar.utils.toAstro(10, 23)).toBe("天秤座");
-    expect(calendar.utils.toAstro(10, 24)).toBe("天蝎座");
-    expect(calendar.utils.toAstro(12, 22)).toBe("摩羯座");
+    expect(utils.toAstro(1, 19)).toBe("摩羯座");
+    expect(utils.toAstro(1, 20)).toBe("水瓶座");
+    expect(utils.toAstro(4, 19)).toBe("白羊座");
+    expect(utils.toAstro(4, 20)).toBe("金牛座");
+    expect(utils.toAstro(10, 23)).toBe("天秤座");
+    expect(utils.toAstro(10, 24)).toBe("天蝎座");
+    expect(utils.toAstro(12, 22)).toBe("摩羯座");
   });
 
   it("README 里写过的方法都存在", () => {
-    expect(typeof calendar.utils.toChinaNum).toBe("function");
-    expect(typeof calendar.utils.getTerm).toBe("function");
-    expect(typeof calendar.utils.getSolarTerm).toBe("function");
-    expect(calendar.utils.toChinaNum(3)).toBe("三");
-    expect(calendar.utils.getSolarTerm(0)).toBe("小寒");
-    expect(calendar.utils.getTerm(2026, 3)).toBe(4);
+    expect(typeof utils.toChinaNum).toBe("function");
+    expect(typeof utils.getTerm).toBe("function");
+    expect(typeof utils.getSolarTerm).toBe("function");
+    expect(utils.toChinaNum(3)).toBe("三");
+    expect(utils.getSolarTerm(0)).toBe("小寒");
+    expect(utils.getTerm(2026, 3)).toBe(4);
   });
 
   it("越界的工具函数抛错而不是返回脏值", () => {
-    expect(() => calendar.utils.lYearDays(1899)).toThrow(RangeError);
-    expect(() => calendar.utils.leapMonth(2101)).toThrow(RangeError);
-    expect(() => calendar.utils.lMonthDays(2024, 13)).toThrow(RangeError);
-    expect(() => calendar.utils.toChinaDay(31)).toThrow(RangeError);
-    expect(() => calendar.utils.solarDays(2024, 13)).toThrow(RangeError);
-    expect(() => calendar.utils.toChinaNum(11)).toThrow(RangeError);
+    expect(() => utils.lYearDays(1899)).toThrow(RangeError);
+    expect(() => utils.leapMonth(2101)).toThrow(RangeError);
+    expect(() => utils.lMonthDays(2024, 13)).toThrow(RangeError);
+    expect(() => utils.toChinaDay(31)).toThrow(RangeError);
+    expect(() => utils.solarDays(2024, 13)).toThrow(RangeError);
+    expect(() => utils.toChinaNum(11)).toThrow(RangeError);
   });
 
   it("星期两套口径都给出", () => {
     const r = calendar.solarToLunar(2026, 11, 1);
     expect([r.nWeek, r.dayOfWeek, r.ncWeek]).toEqual([7, 0, "星期日"]);
-    expect(calendar.utils.solarFirstWeek(2026, 10)).toBe(4);
+    expect(utils.solarFirstWeek(2026, 10)).toBe(4);
   });
 
   it("农历日中文", () => {
     const expected = ["初一", "初十", "十一", "二十", "廿一", "三十"];
-    expect([1, 10, 11, 20, 21, 30].map((d) => calendar.utils.toChinaDay(d))).toEqual(expected);
+    expect([1, 10, 11, 20, 21, 30].map((d) => utils.toChinaDay(d))).toEqual(expected);
   });
 });

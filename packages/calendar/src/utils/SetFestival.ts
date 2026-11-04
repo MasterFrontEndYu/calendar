@@ -9,7 +9,7 @@ const NO_FESTIVAL: readonly string[] = Object.freeze([]) as readonly string[];
  * 校验并规范化节日表。
  * 任何格式错误都会抛出 TypeError，并指出具体是哪个 key。
  * @param input 待校验的节日表
- * @param path 出错时用于定位的路径，例如 "setHolidays.setFestival.sFtv"
+ * @param path 出错时用于定位的路径，例如 "createCalendar.setFestival.sFtv"
  */
 const normalizeFestivalMap = function (input: unknown, path: string): FestivalMap {
   if (!isPlainObject(input)) {

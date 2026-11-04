@@ -38,7 +38,7 @@ export interface NormalizedRestEntry {
 export type RestConfig = Record<string | number, RestEntry>;
 
 /**
- * getHolidays() 的返回值：结构完整，可直接再传给 setHolidays()
+ * getHolidays() 的返回值：结构完整，可直接再传给 createCalendar()
  */
 export interface HolidaySnapshot {
   setFestival: {
@@ -49,7 +49,7 @@ export interface HolidaySnapshot {
 }
 
 /**
- * setHolidays 的入参
+ * createCalendar 的入参
  */
 export interface HolidayConfig {
   setFestival?: FestivalConfig;
@@ -57,7 +57,7 @@ export interface HolidayConfig {
 }
 
 /**
- * setHolidays 的选项
+ * createCalendar 的选项
  */
 export interface SetHolidayOptions {
   /** 为 true 时丢弃内置节日/调休数据，只使用传入的数据 */
@@ -121,15 +121,15 @@ export interface LunarResult {
 }
 
 /**
- * 固定了一份节假日配置的转换器
+ * 固定了一份节假日配置的日历实例
  *
- * 由 createConverter() 创建，配置在创建时固定，与全局 setHolidays() 互不影响。
+ * 由 createCalendar() 创建，配置在创建时固定，实例之间互不影响。
  */
-export interface CalendarConverter {
+export interface Calendar {
   /** 公历转农历，不传参返回今天 */
   solarToLunar(this: void, y?: number, m?: number, d?: number): LunarResult;
   /** 农历转公历 */
   lunarToSolar(this: void, y: number, m: number, d: number, isLeapMonth?: boolean): LunarResult;
-  /** 该转换器当前配置的深拷贝，可再次用于 createConverter() / setHolidays() */
+  /** 该实例当前配置的深拷贝，可再次用于 createCalendar() */
   getHolidays(this: void): HolidaySnapshot;
 }

@@ -1,6 +1,6 @@
-import calendar from "@sanguogege/calendar";
+import createCalendar from "@sanguogege/calendar";
 import type { HolidayConfig, LunarResult } from "@sanguogege/calendar";
-import { createCalendar as createBaseCalendar } from "@sanguogege/calendar-ui";
+import { createCalendarUI } from "@sanguogege/calendar-ui";
 import type {
   CalendarAdapter,
   CalendarDate,
@@ -12,7 +12,7 @@ import type {
 } from "@sanguogege/calendar-ui";
 
 export interface LunarAdapterOptions {
-  /** 本适配器使用的节假日 / 调休配置；不传时跟随全局 setHolidays() */
+  /** 本适配器使用的节假日 / 调休配置；不传时使用内置数据 */
   holidays?: HolidayConfig;
   /** 为 true 时忽略内置节日 / 调休数据，只使用 holidays */
   replaceHolidays?: boolean;
@@ -39,9 +39,11 @@ interface Source {
   solarToLunar(year: number, month: number, day: number): LunarResult;
 }
 
-const GLOBAL_SOURCE: Source = {
+const DEFAULT_CALENDAR = createCalendar();
+
+const DEFAULT_SOURCE: Source = {
   id: 0,
-  solarToLunar: (year, month, day) => calendar.solarToLunar(year, month, day),
+  solarToLunar: (year, month, day) => DEFAULT_CALENDAR.solarToLunar(year, month, day),
 };
 
 interface SourceEntry {
@@ -54,7 +56,7 @@ const sourceCache = new WeakMap<object, SourceEntry>();
 
 /** 同一份配置对象 + 同样的 replace 语义只创建一个 converter */
 const resolveSource = function (holidays?: HolidayConfig, replace = false): Source {
-  if (!holidays) return GLOBAL_SOURCE;
+  if (!holidays) return DEFAULT_SOURCE;
 
   let entry = sourceCache.get(holidays);
   if (!entry) {
@@ -66,10 +68,10 @@ const resolveSource = function (holidays?: HolidayConfig, replace = false): Sour
   const cached = entry[mode];
   if (cached) return cached;
 
-  const converter = calendar.createConverter(holidays, replace ? { replace: true } : {});
+  const calendar = createCalendar(holidays, replace ? { replace: true } : {});
   const source: Source = {
     id: nextSourceId++,
-    solarToLunar: (year, month, day) => converter.solarToLunar(year, month, day),
+    solarToLunar: (year, month, day) => calendar.solarToLunar(year, month, day),
   };
   entry[mode] = source;
   return source;
@@ -139,13 +141,13 @@ export const createLunarAdapter = function (
  *
  * 接口与纯公历版本一致，只是换成这个入口，并且多收 holidays / replaceHolidays。
  */
-export const createCalendar = function (
+export const createCalendarLunar = function (
   container: HTMLElement,
   options: LunarCalendarOptions = {},
 ): CalendarInstance {
   const { holidays, replaceHolidays, adapter, ...rest } = options;
 
-  return createBaseCalendar<LunarResult>(container, {
+  return createCalendarUI<LunarResult>(container, {
     ...rest,
     adapter: adapter ?? createLunarAdapter({ holidays, replaceHolidays }),
   });

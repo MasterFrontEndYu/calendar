@@ -27,47 +27,56 @@ bun add @sanguogege/calendar-ui @sanguogege/calendar-ui-lunar
 
 ## 按场景选择
 
-| 场景                      | 入口                                           |
-| ------------------------- | ---------------------------------------------- |
-| 只需要日期数据            | `@sanguogege/calendar`                         |
-| 只需要公历日历组件        | `@sanguogege/calendar-ui`                      |
-| 要农历、节气、节日、休班  | `@sanguogege/calendar-ui-lunar`                |
-| 有自己的历法 / 节假日接口 | 自己实现 `CalendarAdapter`，传给 `calendar-ui` |
+| 场景                      | 入口                                                  |
+| ------------------------- | ----------------------------------------------------- |
+| 只需要日期数据            | `createCalendar()`                                    |
+| 只需要公历日历组件        | `createCalendarUI()`                                  |
+| 要农历、节气、节日、休班  | `createCalendarLunar()`                               |
+| 有自己的历法 / 节假日接口 | 自己实现 `CalendarAdapter`，传给 `createCalendarUI()` |
 
 ## 设计原则
 
 - **核心只做换算**：`calendar` 不碰 DOM，也不依赖框架。
+- **没有全局状态**：节假日配置在 `createCalendar(config)` 创建时固定，多个实例互不影响。
 - **UI 核心默认纯公历**：不装农历包、不 import 农历代码，默认 bundle 里没有农历数据。
 - **公共适配器接口**：`CalendarAdapter` 是公开的，第三方可以接自己的历法或节假日源。
-- **配置按实例固定**：需要多套节假日时用 `createConverter`，互不影响。
 
-## 最小的两个例子
+## 最小的三个例子
 
 ```ts
 // 只换算
-import calendar from "@sanguogege/calendar";
+import createCalendar from "@sanguogege/calendar";
 
+const calendar = createCalendar();
 const day = calendar.solarToLunar(2026, 10, 1);
 console.log(day.lMonthCn, day.lDayCn, day.term, day.gljr);
 ```
 
 ```ts
 // 纯公历 UI
-import { createCalendar } from "@sanguogege/calendar-ui";
+import { createCalendarUI } from "@sanguogege/calendar-ui";
 import "@sanguogege/calendar-ui/style.css";
 
-const instance = createCalendar(container, {
+const instance = createCalendarUI(container, {
   onSelect: (day) => console.log(day.year, day.month, day.day, day.data),
 });
 ```
 
-`calendar` 只导出默认 converter；`calendar-ui` 默认不依赖 `calendar`。
+```ts
+// 农历 UI
+import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
+import "@sanguogege/calendar-ui/style.css";
+
+const instance = createCalendarLunar(container, {
+  onSelect: (day) => console.log(day.subtitle, day.data?.lMonthCn),
+});
+```
 
 ## 下一步
 
-- [calendar 核心](/guide/calendar)：`solarToLunar`、`lunarToSolar`、节日、调休、`createConverter`。
-- [calendar-ui](/guide/calendar-ui)：`createCalendar`、`CalendarOptions`、`CalendarInstance`、样式。
-- [农历适配器](/guide/lunar)：把 `@sanguogege/calendar` 接到 UI 上。
+- [calendar 核心](/guide/calendar)：`createCalendar`、`LunarResult`、节日、调休、`utils`。
+- [calendar-ui](/guide/calendar-ui)：`createCalendarUI`、`CalendarOptions`、`CalendarInstance`、样式。
+- [农历适配器](/guide/lunar)：`createCalendarLunar` 和 `createLunarAdapter`。
 - [第三方适配器](/guide/adapter)：实现公开的 `CalendarAdapter`，接自己的数据源。
 
 ## 演示

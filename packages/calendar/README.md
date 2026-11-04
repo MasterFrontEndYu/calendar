@@ -1,229 +1,199 @@
-[![NPM Version](https://img.shields.io/npm/v/@sanguogege/calendar.svg?style=for-the-badge)](https://www.npmjs.com/package/@sanguogege/calendar)
-[![](https://img.shields.io/npm/dm/@sanguogege/calendar.svg?style=for-the-badge)](https://www.npmjs.com/package/@sanguogege/calendar)
+# calendar
 
-<p align="center"> <b>万年历生成器</b> </p>
-
-公历 / 农历互转，附带干支、节气、生肖、星座、节日与节假日调休。纯 TypeScript，零依赖，支持 ESM / CJS / UMD / IIFE。
-
-## 安装
+零依赖的公历 / 农历换算库，支持农历、节气、干支、生肖、节日和调休。
 
 ```bash
-npm i @sanguogege/calendar
+bun add @sanguogege/calendar
 ```
 
 ## 快速开始
 
 ```ts
-import calendar from "@sanguogege/calendar";
+import createCalendar from "@sanguogege/calendar";
 
-// 不传参：今天
-const today = calendar.solarToLunar();
+const calendar = createCalendar();
 
-// 传参：指定公历日期
-const day = calendar.solarToLunar(2026, 4, 5);
-console.log(day.lMonthCn + day.lDayCn); // 二月十八
-console.log(day.term); // 清明
-console.log(day.gzYear, day.gzMonth, day.gzDay); // 丙午 壬辰 己酉
+const day = calendar.solarToLunar(2026, 10, 1);
+console.log(day.lMonthCn, day.lDayCn, day.gljr, day.xiu);
 ```
 
-## 支持范围
+`createCalendar()` 不传参数时使用内置数据。每次调用都会创建一个独立实例，没有全局可变状态。
 
-| 项目 | 范围                        |
-| ---- | --------------------------- |
-| 公历 | `1900-01-31` ~ `2100-12-31` |
-| 农历 | `1900` ~ `2100` 年          |
-
-超出范围、日期不存在（如 2 月 30 日、农历三十一）、参数类型不对，一律抛异常，**不会**再静默回退到今天或自动进位。
-
-## 核心方法
-
-### `solarToLunar(y?: number, m?: number, d?: number)`
-
-公历转农历。不传参返回今天；传参时年、月、日必须同时传入。
+## createCalendar
 
 ```ts
-calendar.solarToLunar(2024, 2, 10); // 2024 年正月初一
+const calendar = createCalendar(config?, options?);
+```
+
+| 参数              | 类型            | 说明                                      |
+| ----------------- | --------------- | ----------------------------------------- |
+| `config`          | `HolidayConfig` | 节假日 / 调休配置，默认与内置数据合并     |
+| `options.replace` | `boolean`       | 为 `true` 时丢弃内置数据，只使用 `config` |
+
+```ts
+const company = createCalendar(
+  { setRest: { 2027: { xiu: ["0101", "0102"], ban: ["0104"] } } },
+  { replace: true },
+);
+
+company.solarToLunar(2027, 1, 4).ban; // true
+createCalendar().solarToLunar(2027, 1, 4).ban; // false
+```
+
+- 配置在创建时校验、深拷贝并冻结；
+- 多个实例互不影响；
+- 修改传入对象不会影响已经创建的实例；
+- 配置错误立即抛 `TypeError`，错误信息带 `createCalendar.…` 字段路径。
+
+## 实例方法
+
+| 方法                                  | 说明                                          |
+| ------------------------------------- | --------------------------------------------- |
+| `solarToLunar(y?, m?, d?)`            | 公历转农历；不传参数返回今天                  |
+| `lunarToSolar(y, m, d, isLeapMonth?)` | 农历转公历                                    |
+| `getHolidays()`                       | 当前配置的深拷贝，可再传给 `createCalendar()` |
+
+```ts
+const calendar = createCalendar();
+
 calendar.solarToLunar(); // 今天
-```
+calendar.solarToLunar(2026, 10, 1);
 
-### `lunarToSolar(y: number, m: number, d: number, isLeapMonth?: boolean)`
-
-农历转公历。闰月不存在时抛 `RangeError`，不再返回 `-1`。
-
-```ts
 calendar.lunarToSolar(2024, 1, 1); // 2024-02-10
-calendar.lunarToSolar(2020, 4, 1, true); // 2020-05-23（闰四月）
+calendar.lunarToSolar(2020, 4, 1, true); // 闰四月
+
+const snapshot = calendar.getHolidays();
+const copy = createCalendar(snapshot);
 ```
 
-### 返回值 `LunarResult`
+## LunarResult
 
-| 字段                        | 类型           | 说明                                             |
-| --------------------------- | -------------- | ------------------------------------------------ |
-| `cYear` / `cMonth` / `cDay` | number         | 公历年 / 月 / 日                                 |
-| `lYear` / `lMonth` / `lDay` | number         | 农历年 / 月 / 日                                 |
-| `isLeap`                    | boolean        | 是否闰月                                         |
-| `lMonthCn` / `lDayCn`       | string         | 农历月 / 日中文，如 `"闰四月"`、`"廿一"`         |
-| `animal`                    | string         | 生肖，以农历年为准                               |
-| `gzYear`                    | string         | 干支年，**以立春为界**，与 `gzMonth` 口径一致    |
-| `gzYearLunar`               | string         | 干支年，以正月初一为界，与 `animal` 口径一致     |
-| `gzMonth` / `gzDay`         | string         | 干支月（以节气为界）/ 干支日                     |
-| `gzHour`                    | string[]       | 当天十二个时辰的干支                             |
-| `term`                      | string \| null | 节气名，非节气日为 `null`                        |
-| `astro`                     | string         | 星座，如 `"摩羯座"`                              |
-| `gljr` / `nljr`             | string[]       | 公历节日 / 农历节日                              |
-| `xiu`                       | boolean        | 是否在 rest.json 的 `xiu` 列表中；与周末无关     |
-| `ban`                       | boolean        | 是否在 rest.json 的 `ban` 列表中                 |
-| `isToday`                   | boolean        | 是否今天（按运行环境本地时区）                   |
-| `nWeek`                     | number         | 星期 1-7，**周日为 7**                           |
-| `dayOfWeek`                 | number         | 星期 0-6，**周日为 0**，与 `solarFirstWeek` 一致 |
-| `ncWeek`                    | string         | 星期中文，如 `"星期日"`                          |
+`solarToLunar` / `lunarToSolar` 都返回完整结果：
 
-## 节假日与调休
+| 字段                        | 类型                | 说明                         |
+| --------------------------- | ------------------- | ---------------------------- |
+| `xiu`                       | `boolean`           | 是否在放假日列表；与周末无关 |
+| `ban`                       | `boolean`           | 是否在补班日列表             |
+| `gljr`                      | `readonly string[]` | 公历节日                     |
+| `nljr`                      | `readonly string[]` | 农历节日                     |
+| `lYear` / `lMonth` / `lDay` | `number`            | 农历年 / 月 / 日             |
+| `isLeap`                    | `boolean`           | 是否闰月                     |
+| `lMonthCn` / `lDayCn`       | `string`            | 农历月 / 日中文              |
+| `animal`                    | `string`            | 生肖                         |
+| `cYear` / `cMonth` / `cDay` | `number`            | 公历年 / 月 / 日             |
+| `gzYear`                    | `string`            | 干支年（立春为界）           |
+| `gzYearLunar`               | `string`            | 干支年（正月初一为界）       |
+| `gzMonth` / `gzDay`         | `string`            | 干支月 / 日                  |
+| `gzHour`                    | `string[]`          | 十二时辰干支                 |
+| `isToday`                   | `boolean`           | 是否今天                     |
+| `nWeek`                     | `number`            | 星期 1-7，周日为 7           |
+| `dayOfWeek`                 | `number`            | 星期 0-6，周日为 0           |
+| `ncWeek`                    | `string`            | 星期中文                     |
+| `term`                      | `string \| null`    | 节气名                       |
+| `astro`                     | `string`            | 星座                         |
 
-内置数据目前只包含 **2026** 年的法定节假日安排（依据国务院办公厅 2025 年 11 月 4 日发布的[《关于 2026 年部分节假日安排的通知》](https://www.gov.cn/zhengce/content/202511/content_7047090.htm)）。2027 年的安排国务院办公厅尚未发布，发布后请按年注入（通常每年 11 月发布次年安排）。
+支持范围：`1900-01-31 ~ 2100-12-31`。越界、非法日期、不存在的闰月都抛 `RangeError`。
+
+## 节日与调休
+
+### HolidayConfig
 
 ```ts
-calendar.setHolidays({
+interface HolidayConfig {
+  setFestival?: {
+    sFtv?: Record<string, string[]>; // 公历节日，MMDD
+    lFtv?: Record<string, string[]>; // 农历节日，MMDD
+  };
+  setRest?: {
+    [year: string]: {
+      xiu?: string[]; // 放假 MMDD
+      ban?: string[]; // 补班 MMDD
+    };
+  };
+}
+```
+
+```ts
+const calendar = createCalendar({
   setFestival: {
-    sFtv: { "0419": ["项目上线日"] }, // 公历节日，key 为 MMDD
-    lFtv: { "0101": ["春节"] }, // 农历节日，key 为 MMDD
+    sFtv: { "0419": ["项目上线日"] },
   },
   setRest: {
     2027: { xiu: ["0101", "0102"], ban: ["0104"] },
   },
 });
+
+calendar.solarToLunar(2027, 1, 4).ban; // true
 ```
 
-- `setHolidays(config, options?)`：默认与内置数据**合并去重**，不会修改内置数据，也不会修改你传入的对象。重复调用继续叠加。
-- `setHolidays(config, { replace: true })`：丢弃内置数据，只保留你传入的。
-- `resetHolidays()`：恢复到内置数据。
-- `getHolidays()`：取当前配置的深拷贝，可直接再传给 `setHolidays()`。
+### xiu / ban
 
-**休息语义**：`xiu` / `ban` 完全由 `rest.json` 的 `xiu` / `ban` 决定，与星期几无关。普通周末不会自动算作休息；需要把某天视为休息，就把对应 `MMDD` 写进该年的 `xiu`。某年没有数据时，`xiu` 和 `ban` 都为 `false`。
-
-**不需要写进数据的节日**：`除夕`（腊月最后一天）、`母亲节`（5 月第 2 个周日）、`父亲节`（6 月第 3 个周日）、`感恩节`（11 月第 4 个周四）由规则计算，写死在数据里反而会错年份。
-
-配置格式不合法会抛 `TypeError`，错误信息里有完整字段路径，例如：
-
-```
-[calendar] setHolidays.setFestival.sFtv.1-1 节日 key 必须是四位 "MMDD"（如 "0101"），收到 "1-1"
-```
-
-### 多套配置：`calendar.createConverter(config?, options?)`
-
-`setHolidays()` 是全局的，同一时刻只能有一套配置。需要在同一页面里并排展示多套节假日数据时，用 `calendar.createConverter()` 把配置固定在转换器上：
+`xiu` / `ban` 完全由配置决定，和周末无关：
 
 ```ts
-import calendar from "@sanguogege/calendar";
-
-const mainland = calendar.createConverter({
-  setRest: { 2027: { xiu: ["0101", "0102"], ban: ["0104"] } },
-});
-const hongKong = calendar.createConverter({
-  setRest: { 2027: { xiu: ["0101"] } },
-});
-
-mainland.solarToLunar(2027, 1, 4).ban; // true
-hongKong.solarToLunar(2027, 1, 4).ban; // false
-
-// 与全局配置互不影响
-calendar.setHolidays({ setRest: { 2027: { ban: ["0101"] } } });
-hongKong.solarToLunar(2027, 1, 1).xiu; // 仍然是 true
+day.xiu; // 在放假日列表
+day.ban; // 在补班日列表
+day.dayOfWeek; // 0-6，判断周末用这个
 ```
 
-- 2.x 只导出默认 converter：`calendar.solarToLunar`、`calendar.createConverter`、`calendar.utils` 都挂在这一个对象上，没有具名函数导出；
-- 默认以内置数据为基准合并，`calendar.createConverter(config, { replace: true })` 丢弃内置数据；
-- 配置在创建时校验并冻结，之后再修改传入的对象不会生效；
-- `converter.getHolidays()` 返回该转换器配置的深拷贝，可以再传给 `calendar.createConverter()`；
-- 配置写错时错误信息前缀是 `[calendar] createConverter.…`，定位方式与 `setHolidays` 一致。
+内置 2026 数据来自[国务院办公厅通知](https://www.gov.cn/zhengce/content/202511/content_7047090.htm)：
 
-## 错误处理
+| 假期   | 放假        | 补班        |
+| ------ | ----------- | ----------- |
+| 元旦   | 1/1 - 1/3   | 1/4         |
+| 春节   | 2/15 - 2/23 | 2/14、2/28  |
+| 清明节 | 4/4 - 4/6   | -           |
+| 劳动节 | 5/1 - 5/5   | 5/9         |
+| 端午节 | 6/19 - 6/21 | -           |
+| 中秋节 | 9/25 - 9/27 | -           |
+| 国庆节 | 10/1 - 10/7 | 9/20、10/10 |
 
-| 异常         | 场景                                                     |
-| ------------ | -------------------------------------------------------- |
-| `RangeError` | 日期越界、日期不存在、闰月不匹配、工具函数参数越界       |
-| `TypeError`  | `setHolidays` / `createConverter` 的配置结构或类型不合法 |
+### 快照
 
 ```ts
-try {
-  calendar.solarToLunar(2024, 2, 30);
-} catch (e) {
-  console.error(e.message); // [calendar] solarToLunar(day) 必须在 1-29 之间，收到 30
-}
+const snapshot = createCalendar().getHolidays();
+const copy = createCalendar(snapshot);
 ```
 
-## 工具方法
+`getHolidays()` 返回深拷贝，不会共享内部数组。
 
-`calendar.utils` 里全部是无状态纯函数，不读取也不受 `setHolidays()` / `createConverter()` 的配置影响，可以单独抽出来用。
+## 工具函数
+
+`utils` 是具名导出的无状态函数，不读取实例配置：
 
 ```ts
-calendar.utils.lYearDays(2026); // 农历年天数
-calendar.utils.leapMonth(2026); // 闰几月，0 表示不闰
-calendar.utils.leapDays(2026); // 闰月天数
-calendar.utils.lMonthDays(2026, 3); // 农历某月天数
-calendar.utils.toChinaMonth(3); // "三月"
-calendar.utils.toChinaDay(21); // "廿一"
-calendar.utils.toChinaNum(3); // "三"
-calendar.utils.solarDays(2026, 2); // 28
-calendar.utils.solarFirstWeek(2026, 4); // 3（4/1 是周三，0 为周日）
-calendar.utils.nthWeekdayOfMonth(2026, 5, 0, 2); // 10（5 月第 2 个周日）
-calendar.utils.toAstro(4, 19); // "白羊座"
-calendar.utils.getAnimal(2026); // "马"
-calendar.utils.getTerm(2026, 3); // 4（立春在 2 月 4 日）
-calendar.utils.getSolarTerm(0); // "小寒"
-calendar.utils.toGanZhi(40); // "甲辰"
-calendar.utils.toGanZhiYear(2024); // "甲辰"
-calendar.utils.toHourGanZhi(40); // ["甲子", "乙丑", ...]
+import { utils } from "@sanguogege/calendar";
+
+utils.lYearDays(2026);
+utils.leapMonth(2026);
+utils.leapDays(2026);
+utils.lMonthDays(2026, 3);
+utils.toChinaMonth(3); // "三月"
+utils.toChinaDay(21); // "廿一"
+utils.toChinaNum(3); // "三"
+utils.solarDays(2026, 2); // 28
+utils.solarFirstWeek(2026, 4); // 3
+utils.nthWeekdayOfMonth(2026, 5, 0, 2); // 10
+utils.toAstro(4, 19); // "白羊座"
+utils.getAnimal(2026); // "马"
+utils.getTerm(2026, 3); // 4
+utils.getSolarTerm(0); // "小寒"
+utils.toGanZhi(40); // "甲辰"
+utils.toGanZhiYear(2024); // "甲辰"
+utils.toHourGanZhi(40); // ["甲子", "乙丑", ...]
 ```
 
-## 传统页面直接引入
+## 错误
 
-```html
-<script src="https://cdn.jsdelivr.net/npm/@sanguogege/calendar/dist/index.umd.js"></script>
-<script>
-  const day = calendar.solarToLunar(2026, 4, 5);
-  calendar.utils.solarFirstWeek(2026, 4); // 3
-</script>
-```
+| 异常         | 场景                                               |
+| ------------ | -------------------------------------------------- |
+| `RangeError` | 日期越界、日期不存在、闰月不匹配、工具函数参数越界 |
+| `TypeError`  | `createCalendar` 的配置结构或类型不合法            |
 
-也可以直接使用 `dist/index.iife.js`，全局变量名同样是 `calendar`，并且它就是这个默认 converter 对象。
+## 2.x 变化
 
-## 从 1.x 升级
-
-这是 2.0，行为有不兼容变更：
-
-1. 非法入参一律抛异常，不再 `return -1`、不再静默取今天、不再自动进位（如 `2024-02-30` 不再变成 3 月 1 日）。
-2. `lunarToSolar` 不再返回 `-1`。
-3. `gzYear` 改为以**立春**为界，与 `gzMonth` 一致；需要按正月初一换年的用新增的 `gzYearLunar`。
-4. `xiu` / `ban` 改为完全由 `rest.json` 的 `xiu` / `ban` 决定，不再自动包含周末；新增 `dayOfWeek`。
-5. `setRest` 由“整年覆盖”改为“按年按列表合并”。
-6. 除夕、母亲节、父亲节、感恩节改为规则计算，数据文件里已移除对应写法。
-7. 修复星座名（`摩羯座`、`天秤座`）与星座边界日期。
-8. 节日数据修正：世界微笑日移到 5 月 8 日，寒衣节移到农历十月初一。
-9. 只保留默认导出 `calendar`，不再提供 `solarToLunar` 等具名函数导出；`createConverter` 通过 `calendar.createConverter()` 使用。
-
-## 数据维护规范
-
-```json
-{
-  "setFestival": {
-    "sFtv": { "MMDD": ["节日名称"] },
-    "lFtv": { "MMDD": ["节日名称"] }
-  },
-  "setRest": {
-    "YYYY": {
-      "xiu": ["MMDD", "MMDD"],
-      "ban": ["MMDD", "MMDD"]
-    }
-  }
-}
-```
-
-- `MMDD` 必须是四位，月份 01-12、日期 01-31；
-- `setRest` 的年份范围 1900-2100，`xiu` / `ban` 缺省时按空数组处理；
-- `xiu` / `ban` 是 `xiu` / `ban` 的唯一依据，周末不参与计算；
-- 写错格式会在 `setHolidays()` 调用处立刻抛 `TypeError`，不会等到查询时才出现 `undefined`。
-
-## License
-
-MIT
+- 默认导出改成 `createCalendar` 函数；不再有 `calendar.solarToLunar` 这种默认对象；
+- 删除全局 `setHolidays` / `resetHolidays`，配置只通过 `createCalendar(config)` 传入；
+- `createConverter` 重命名为 `createCalendar`；
+- `utils` 改为具名导出；
+- 每次调用 `createCalendar()` 都是独立实例，没有跨实例状态。

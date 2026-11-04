@@ -13,7 +13,7 @@ import PlainCalendar from "../../components/demo/PlainCalendar";
 <PlainCalendar year={2026} month={10} weekStartsOn={1} locale="zh-CN" />
 
 ```ts
-const a = createCalendar(hostA, {
+const a = createCalendarUI(hostA, {
   initialDate: new Date(2026, 9, 1),
   weekStartsOn: 1,
   locale: "zh-CN",
@@ -26,7 +26,7 @@ const a = createCalendar(hostA, {
 <PlainCalendar year={2026} month={12} weekStartsOn={0} locale="en-US" />
 
 ```ts
-const b = createCalendar(hostB, {
+const b = createCalendarUI(hostB, {
   initialDate: new Date(2026, 11, 1),
   weekStartsOn: 0,
   locale: "en-US",

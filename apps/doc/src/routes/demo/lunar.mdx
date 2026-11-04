@@ -13,9 +13,9 @@ import LunarCalendar from "../../components/demo/LunarCalendar";
 <LunarCalendar variant="builtin" />
 
 ```ts
-import { createCalendar } from "@sanguogege/calendar-ui-lunar";
+import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
 
-const builtin = createCalendar(hostA, {
+const builtin = createCalendarLunar(hostA, {
   initialDate: new Date(2026, 9, 1),
 });
 ```
@@ -25,7 +25,7 @@ const builtin = createCalendar(hostA, {
 <LunarCalendar variant="custom" />
 
 ```ts
-const custom = createCalendar(hostB, {
+const custom = createCalendarLunar(hostB, {
   initialDate: new Date(2026, 0, 1),
   holidays: {
     setFestival: { sFtv: { "0105": ["公司年会"] } },

@@ -1,5 +1,5 @@
 import { createSignal, onSettled } from "solid-js";
-import { createCalendar } from "@sanguogege/calendar-ui";
+import { createCalendarUI } from "@sanguogege/calendar-ui";
 import type { CalendarAdapter } from "@sanguogege/calendar-ui";
 import "@sanguogege/calendar-ui/style.css";
 import { getCompanyRest } from "../../demo/company-holidays";
@@ -30,7 +30,7 @@ export default function CustomCalendar() {
   onSettled(() => {
     if (!host) return;
 
-    const instance = createCalendar(host, {
+    const instance = createCalendarUI(host, {
       initialDate: new Date(2026, 5, 1),
       adapter,
       onSelect: (day) => {

@@ -2,7 +2,7 @@ import { enUS } from "./en-US";
 import { zhCN } from "./zh-CN";
 import type { CalendarLocale, CalendarLocaleName } from "../types";
 
-/** 内置语言包，key 可直接传给 createCalendar 的 locale 选项 */
+/** 内置语言包，key 可直接传给 createCalendarUI 的 locale 选项 */
 export const locales: Record<CalendarLocaleName, CalendarLocale> = {
   "zh-CN": zhCN,
   "en-US": enUS,

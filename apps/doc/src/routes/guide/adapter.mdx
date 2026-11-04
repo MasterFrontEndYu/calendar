@@ -28,12 +28,12 @@ interface CalendarAdapter<TData = unknown> {
 | `id`            | 适配器标识，用于调试和排查                   |
 | `decorateMonth` | 每次渲染月视图调用一次，返回 42 格的装饰数组 |
 
-`createCalendar` 的泛型会从 `adapter` 推导：
+`createCalendarUI` 的泛型会从 `adapter` 推导：
 
 ```ts
 const adapter: CalendarAdapter<MyDay> = { ... };
 
-const instance = createCalendar(container, {
+const instance = createCalendarUI(container, {
   adapter,
   onSelect: (day) => {
     day.data; // MyDay | null
@@ -193,7 +193,7 @@ interface CalendarDay<TData = null> {
 下面这个第三方适配器完全不依赖 `@sanguogege/calendar`，数据写成和 `setRest` 相同的形状，`names` 提供副标题：
 
 ```ts
-import { createCalendar } from "@sanguogege/calendar-ui";
+import { createCalendarUI } from "@sanguogege/calendar-ui";
 import type { CalendarAdapter } from "@sanguogege/calendar-ui";
 
 const COMPANY_REST = {
@@ -245,7 +245,7 @@ const adapter: CalendarAdapter<{ type: "holiday" | "makeup"; subtitle: string }>
   },
 };
 
-createCalendar(container, {
+createCalendarUI(container, {
   initialDate: new Date(2026, 5, 1),
   adapter,
   onSelect: (day) => {
@@ -319,7 +319,7 @@ try {
 
 ### SSR
 
-适配器应该是纯函数，不访问 `window` / `document`。这样 `createCalendar` 在 SSR 时只渲染空壳，客户端 hydration 后再挂载。
+适配器应该是纯函数，不访问 `window` / `document`。这样 `createCalendarUI` 在 SSR 时只渲染空壳，客户端 hydration 后再挂载。
 
 ### 打包边界
 

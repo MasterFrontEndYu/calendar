@@ -13,10 +13,10 @@ bun add @sanguogege/calendar-ui @sanguogege/calendar-ui-lunar
 ## 用法
 
 ```ts
-import { createCalendar } from "@sanguogege/calendar-ui-lunar";
+import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
 import "@sanguogege/calendar-ui/style.css";
 
-const instance = createCalendar(container, {
+const instance = createCalendarLunar(container, {
   initialDate: new Date(2026, 9, 1),
   onSelect: (day) => {
     day.subtitle; // "国庆节"
@@ -91,25 +91,25 @@ day.data?.term; // 节气
 ## 多套配置
 
 ```ts
-const mainland = createCalendar(hostA, {
+const mainland = createCalendarLunar(hostA, {
   holidays: mainlandHolidays,
 });
-const hongKong = createCalendar(hostB, {
+const hongKong = createCalendarLunar(hostB, {
   holidays: hongKongHolidays,
 });
 ```
 
-- `holidays` 在 `createCalendar()` 时校验并固定；
-- 不同配置对象得到不同的 converter 和月份缓存；
+- `holidays` 在 `createCalendarLunar()` 时校验并固定；
+- 不同配置对象互不影响，各自有月份缓存；
 - 多个实例传**同一个配置对象**时会共享月份缓存；
-- 不传 `holidays` 时使用全局 `setHolidays()` 的配置；月份一旦缓存，之后再改全局配置不会自动刷新已缓存月份，建议在创建实例前设置全局配置。
+- 不传 `holidays` 时使用内置数据；配置不会再被全局修改。
 
 ## 直接使用适配器
 
 如果不想用包装入口，也可以把适配器传给核心：
 
 ```ts
-import { createCalendar } from "@sanguogege/calendar-ui";
+import { createCalendarUI } from "@sanguogege/calendar-ui";
 import { createLunarAdapter } from "@sanguogege/calendar-ui-lunar";
 
 const adapter = createLunarAdapter({
@@ -118,7 +118,7 @@ const adapter = createLunarAdapter({
   },
 });
 
-const instance = createCalendar(container, {
+const instance = createCalendarUI(container, {
   adapter,
   onSelect: (day) => day.data?.gljr,
 });
@@ -139,10 +139,14 @@ const instance = createCalendar(container, {
 如果只需要日期数据，可以直接用核心包：
 
 ```ts
-import calendar from "@sanguogege/calendar";
+import createCalendar from "@sanguogege/calendar";
+
+const calendar = createCalendar();
 
 calendar.solarToLunar(2026, 10, 1).gljr;
-calendar.createConverter({ ... }).solarToLunar(2027, 1, 1).xiu;
+
+const custom = createCalendar({ setRest: { 2027: { xiu: ["0101"] } } });
+custom.solarToLunar(2027, 1, 1).xiu;
 ```
 
 详见 [calendar 核心](/guide/calendar)。

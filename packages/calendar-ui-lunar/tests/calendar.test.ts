@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vite-plus/test";
 import type { LunarCalendarDay } from "../src/index.ts";
-import { createCalendar } from "../src/index.ts";
+import { createCalendarLunar } from "../src/index.ts";
 
 const host = function (): HTMLElement {
   const el = document.createElement("div");
@@ -23,7 +23,7 @@ const tagOf = function (root: HTMLElement, key: string): string {
 
 describe("LunarCalendar", () => {
   it("使用内置 2026 数据渲染副标题和休班标记", () => {
-    const instance = createCalendar(host(), { initialDate: new Date(2026, 9, 1) });
+    const instance = createCalendarLunar(host(), { initialDate: new Date(2026, 9, 1) });
 
     expect(subtitleOf(instance.el, "2026-10-1")).toBe("国庆节");
     expect(tagOf(instance.el, "2026-10-1")).toBe("休");
@@ -37,7 +37,7 @@ describe("LunarCalendar", () => {
 
   it("onSelect 能拿到 LunarResult", () => {
     let picked: LunarCalendarDay | null = null;
-    const instance = createCalendar(host(), {
+    const instance = createCalendarLunar(host(), {
       initialDate: new Date(2026, 9, 1),
       onSelect: (day) => {
         picked = day;
@@ -55,7 +55,7 @@ describe("LunarCalendar", () => {
   });
 
   it("holidays 选项会覆盖默认配置", () => {
-    const instance = createCalendar(host(), {
+    const instance = createCalendarLunar(host(), {
       initialDate: new Date(2026, 0, 1),
       holidays: { setRest: { 2026: { xiu: ["0110"], ban: ["0111"] } } },
     });

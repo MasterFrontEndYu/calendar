@@ -29,19 +29,13 @@ import {
 import { assertInteger, failRange } from "./utils/Assert";
 import { festivalList } from "./utils/SetFestival";
 import { restOf } from "./utils/SetRest";
-import {
-  getResolvedConfig,
-  setHolidays as applyHolidays,
-  resetHolidays as restoreHolidays,
-  createStandaloneConfig,
-  snapshotOf,
-} from "./config";
+import { createStandaloneConfig, snapshotOf } from "./config";
 import type { ResolvedConfig } from "./config";
-import type { CalendarConverter, HolidayConfig, LunarResult, SetHolidayOptions } from "./types";
+import type { Calendar, HolidayConfig, LunarResult, SetHolidayOptions } from "./types";
 
 export type {
   LunarResult,
-  CalendarConverter,
+  Calendar,
   FestivalMap,
   FestivalConfig,
   RestEntry,
@@ -253,41 +247,32 @@ const lunarToSolarWith = function (
 };
 
 /**
- * 把“读某一份配置”的只读操作打包成 converter 形态
+ * 创建固定节假日配置的日历实例
  *
- * 默认 converter 和 createConverter() 都走这里，保证两种实例行为完全一致。
- */
-const createConverterAPI = function (getConfig: () => ResolvedConfig): CalendarConverter {
-  return {
-    /** 公历转农历，不传参返回今天 */
-    solarToLunar: (y, m, d) => solarToLunarWith(getConfig(), y, m, d),
-    /** 农历转公历 */
-    lunarToSolar: (y, m, d, isLeapMonth) => lunarToSolarWith(getConfig(), y, m, d, isLeapMonth),
-    /** 当前配置的深拷贝 */
-    getHolidays: () => snapshotOf(getConfig()),
-  };
-};
-
-/**
- * 创建带独立节假日配置的转换器
- *
- * 配置在创建时校验并冻结，之后与全局 setHolidays() 互不影响，
- * 适合同一页面里并排展示多套节假日数据的场景。
- * 默认以内置数据为基准合并，传 { replace: true } 则丢弃内置数据。
+ * 不读取也不修改任何全局状态；配置在创建时校验并冻结，
+ * 多个实例之间互不影响。不传配置时使用内置数据。
  *
  * @param config 节假日 / 调休配置
  * @param options replace 为 true 时忽略内置数据
  * @throws TypeError 配置格式不合法（含具体字段路径）
  * @example
- * const converter = calendar.createConverter({ setRest: { 2027: { xiu: ["0101"] } } });
- * converter.solarToLunar(2027, 1, 1).xiu; // true
+ * const cc = createCalendar({ setRest: { 2027: { xiu: ["0101"] } } });
+ * cc.solarToLunar(2027, 1, 1).xiu; // true
  */
-const createConverter = function (
+const createCalendar = function (
   config: HolidayConfig = {},
   options: SetHolidayOptions = {},
-): CalendarConverter {
+): Calendar {
   const resolved = createStandaloneConfig(config, options);
-  return createConverterAPI(() => resolved);
+
+  return {
+    /** 公历转农历，不传参返回今天 */
+    solarToLunar: (y, m, d) => solarToLunarWith(resolved, y, m, d),
+    /** 农历转公历 */
+    lunarToSolar: (y, m, d, isLeapMonth) => lunarToSolarWith(resolved, y, m, d, isLeapMonth),
+    /** 当前配置的深拷贝 */
+    getHolidays: () => snapshotOf(resolved),
+  };
 };
 
 const utils = {
@@ -310,26 +295,5 @@ const utils = {
   toHourGanZhi,
 };
 
-/**
- * 默认 converter：全局 API 的唯一实现
- *
- * solarToLunar / lunarToSolar / getHolidays 与自定义 converter 同形，
- * 额外带 setHolidays / resetHolidays 来管理全局配置。
- */
-const calendar = {
-  ...createConverterAPI(getResolvedConfig),
-  /** 注入自定义节日与调休数据，默认与内置数据合并去重 */
-  setHolidays(this: void, config: HolidayConfig = {}, options: SetHolidayOptions = {}): void {
-    applyHolidays(config, options);
-  },
-  /** 恢复到内置数据 */
-  resetHolidays(this: void): void {
-    restoreHolidays();
-  },
-  /** 创建带独立节假日配置的转换器 */
-  createConverter,
-  utils,
-};
-
-// 只保留默认 converter 一套 API：2.x 不再提供具名函数导出
-export default calendar;
+export { createCalendar, utils };
+export default createCalendar;

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vite-plus/test";
 import type { CalendarAdapter, CalendarDay, MonthInput } from "../src/index.ts";
-import { createCalendar } from "../src/index.ts";
+import { createCalendarUI } from "../src/index.ts";
 
 const host = function (): HTMLElement {
   const el = document.createElement("div");
@@ -42,9 +42,9 @@ const createFakeAdapter = function (): CalendarAdapter<{ note: string }> {
   };
 };
 
-describe("createCalendar 纯公历", () => {
+describe("createCalendarUI 纯公历", () => {
   it("不传 adapter 时不显示副标题和标记", () => {
-    const instance = createCalendar(host(), { initialDate: new Date(2026, 9, 1) });
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 1) });
 
     expect(subtitleOf(instance.el, "2026-10-1")).toBe("");
     expect(tagOf(instance.el, "2026-10-1")).toBe("");
@@ -65,7 +65,7 @@ describe("createCalendar 纯公历", () => {
       },
     };
 
-    const instance = createCalendar(host(), {
+    const instance = createCalendarUI(host(), {
       initialDate: new Date(2026, 9, 1),
       adapter,
     });
@@ -80,7 +80,7 @@ describe("createCalendar 纯公历", () => {
 
   it("副标题、标记、透传数据和 onSelect 都可用", () => {
     let picked: CalendarDay<{ note: string }> | null = null;
-    const instance = createCalendar(host(), {
+    const instance = createCalendarUI(host(), {
       initialDate: new Date(2026, 9, 1),
       adapter: createFakeAdapter(),
       onSelect: (day) => {

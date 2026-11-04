@@ -5,10 +5,10 @@
 ## 用法
 
 ```ts
-import { createCalendar } from "@sanguogege/calendar-ui";
+import { createCalendarUI } from "@sanguogege/calendar-ui";
 import "@sanguogege/calendar-ui/style.css";
 
-const instance = createCalendar(container, {
+const instance = createCalendarUI(container, {
   weekStartsOn: 1, // 0 周日 / 1 周一（默认）
   locale: "zh-CN", // 或 "en-US" / 自定义语言包
   onSelect: (day) => console.log(day.year, day.month, day.day, day.data),

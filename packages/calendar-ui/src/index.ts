@@ -1,4 +1,4 @@
-export { createCalendar } from "./calendar";
+export { createCalendarUI } from "./calendar";
 export { enUS, locales, resolveLocale, zhCN } from "./locales";
 export type {
   CalendarAdapter,

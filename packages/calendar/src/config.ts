@@ -41,13 +41,6 @@ const BASE = createResolved(
 
 const EMPTY = createResolved({}, {}, {});
 
-let current: ResolvedConfig = BASE;
-
-/** 取当前生效的配置（内部使用，调用方不应直接改它） */
-const getResolvedConfig = function (): ResolvedConfig {
-  return current;
-};
-
 const FESTIVAL_FIELDS = ["sFtv", "lFtv"];
 const HOLIDAY_FIELDS = ["setFestival", "setRest"];
 
@@ -55,13 +48,13 @@ const HOLIDAY_FIELDS = ["setFestival", "setRest"];
  * 校验并合并一份配置，返回新的不可变配置。
  *
  * base 不会被修改；replace 为 true 时从空配置开始。
- * path 只用于错误信息，区分是 setHolidays 还是 createConverter 传错了。
+ * path 只用于错误信息，标明是 createCalendar 传错了。
  */
 const resolveConfig = function (
   base: ResolvedConfig,
   config: HolidayConfig = {},
   options: SetHolidayOptions = {},
-  path = "setHolidays",
+  path = "createCalendar",
 ): ResolvedConfig {
   if (!isPlainObject(config)) {
     failType(path, `参数必须是对象，收到 ${describe(config)}`);
@@ -119,34 +112,15 @@ const resolveConfig = function (
 };
 
 /**
- * 注入自定义节日与调休数据。
- *
- * 默认是与内置数据“合并去重”，不会修改内置数据，也不会修改你传入的对象；
- * 重复调用会继续叠加，想回到初始状态用 resetHolidays()。
- *
- * @param config 要注入的数据
- * @param options replace 为 true 时丢弃内置数据，只使用传入的数据
- * @throws TypeError 配置格式不合法（含具体字段路径）
- */
-const setHolidays = function (config: HolidayConfig = {}, options: SetHolidayOptions = {}): void {
-  current = resolveConfig(current, config, options);
-};
-
-/**
  * 以模块加载时的内置数据为基准，生成一份独立配置。
  *
- * 与 setHolidays 的区别：不读取、也不修改全局状态，供 createConverter 固定配置。
+ * 不读取、也不修改任何全局状态。
  */
 const createStandaloneConfig = function (
   config: HolidayConfig = {},
   options: SetHolidayOptions = {},
 ): ResolvedConfig {
-  return resolveConfig(BASE, config, options, "createConverter");
-};
-
-/** 恢复到内置数据 */
-const resetHolidays = function (): void {
-  current = BASE;
+  return resolveConfig(BASE, config, options, "createCalendar");
 };
 
 /** 把内部配置转成可再次使用的快照 */
@@ -175,17 +149,6 @@ const snapshotOf = function (resolved: ResolvedConfig): HolidaySnapshot {
 };
 
 /**
- * 取当前生效的节假日配置的深拷贝，可再次传给 setHolidays()
+ * 取某份配置的深拷贝，可再次传给 createCalendar()
  */
-const getHolidays = function (): HolidaySnapshot {
-  return snapshotOf(current);
-};
-
-export {
-  setHolidays,
-  resetHolidays,
-  getHolidays,
-  getResolvedConfig,
-  createStandaloneConfig,
-  snapshotOf,
-};
+export { createStandaloneConfig, snapshotOf };
