@@ -26,6 +26,8 @@ export interface HeaderOptions {
   month: number;
   /** 界面文案 */
   locale: CalendarLocale;
+  /** 自定义标题文本；不传时使用 locale.monthTitle */
+  title?: (year: number, month: number) => string;
   /** 上个月 */
   onPrev: () => void;
   /** 下个月 */
@@ -57,5 +59,7 @@ export interface GridHandle<TData = null> {
   render(days: CalendarDay<TData>[]): void;
   /** 只更新选中/今天等状态类，不动文本 */
   updateState(days: CalendarDay<TData>[]): void;
+  /** 折叠时只显示指定行；传 null 显示全部 6 行 */
+  setVisibleRows(rows: readonly number[] | null): void;
   destroy(): void;
 }

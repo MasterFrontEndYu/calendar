@@ -180,6 +180,9 @@ interface CalendarDay<TData = null> {
   isToday: boolean;
   isSelected: boolean;
   isDisabled: boolean;
+  isRangeStart: boolean;
+  isRangeEnd: boolean;
+  isInRange: boolean;
   subtitle: string;
   badge: CalendarBadge | null;
   data: TData | null;

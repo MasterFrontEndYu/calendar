@@ -23,4 +23,6 @@ export const enUS: CalendarLocale = {
   monthTitle: (year, month) => `${MONTHS[month - 1] ?? month} ${year}`,
   prevMonth: "Previous month",
   nextMonth: "Next month",
+  collapse: "Collapse calendar",
+  expand: "Expand calendar",
 };

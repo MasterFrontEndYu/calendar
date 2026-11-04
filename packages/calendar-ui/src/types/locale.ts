@@ -16,6 +16,10 @@ export interface CalendarLocale {
   prevMonth: string;
   /** 下个月按钮的无障碍名称 */
   nextMonth: string;
+  /** 折叠按钮的无障碍名称；不传时使用内置文案 */
+  collapse?: string;
+  /** 展开按钮的无障碍名称；不传时使用内置文案 */
+  expand?: string;
 }
 
 /** 内置语言包的名称，可直接传给 CalendarOptions.locale */

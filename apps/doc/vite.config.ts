@@ -47,6 +47,8 @@ export default defineConfig(({ command }) => {
                 items: [
                   { title: "总览", link: "/" },
                   { title: "纯公历 · 多实例", link: "/plain" },
+                  { title: "范围选择", link: "/range" },
+                  { title: "折叠", link: "/collapse" },
                   { title: "官方农历适配器", link: "/lunar" },
                   { title: "第三方适配器", link: "/custom" },
                 ],

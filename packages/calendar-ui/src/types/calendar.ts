@@ -14,6 +14,15 @@ export type CalendarTheme = "light" | "dark" | "auto";
  */
 export type CalendarDateInput = Date | string;
 
+/** 选择模式：单选 / 范围 */
+export type CalendarMode = "single" | "range";
+
+/** 范围选择结果，start/end 为 null 表示还没选完 */
+export interface CalendarRange {
+  start: Date | null;
+  end: Date | null;
+}
+
 /** 规范后的年月 */
 export interface YearMonth {
   year: number;
@@ -98,6 +107,12 @@ export interface CalendarDay<TData = null> extends CalendarDate {
   isSelected: boolean;
   /** 是否被 minDate / maxDate / disabledDates 禁止 */
   isDisabled: boolean;
+  /** 是否范围起点 */
+  isRangeStart: boolean;
+  /** 是否范围终点 */
+  isRangeEnd: boolean;
+  /** 是否在已选范围内（含起终点） */
+  isInRange: boolean;
   /** 格子副标题，例如节气、节日、农历日 */
   subtitle: string;
   /** 左上角小标记 */
@@ -135,12 +150,22 @@ export interface CalendarOptions<TData = null> {
   maxDate?: CalendarDateInput;
   /** 禁止选中的日期，按本地年月日比较 */
   disabledDates?: readonly CalendarDateInput[];
+  /** 选择模式，默认 "single" */
+  mode?: CalendarMode;
+  /** 范围模式下显示的月数，默认 1；设为 2 时显示相邻两个月 */
+  months?: 1 | 2;
+  /** 范围变化时触发 */
+  onRangeChange?: (range: CalendarRange) => void;
   /** 一周从哪天开始，默认 1（周一） */
   weekStartsOn?: WeekStartsOn;
   /** 界面语言：内置 "zh-CN"（默认）/ "en-US"，也可直接传自定义语言包 */
   locale?: CalendarLocale | CalendarLocaleName;
   /** 主题，默认 "auto"：跟随最近的 data-theme，没有则跟随系统 */
   theme?: CalendarTheme;
+  /** 是否允许折叠，默认 false；开启后底部出现上下箭头 */
+  collapsible?: boolean;
+  /** 初始是否折叠，默认 false；仅在 collapsible 为 true 时生效 */
+  defaultCollapsed?: boolean;
   /** 是否显示头部，默认 true */
   header?: boolean;
   /** 自定义头部，替换默认的 ‹ 标题 › */
@@ -167,6 +192,12 @@ export interface CalendarInstance {
   nextMonth(): void;
   /** 选中某个日期 */
   select(date: CalendarDateInput): void;
+  /** 当前已选范围；单选模式返回 { start: null, end: null } */
+  getRange(): CalendarRange;
+  /** 设置范围；start 为空时清空，end 省略表示只选了起点 */
+  setRange(start: CalendarDateInput | null, end?: CalendarDateInput | null): void;
+  /** 清空范围 */
+  clearRange(): void;
   /** 当前选中的日期 */
   getSelected(): Date | null;
   /** 显示整个日历 */
@@ -185,6 +216,14 @@ export interface CalendarInstance {
   toggleHeader(): void;
   /** 头部当前是否可见 */
   isHeaderVisible(): boolean;
+  /** 折叠日历，只显示当前行；未开启 collapsible 时无效 */
+  collapse(): void;
+  /** 展开日历 */
+  expand(): void;
+  /** 切换折叠状态 */
+  toggleCollapsed(): void;
+  /** 是否处于折叠状态 */
+  isCollapsed(): boolean;
   /** 当前最小可选日期，未设置时为 null */
   getMinDate(): Date | null;
   /** 设置最小可选日期，传 null 取消 */

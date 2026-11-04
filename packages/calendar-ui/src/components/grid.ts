@@ -16,8 +16,13 @@ const CELL_COUNT = 42;
  */
 export const createGrid = function <TData = null>(options: GridOptions<TData>): GridHandle<TData> {
   const el = node("div", "cui__grid");
+  const rowEls = Array.from({ length: 6 }, () => node("div", "cui__week"));
   const cells = Array.from({ length: CELL_COUNT }, () => createDayCell());
-  el.append(...cells);
+
+  rowEls.forEach((row, index) => {
+    row.append(...cells.slice(index * 7, index * 7 + 7));
+  });
+  el.append(...rowEls);
 
   let days: CalendarDay<TData>[] = [];
 
@@ -47,6 +52,12 @@ export const createGrid = function <TData = null>(options: GridOptions<TData>): 
         const day = next[i];
         if (day) setDayState(cells[i] as HTMLButtonElement, day);
       }
+    },
+    setVisibleRows: (rows: readonly number[] | null) => {
+      const visible = rows === null ? null : new Set(rows);
+      rowEls.forEach((row, index) => {
+        row.hidden = visible !== null && !visible.has(index);
+      });
     },
     destroy: () => el.removeEventListener("click", onClick),
   };

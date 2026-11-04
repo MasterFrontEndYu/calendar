@@ -1,0 +1,62 @@
+---
+title: 范围选择
+---
+
+import RangeCalendar from "../../components/demo/RangeCalendar";
+
+# 范围选择
+
+`mode: "range"` 时，第一次点击选起点，第二次点击选终点。第二次早于起点会自动交换；第三次点击重新开始一个新范围。
+
+## 单视图
+
+默认 `months: 1`，只显示一个月份：
+
+<RangeCalendar months={1} />
+
+```ts
+const instance = createCalendarUI(host, {
+  mode: "range",
+  months: 1,
+  initialDate: "2026-10-15",
+  onRangeChange: (range) => {
+    console.log(range.start, range.end);
+  },
+});
+```
+
+点击 10 月 20 日，再点击 10 月 10 日，会得到：
+
+```ts
+{ start: 2026-10-10, end: 2026-10-20 }
+```
+
+## 双视图
+
+`months: 2` 显示相邻两个月，范围可以跨月：
+
+<RangeCalendar months={2} />
+
+```ts
+const instance = createCalendarUI(host, {
+  mode: "range",
+  months: 2,
+  initialDate: "2026-10-15",
+  onRangeChange: (range) => {
+    console.log(range.start, range.end);
+  },
+});
+```
+
+双视图默认显示当前月和下一个月；翻月时两列一起移动，移动端会自动改为上下排列。
+
+## 程序化设置
+
+```ts
+instance.getRange();
+instance.setRange("2026-10-20", "2026-10-05"); // 自动交换
+instance.setRange("2026-10-05"); // 只设起点
+instance.clearRange();
+```
+
+`setRange()` / `clearRange()` 会触发 `onRangeChange`，不会触发 `onSelect`。

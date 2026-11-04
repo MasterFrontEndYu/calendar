@@ -13,6 +13,10 @@ export interface BuildDaysOptions<TData = null> {
   today: Date;
   /** 当前选中的日期，未选中传 null */
   selected: Date | null;
+  /** 范围起点 */
+  rangeStart?: Date | null;
+  /** 范围终点 */
+  rangeEnd?: Date | null;
   /** 当前界面语言 */
   locale: CalendarLocale;
   /** 判断某个日期是否不可选；不传表示全部都可用 */

@@ -21,20 +21,67 @@ instance.destroy();
 
 ## 选项
 
-| 选项            | 类型                                    | 说明                              |
-| --------------- | --------------------------------------- | --------------------------------- |
-| `initialDate`   | `CalendarDateInput`                     | 初始日期，默认今天                |
-| `minDate`       | `CalendarDateInput`                     | 最小可选日期（包含）              |
-| `maxDate`       | `CalendarDateInput`                     | 最大可选日期（包含）              |
-| `disabledDates` | `readonly CalendarDateInput[]`          | 禁止选中的日期                    |
-| `weekStartsOn`  | `0 \| 1`                                | 一周从哪天开始，默认 1            |
-| `locale`        | `CalendarLocale \| CalendarLocaleName`  | 界面语言，默认 `"zh-CN"`          |
-| `theme`         | `"light" \| "dark" \| "auto"`           | 主题，默认 `"auto"`               |
-| `header`        | `boolean`                               | 是否显示头部，默认 `true`         |
-| `renderHeader`  | `HeaderRenderer`                        | 自定义头部，替换默认的 `‹ 标题 ›` |
-| `adapter`       | `CalendarAdapter<TData>`                | 日历适配器；不传就是纯公历        |
-| `onSelect`      | `(day: CalendarDay<TData>) => void`     | 选中某一天时触发                  |
-| `onMonthChange` | `(year: number, month: number) => void` | 切换月份时触发                    |
+| 选项               | 类型                                    | 说明                              |
+| ------------------ | --------------------------------------- | --------------------------------- |
+| `initialDate`      | `CalendarDateInput`                     | 初始日期，默认今天                |
+| `minDate`          | `CalendarDateInput`                     | 最小可选日期（包含）              |
+| `maxDate`          | `CalendarDateInput`                     | 最大可选日期（包含）              |
+| `disabledDates`    | `readonly CalendarDateInput[]`          | 禁止选中的日期                    |
+| `mode`             | `"single" \| "range"`                   | 选择模式，默认 `"single"`         |
+| `months`           | `1 \| 2`                                | 范围模式月数，`2` 为相邻两月      |
+| `collapsible`      | `boolean`                               | 开启底部折叠箭头，默认 `false`    |
+| `defaultCollapsed` | `boolean`                               | 初始折叠，默认 `false`            |
+| `weekStartsOn`     | `0 \| 1`                                | 一周从哪天开始，默认 1            |
+| `locale`           | `CalendarLocale \| CalendarLocaleName`  | 界面语言，默认 `"zh-CN"`          |
+| `theme`            | `"light" \| "dark" \| "auto"`           | 主题，默认 `"auto"`               |
+| `header`           | `boolean`                               | 是否显示头部，默认 `true`         |
+| `renderHeader`     | `HeaderRenderer`                        | 自定义头部，替换默认的 `‹ 标题 ›` |
+| `adapter`          | `CalendarAdapter<TData>`                | 日历适配器；不传就是纯公历        |
+| `onSelect`         | `(day: CalendarDay<TData>) => void`     | 选中某一天时触发                  |
+| `onRangeChange`    | `(range: CalendarRange) => void`        | 范围变化时触发                    |
+| `onMonthChange`    | `(year: number, month: number) => void` | 切换月份时触发                    |
+
+## 范围选择
+
+```ts
+const instance = createCalendarUI(container, {
+  mode: "range",
+  months: 2, // 相邻两个月；默认 1
+  initialDate: "2026-10-15",
+  onRangeChange: (range) => console.log(range),
+});
+
+instance.getRange();
+instance.setRange("2026-10-20", "2026-10-05"); // 自动交换
+instance.setRange("2026-10-05"); // 只设起点
+instance.clearRange();
+```
+
+- 第一次点击设起点，第二次设终点；
+- 反向选择自动交换；
+- 第三次点击重新开始；
+- `months: 2` 显示相邻两月，移动端自动上下排列；
+- `day.isRangeStart` / `isRangeEnd` / `isInRange` 可用于自定义样式；
+- `setRange` 触发 `onRangeChange`，不触发 `onSelect`。
+
+## 折叠
+
+```ts
+const instance = createCalendarUI(container, {
+  collapsible: true,
+  defaultCollapsed: false,
+});
+
+instance.collapse();
+instance.expand();
+instance.toggleCollapsed();
+instance.isCollapsed();
+```
+
+- 默认展开，只有 `collapsible: true` 才显示底部单状态箭头；
+- 折叠后显示当前选中行；
+- 范围模式折叠时显示起点行和终点行（同一周只显示一行）；
+- 双视图下每个月份只显示属于该月的端点行。
 
 ## 日期输入
 

@@ -36,7 +36,9 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
       return;
     }
 
-    title.textContent = options.locale.monthTitle(year, month);
+    title.textContent = options.title
+      ? options.title(year, month)
+      : options.locale.monthTitle(year, month);
     el.append(prev.el, title, next.el);
   };
 

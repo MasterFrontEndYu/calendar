@@ -24,6 +24,27 @@
   line-height: 1.4;
 }
 
+/* 双月范围视图 */
+.cui--range {
+  max-width: 900px;
+}
+
+.cui__months {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.cui__month {
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .cui__months {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* 显式深色 */
 .cui[data-theme="dark"] {
   --cui-bg: #161b22;
@@ -134,16 +155,28 @@
 }
 
 /* 星期表头 */
-.cui__weekdays,
-.cui__grid {
+.cui__weekdays {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
 }
 
-/* 42 格固定由 JS 就地更新，把布局/绘制的影响限制在网格内部 */
+/* 6 行日期；折叠时按行隐藏，节点仍然复用 */
 .cui__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   contain: layout paint;
+}
+
+.cui__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.cui__week[hidden] {
+  display: none;
 }
 
 .cui__weekday {
@@ -247,9 +280,45 @@
   color: var(--cui-accent-fg);
 }
 
+.cui__day.is-in-range:not(.is-selected) {
+  background: color-mix(in srgb, var(--cui-accent) 14%, transparent);
+}
+
+.cui__day.is-in-range:hover:not(.is-selected) {
+  background: color-mix(in srgb, var(--cui-accent) 22%, transparent);
+}
+
 .cui__day.is-selected .cui__day-sub {
   color: currentColor;
   opacity: 0.85;
+}
+
+/* 折叠开关：始终只有一个按钮，箭头随状态切换 */
+.cui__collapse {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cui-muted);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cui__collapse:hover {
+  color: var(--cui-fg);
+  background: var(--cui-hover);
+}
+
+.cui__collapse:focus-visible {
+  outline: 2px solid var(--cui-accent);
+  outline-offset: 1px;
 }
 
 /* 隐藏状态：类选择器里的 display 会盖掉 [hidden] 的默认样式，这里显式补上 */

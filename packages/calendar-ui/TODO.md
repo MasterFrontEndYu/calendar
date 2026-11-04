@@ -1,6 +1,6 @@
 # calendar-ui 功能备忘录
 
-> 状态：日期约束已完成（`minDate` / `maxDate` / `disabledDates`）；其余功能待实现。
+> 状态：日期约束、范围选择、折叠已完成；翻月动画、subtitle 待实现。
 >
 > 范围：`@sanguogege/calendar-ui` 核心；`calendar-ui-lunar` 只做适配，不重复实现。
 >
@@ -14,7 +14,7 @@
 - 入口日期统一接受 `Date` 或 `YYYY-MM-DD` / `YYYY/MM/DD` 字符串；
 - 已有 `light` / `dark` / `auto` 主题；
 - 已实现 `minDate` / `maxDate` / `disabledDates` 日期约束；
-- 暂无动画、范围选择、折叠。
+- 已完成日期约束和范围选择；暂无动画、折叠。
 
 ---
 
@@ -101,41 +101,43 @@ interface CalendarInstance {
 
 ### 2.1 多选模式：范围选择（两个日历界面）
 
+**状态：已完成。**
+
 **目标**：一个组件内显示两个日历界面，点击第一次选起点，点击第二次选终点。
 
 行为：
 
 - `mode: "range"` 时进入范围模式；
 - 第一次点击设置 `start`，第二次点击设置 `end`；
-- 如果第二次点击早于起点，自动交换起点/终点，或按配置拒绝（待定）；
+- 第二次点击早于起点时**自动交换**；
 - 起点和终点同一天是合法范围；
-- hover 时高亮 `start ~ hover` 的预览范围（可选）；
-- 再次点击已选范围可以重新开始，或清除（待定）；
-- 两个日历默认显示相邻月份（例如 2026-10 + 2026-11），也可配置同月双视图；
+- 第三次点击重新开始一个新范围；
+- `months: 1`（默认）单视图；`months: 2` 双视图，默认相邻两个月；
 - 两个视图共享选中状态、min/max、disabled 和主题；
 - 移动端两个视图上下排列，不横向挤压；
-- 范围内部、起点、终点分别有独立样式和 `aria` 描述；
-- `onSelect` 仍可触发，另外提供 `onRangeChange`。
+- `CalendarDay` 暴露 `isRangeStart` / `isRangeEnd` / `isInRange`；
+- `onSelect` 仍可触发，另外提供 `onRangeChange`；
+- 禁用日期不能作为起点或终点。
 
 候选 API：
 
 ```ts
 type CalendarMode = "single" | "range";
 
-interface DateRange {
+interface CalendarRange {
   start: Date | null;
   end: Date | null;
 }
 
 interface CalendarOptions {
   mode?: CalendarMode;
-  months?: 1 | 2; // range 默认 2
-  onRangeChange?: (range: DateRange) => void;
+  months?: 1 | 2; // range 默认 1，设为 2 显示相邻两月
+  onRangeChange?: (range: CalendarRange) => void;
 }
 
 interface CalendarInstance {
-  getRange(): DateRange;
-  setRange(start: Date | null, end?: Date | null): void;
+  getRange(): CalendarRange;
+  setRange(start: CalendarDateInput | null, end?: CalendarDateInput | null): void;
   clearRange(): void;
 }
 ```
@@ -143,7 +145,7 @@ interface CalendarInstance {
 验收：
 
 - 两次点击完成范围；
-- 反向选择处理明确；
+- 反向选择自动交换；
 - 两个视图选中状态同步；
 - 范围跨月可见；
 - 起点/终点/区间有可访问描述；
@@ -151,22 +153,27 @@ interface CalendarInstance {
 
 ### 2.2 显示当前行（配合折叠）
 
+**状态：已完成（高度过渡动画仍属于 1.2）。**
+
 **目标**：折叠后展示“当前行”，而不是只显示选中格。
 
 行为：
 
-- 当前行 = 选中日期所在的周（周起始由 `weekStartsOn` 决定）；
-- 默认选中日期决定初始当前行；
-- 范围模式下可显示起点行、终点行，或起点所在行（待定）；
-- 当前行需要包含完整 7 天，包括上下月补位格；
-- 当前行在折叠状态下仍可点击其他日期；
-- 行变化时与折叠过渡同步。
+- 默认展开，只有 `collapsible: true` 才显示底部单状态上下箭头；
+- `defaultCollapsed` 默认 `false`；
+- 单选：折叠后显示选中日期所在周；默认选中日期决定初始行；
+- 范围：折叠后同时显示起点行和终点行；两个端点同一周时只显示一行；
+- 双视图：每个月份只显示属于该月的端点行；没有端点时显示该月第一行；
+- 当前行包含完整 7 天，包括上下月补位格；
+- 折叠状态下仍可点击其他日期，选中变化后行跟随；
+- `collapse()` / `expand()` / `toggleCollapsed()` / `isCollapsed()` 已提供。
 
 验收：
 
 - 周起始为周一/周日时行边界正确；
 - 跨月周补位格显示正确；
-- 选中日期在补位格时，当前行与展示月份关系明确。
+- 选中日期在补位格时，当前行与展示月份关系明确；
+- 范围折叠显示两行（同一周时一行）。
 
 ### 2.3 最大日期 / 最小日期
 
@@ -318,17 +325,13 @@ interface CalendarInstance {
 ## 建议实现顺序
 
 1. ✅ **日期约束**：`minDate` / `maxDate` / `disabledDates`，已完成；
-2. **范围选择**：先单视图 range，再双视图；
-3. **折叠 + 当前行**：选中行计算、折叠状态、键盘；
+2. ✅ **范围选择**：单视图 range + 双视图，已完成；
+3. ✅ **折叠 + 当前行**：已完成（折叠高度动画仍待做）；
 4. **翻月动画**：在状态稳定后加过渡，避免和范围/折叠互相干扰；
 5. **subtitle 选项**：最后补纯展示 API，风险最低。
 
 ## 待确认问题
 
-- 双日历默认是相邻月份，还是同一个月双视图？
-- 范围反向选择：自动交换，还是忽略第二次点击？
-- 折叠初始状态：默认展开还是折叠？
-- 折叠时范围模式显示起点行、终点行，还是两行都显示？
 - `disabledDates` 是否也支持 predicate（函数），还是保持数组？
 - subtitle 与 adapter subtitle 的优先级？
 - 动画时长、缓动、是否允许配置？
@@ -337,12 +340,12 @@ interface CalendarInstance {
 ## 测试清单
 
 - [ ] 翻月方向、连续快速翻月、reduced motion；
-- [ ] 折叠默认行、选中换行、展开/折叠状态；
-- [ ] range 两次点击、反向选择、同一天、跨月；
-- [ ] 双视图月份同步、选中同步、移动端布局；
+- [x] 折叠默认行、选中换行、展开/折叠状态；
+- [x] range 两次点击、反向选择、同一天、跨月；
+- [x] 双视图月份同步、选中同步、移动端布局（基础）；
 - [x] min/max 单独、组合、边界、翻月禁用；
 - [x] disabledDates 单日、跨月、键盘；
-- [ ] disabledDates 作为 range 端点（range 待接）；
+- [x] disabledDates 作为 range 端点；
 - [ ] subtitle 自定义、点击返回、与 adapter 组合；
 - [x] 主题 light/dark/auto 下新增状态的对比度（基础样式）；
 - [x] 键盘与屏幕阅读器描述（禁用状态）。

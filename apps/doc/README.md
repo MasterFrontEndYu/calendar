@@ -91,12 +91,14 @@ src/
     demo/
       index.mdx            演示总览
       plain.mdx            纯公历 · 多实例
+      range.mdx            单视图 / 双视图范围
       lunar.mdx            官方农历适配器
       custom.mdx           第三方适配器
     [...404].mdx           404（渲染 NotFound 组件）
   components/
     demo/
       PlainCalendar.tsx    纯公历实例
+      RangeCalendar.tsx    范围选择实例
       LunarCalendar.tsx    官方农历实例
       CustomCalendar.tsx   第三方适配器实例
       CompanyRestTable.tsx 第三方 xiu / ban 数据表

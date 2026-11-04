@@ -8,4 +8,6 @@ export const zhCN: CalendarLocale = {
   monthTitle: (year, month) => `${year} 年 ${month} 月`,
   prevMonth: "上个月",
   nextMonth: "下个月",
+  collapse: "收起日历",
+  expand: "展开日历",
 };

@@ -3,6 +3,10 @@
   margin: 1rem 0 1.5rem;
 }
 
+.demo-calendar--range {
+  max-width: 900px;
+}
+
 .demo-calendar .cui {
   max-width: none;
 }

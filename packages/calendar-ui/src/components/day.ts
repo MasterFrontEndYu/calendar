@@ -53,6 +53,9 @@ export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay<u
   cell.classList.toggle("is-outside", !day.inCurrentMonth);
   cell.classList.toggle("is-today", day.isToday);
   cell.classList.toggle("is-selected", day.isSelected);
+  cell.classList.toggle("is-range-start", day.isRangeStart);
+  cell.classList.toggle("is-range-end", day.isRangeEnd);
+  cell.classList.toggle("is-in-range", day.isInRange);
   cell.classList.toggle("is-disabled", day.isDisabled);
   cell.disabled = day.isDisabled;
   cell.tabIndex = day.inCurrentMonth && !day.isDisabled ? 0 : -1;

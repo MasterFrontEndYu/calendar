@@ -1,0 +1,59 @@
+---
+title: 折叠
+---
+
+import CollapseCalendar from "../../components/demo/CollapseCalendar";
+
+# 折叠
+
+`collapsible: true` 时，日历底部出现一个单状态上下箭头：
+
+- 展开时显示 `⌃`，点击折叠；
+- 折叠时显示 `⌄`，点击展开；
+- 默认展开；
+- 折叠后只显示当前选中日期所在行。
+
+## 单选折叠
+
+<CollapseCalendar mode="single" />
+
+```ts
+const instance = createCalendarUI(host, {
+  collapsible: true,
+  initialDate: "2026-10-15",
+});
+```
+
+默认选中 10 月 15 日，所以折叠后显示它所在的那一行。点击其他日期，折叠行会跟着移动。
+
+## 范围折叠
+
+<CollapseCalendar mode="range" />
+
+```ts
+const instance = createCalendarUI(host, {
+  mode: "range",
+  collapsible: true,
+  initialDate: "2026-10-15",
+});
+```
+
+范围模式折叠时，会同时显示起点行和终点行；如果两个端点在同一个星期，只显示一行。
+
+## API
+
+```ts
+instance.collapse();
+instance.expand();
+instance.toggleCollapsed();
+instance.isCollapsed();
+
+createCalendarUI(host, {
+  collapsible: true,
+  defaultCollapsed: false,
+});
+```
+
+- `collapsible` 默认 `false`，不开启时没有箭头；
+- `defaultCollapsed` 默认 `false`；
+- `collapse()` / `expand()` / `toggleCollapsed()` 在未开启 `collapsible` 时无效。

@@ -6,7 +6,9 @@ import type {
   CalendarDateInput,
   CalendarDay,
   CalendarInstance,
+  CalendarMode,
   CalendarOptions,
+  CalendarRange,
   CalendarTheme,
 } from "./types";
 import { buildDays } from "./utils/days";
@@ -32,6 +34,10 @@ const readDate = function (value: CalendarDateInput | null | undefined, path: st
 
 const monthIndexOf = function (year: number, month: number): number {
   return year * 12 + (month - 1);
+};
+
+const monthFromIndex = function (index: number): { year: number; month: number } {
+  return { year: Math.floor(index / 12), month: (index % 12) + 1 };
 };
 
 /** 在 [min, max] 内找离 desired 最近的可选日期 */
@@ -87,6 +93,16 @@ export function createCalendarUI<TData = null>(
   let theme = options.theme ?? "auto";
   const today = new Date();
 
+  const mode: CalendarMode = options.mode ?? "single";
+  if (mode !== "single" && mode !== "range") {
+    throw new TypeError("[calendar-ui] mode 必须是 single 或 range");
+  }
+
+  const requestedMonths = options.months ?? 1;
+  if (requestedMonths !== 1 && requestedMonths !== 2) {
+    throw new RangeError("[calendar-ui] months 只能是 1 或 2");
+  }
+
   let minDate = readDate(options.minDate, "minDate");
   let maxDate = readDate(options.maxDate, "maxDate");
   if (minDate !== null && maxDate !== null && compareDay(minDate, maxDate) > 0) {
@@ -119,32 +135,153 @@ export function createCalendarUI<TData = null>(
     disabledSet,
   );
 
+  // 双视图如果边界不足两个月，退化为单视图
+  let monthCount = mode === "range" ? requestedMonths : 1;
+  if (
+    monthCount === 2 &&
+    minDate !== null &&
+    maxDate !== null &&
+    monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1) -
+      monthIndexOf(minDate.getFullYear(), minDate.getMonth() + 1) <
+      1
+  ) {
+    monthCount = 1;
+  }
+
+  let firstYear = initial.getFullYear();
+  let firstMonth = initial.getMonth() + 1;
+  if (monthCount === 2 && maxDate !== null) {
+    const maxFirst = monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1) - 1;
+    if (monthIndexOf(firstYear, firstMonth) > maxFirst) {
+      const clamped = monthFromIndex(maxFirst);
+      firstYear = clamped.year;
+      firstMonth = clamped.month;
+    }
+  }
+
   const state = {
-    year: initial.getFullYear(),
-    month: initial.getMonth() + 1,
+    year: firstYear,
+    month: firstMonth,
     selected: initial,
   };
 
+  let rangeStart: Date | null = null;
+  let rangeEnd: Date | null = null;
+  const collapsible = options.collapsible === true;
+  let collapsed = collapsible && options.defaultCollapsed === true;
+  let collapseButton: HTMLButtonElement | null = null;
+
   const root = node("div", "cui");
   root.dataset.theme = theme;
-  const weekdays = createWeekdays(weekStartsOn, locale);
+  if (monthCount === 2) root.classList.add("cui--range");
 
-  /** 按当前 state 生成 42 个格子 */
-  const currentDays = function (): CalendarDay<TData>[] {
+  const monthOf = function (offset = 0): { year: number; month: number } {
+    return normalizeMonth(state.year, state.month + offset);
+  };
+
+  /** 按当前 state 生成某一列的 42 个格子 */
+  const currentDays = function (offset = 0): CalendarDay<TData>[] {
+    const month = monthOf(offset);
     return buildDays<TData>({
-      year: state.year,
-      month: state.month,
+      year: month.year,
+      month: month.month,
       weekStartsOn,
       today,
-      selected: state.selected,
+      selected: mode === "single" ? state.selected : null,
+      rangeStart,
+      rangeEnd,
       locale,
       adapter,
       isDisabled,
     });
   };
 
+  const rangeCopy = function (): CalendarRange {
+    return {
+      start: rangeStart === null ? null : new Date(rangeStart),
+      end: rangeEnd === null ? null : new Date(rangeEnd),
+    };
+  };
+
+  const withRangeFields = function (day: CalendarDay<TData>): CalendarDay<TData> {
+    const isStart = rangeStart !== null && sameDay(day.date, rangeStart);
+    const isEnd = rangeEnd !== null && sameDay(day.date, rangeEnd);
+    return {
+      ...day,
+      isSelected: isStart || isEnd,
+      isRangeStart: isStart,
+      isRangeEnd: isEnd,
+      isInRange:
+        rangeStart !== null &&
+        rangeEnd !== null &&
+        compareDay(day.date, rangeStart) >= 0 &&
+        compareDay(day.date, rangeEnd) <= 0,
+    };
+  };
+
+  const updateCollapseButton = function (): void {
+    if (collapseButton === null) return;
+    collapseButton.textContent = collapsed ? "⌄" : "⌃";
+    collapseButton.setAttribute("aria-expanded", String(!collapsed));
+    collapseButton.setAttribute(
+      "aria-label",
+      collapsed ? (locale.expand ?? "展开日历") : (locale.collapse ?? "收起日历"),
+    );
+  };
+
+  const updateCollapsedRows = function (dayLists: readonly CalendarDay<TData>[][]): void {
+    if (!collapsed) {
+      panels.forEach((panel) => panel.grid.setVisibleRows(null));
+      return;
+    }
+
+    const targets: Date[] =
+      mode === "range"
+        ? [rangeStart, rangeEnd].filter((date): date is Date => date !== null)
+        : [state.selected];
+    if (targets.length === 0) targets.push(state.selected);
+
+    panels.forEach((panel, index) => {
+      const rows = new Set<number>();
+      const days = dayLists[index] ?? [];
+
+      targets.forEach((target) => {
+        const dayIndex = days.findIndex(
+          (day) => sameDay(day.date, target) && (monthCount === 1 || day.inCurrentMonth),
+        );
+        if (dayIndex >= 0) rows.add(Math.floor(dayIndex / 7));
+      });
+
+      if (rows.size === 0) {
+        const first = days.findIndex((day) => day.inCurrentMonth);
+        rows.add(first >= 0 ? Math.floor(first / 7) : 0);
+      }
+
+      panel.grid.setVisibleRows([...rows].sort((a, b) => a - b));
+    });
+  };
+
+  function applyCollapse(next: boolean): void {
+    if (!collapsible) return;
+    collapsed = next;
+    updateCollapseButton();
+    render();
+  }
+
+  function toggleCollapsed(): void {
+    applyCollapse(!collapsed);
+  }
+
+  function updatePanelLabels(): void {
+    panelEls.forEach((el, index) => {
+      const month = monthOf(index);
+      el.setAttribute("aria-label", locale.monthTitle(month.year, month.month));
+    });
+  }
+
   function updateNav(): void {
-    const current = monthIndexOf(state.year, state.month);
+    const first = monthIndexOf(state.year, state.month);
+    const last = first + monthCount - 1;
     const min =
       minDate === null
         ? Number.NEGATIVE_INFINITY
@@ -153,18 +290,48 @@ export function createCalendarUI<TData = null>(
       maxDate === null
         ? Number.POSITIVE_INFINITY
         : monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1);
-    header.setNavDisabled(current <= min, current >= max);
+
+    header.setNavDisabled(first <= min, last >= max);
   }
 
   function render(): void {
     header.update(state.year, state.month);
-    grid.render(currentDays());
+    const dayLists = panels.map((_, index) => currentDays(index));
+    panels.forEach((panel, index) => panel.grid.render(dayLists[index]!));
+    updatePanelLabels();
     updateNav();
+    updateCollapsedRows(dayLists);
+    updateCollapseButton();
+  }
+
+  function applyRangeClick(target: Date): void {
+    const date = toDateOnly(target);
+
+    // 第一次点选起点；已有完整范围时重新开始
+    if (rangeStart === null || rangeEnd !== null) {
+      rangeStart = date;
+      rangeEnd = null;
+    } else if (compareDay(date, rangeStart) < 0) {
+      // 反向选择自动交换
+      rangeEnd = rangeStart;
+      rangeStart = date;
+    } else {
+      rangeEnd = date;
+    }
+
+    render();
+    options.onRangeChange?.(rangeCopy());
   }
 
   /** 处理点选：补位格只改选中，不切换展示月份 */
   function handleSelect(day: CalendarDay<TData>): void {
     if (day.isDisabled) return;
+
+    if (mode === "range") {
+      applyRangeClick(day.date);
+      options.onSelect?.(withRangeFields(day));
+      return;
+    }
 
     state.selected = toDateOnly(day.date);
     if (day.inCurrentMonth) {
@@ -173,8 +340,15 @@ export function createCalendarUI<TData = null>(
     }
 
     // 点选不换月，只需要刷新状态类，不必重建格子
+    if (collapsed) {
+      render();
+      const days = currentDays();
+      options.onSelect?.(days.find((item) => sameDay(item.date, day.date)) ?? day);
+      return;
+    }
+
     const days = currentDays();
-    grid.updateState(days);
+    panels[0]?.grid.updateState(days);
 
     // 回调用更新后的对象，保证 isSelected 是本次点击的结果
     options.onSelect?.(days.find((item) => sameDay(item.date, day.date)) ?? day);
@@ -185,15 +359,12 @@ export function createCalendarUI<TData = null>(
 
     if (minDate !== null) {
       const min = monthIndexOf(minDate.getFullYear(), minDate.getMonth() + 1);
-      if (monthIndexOf(next.year, next.month) < min) {
-        next = { year: minDate.getFullYear(), month: minDate.getMonth() + 1 };
-      }
+      if (monthIndexOf(next.year, next.month) < min) next = monthFromIndex(min);
     }
     if (maxDate !== null) {
-      const max = monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1);
-      if (monthIndexOf(next.year, next.month) > max) {
-        next = { year: maxDate.getFullYear(), month: maxDate.getMonth() + 1 };
-      }
+      const maxFirst =
+        monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1) - (monthCount - 1);
+      if (monthIndexOf(next.year, next.month) > maxFirst) next = monthFromIndex(maxFirst);
     }
 
     if (next.year === state.year && next.month === state.month) return;
@@ -217,22 +388,63 @@ export function createCalendarUI<TData = null>(
     state.selected = nextSelected;
     state.year = nextSelected.getFullYear();
     state.month = nextSelected.getMonth() + 1;
+
+    if (monthCount === 2 && maxDate !== null) {
+      const maxFirst = monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1) - 1;
+      if (monthIndexOf(state.year, state.month) > maxFirst) {
+        const clamped = monthFromIndex(maxFirst);
+        state.year = clamped.year;
+        state.month = clamped.month;
+      }
+    }
+
     render();
   }
 
-  const grid = createGrid<TData>({ onSelect: handleSelect });
+  const panelEls: HTMLElement[] = [];
+  const panels = Array.from({ length: monthCount }, () => ({
+    weekdays: createWeekdays(weekStartsOn, locale),
+    grid: createGrid<TData>({ onSelect: handleSelect }),
+  }));
 
   const header = createHeader({
     year: state.year,
     month: state.month,
     locale,
+    title:
+      monthCount === 2
+        ? (year, month) => {
+            const next = normalizeMonth(year, month + 1);
+            return `${locale.monthTitle(year, month)} – ${locale.monthTitle(next.year, next.month)}`;
+          }
+        : undefined,
     onPrev: () => goTo(state.year, state.month - 1),
     onNext: () => goTo(state.year, state.month + 1),
     renderer: options.renderHeader,
   });
   header.el.hidden = options.header === false;
 
-  root.append(header.el, weekdays.el, grid.el);
+  if (monthCount === 1) {
+    root.append(header.el, panels[0]!.weekdays.el, panels[0]!.grid.el);
+  } else {
+    const monthsEl = node("div", "cui__months");
+    panels.forEach((panel) => {
+      const monthEl = node("div", "cui__month");
+      monthEl.setAttribute("role", "group");
+      monthEl.append(panel.weekdays.el, panel.grid.el);
+      monthsEl.append(monthEl);
+      panelEls.push(monthEl);
+    });
+    root.append(header.el, monthsEl);
+  }
+
+  if (collapsible) {
+    collapseButton = node("button", "cui__collapse");
+    collapseButton.type = "button";
+    collapseButton.addEventListener("click", toggleCollapsed);
+    root.append(collapseButton);
+  }
+
   container.appendChild(root);
   render();
 
@@ -246,6 +458,39 @@ export function createCalendarUI<TData = null>(
       const target = readDate(date, "select(date)");
       if (target === null || isDisabled(target)) return;
 
+      if (mode === "range") {
+        const targetIndex = monthIndexOf(target.getFullYear(), target.getMonth() + 1);
+        const first = monthIndexOf(state.year, state.month);
+        if (targetIndex < first || targetIndex > first + monthCount - 1) {
+          state.year = target.getFullYear();
+          state.month = target.getMonth() + 1;
+        }
+        if (monthCount === 2 && maxDate !== null) {
+          const maxFirst = monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1) - 1;
+          if (monthIndexOf(state.year, state.month) > maxFirst) {
+            const clamped = monthFromIndex(maxFirst);
+            state.year = clamped.year;
+            state.month = clamped.month;
+          }
+        }
+        applyRangeClick(target);
+        const days = buildDays<TData>({
+          year: target.getFullYear(),
+          month: target.getMonth() + 1,
+          weekStartsOn,
+          today,
+          selected: null,
+          rangeStart,
+          rangeEnd,
+          locale,
+          adapter,
+          isDisabled,
+        });
+        const day = days.find((item) => sameDay(item.date, target));
+        if (day) options.onSelect?.(withRangeFields(day));
+        return;
+      }
+
       state.selected = target;
       state.year = target.getFullYear();
       state.month = target.getMonth() + 1;
@@ -254,7 +499,42 @@ export function createCalendarUI<TData = null>(
       const day = currentDays().find((item) => sameDay(item.date, target));
       if (day) options.onSelect?.(day);
     },
-    getSelected: () => new Date(state.selected),
+    getSelected: () => {
+      if (mode === "range") return rangeStart === null ? null : new Date(rangeStart);
+      return new Date(state.selected);
+    },
+    getRange: rangeCopy,
+    setRange: (start: CalendarDateInput | null, end?: CalendarDateInput | null) => {
+      const nextStart = readDate(start, "setRange(start)");
+      const nextEnd = end === undefined ? null : readDate(end, "setRange(end)");
+
+      if (nextStart === null) {
+        rangeStart = null;
+        rangeEnd = null;
+      } else {
+        if (isDisabled(nextStart) || (nextEnd !== null && isDisabled(nextEnd))) return;
+
+        if (nextEnd === null) {
+          rangeStart = nextStart;
+          rangeEnd = null;
+        } else if (compareDay(nextStart, nextEnd) <= 0) {
+          rangeStart = nextStart;
+          rangeEnd = nextEnd;
+        } else {
+          rangeStart = nextEnd;
+          rangeEnd = nextStart;
+        }
+      }
+
+      render();
+      options.onRangeChange?.(rangeCopy());
+    },
+    clearRange: () => {
+      rangeStart = null;
+      rangeEnd = null;
+      render();
+      options.onRangeChange?.(rangeCopy());
+    },
     show: () => {
       root.hidden = false;
     },
@@ -275,6 +555,10 @@ export function createCalendarUI<TData = null>(
       header.el.hidden = !header.el.hidden;
     },
     isHeaderVisible: () => !header.el.hidden,
+    collapse: () => applyCollapse(true),
+    expand: () => applyCollapse(false),
+    toggleCollapsed,
+    isCollapsed: () => collapsed,
     getMinDate: () => (minDate === null ? null : new Date(minDate)),
     setMinDate: (date: CalendarDateInput | null) => {
       applyBounds(readDate(date, "setMinDate(date)"), maxDate);
@@ -290,7 +574,7 @@ export function createCalendarUI<TData = null>(
     },
     destroy: () => {
       header.destroy();
-      grid.destroy();
+      panels.forEach((panel) => panel.grid.destroy());
       root.remove();
     },
   };

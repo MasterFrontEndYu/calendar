@@ -106,6 +106,248 @@ describe("createCalendarUI 纯公历", () => {
   });
 });
 
+describe("范围选择", () => {
+  it("单视图：两次点击完成范围，反向选择自动交换", () => {
+    let picked: CalendarDay | null = null;
+    const changes: Array<{ start: Date | null; end: Date | null }> = [];
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: "2026-10-15",
+      onSelect: (day) => {
+        picked = day;
+      },
+      onRangeChange: (range) => changes.push(range),
+    });
+
+    expect(instance.getRange()).toEqual({ start: null, end: null });
+
+    cellOf(instance.el, "2026-10-20").click();
+    expect(instance.getRange().start).toEqual(new Date(2026, 9, 20));
+    expect(instance.getRange().end).toBeNull();
+    expect(picked!.isRangeStart).toBe(true);
+    expect(cellOf(instance.el, "2026-10-20").classList.contains("is-range-start")).toBe(true);
+
+    cellOf(instance.el, "2026-10-10").click();
+    expect(instance.getRange()).toEqual({
+      start: new Date(2026, 9, 10),
+      end: new Date(2026, 9, 20),
+    });
+    expect(picked!.isRangeStart).toBe(true);
+    expect(picked!.isRangeEnd).toBe(false);
+    expect(cellOf(instance.el, "2026-10-10").classList.contains("is-range-start")).toBe(true);
+    expect(cellOf(instance.el, "2026-10-20").classList.contains("is-range-end")).toBe(true);
+    expect(cellOf(instance.el, "2026-10-15").classList.contains("is-in-range")).toBe(true);
+    expect(changes).toHaveLength(2);
+
+    instance.destroy();
+  });
+
+  it("setRange 反向输入自动交换，clearRange 清空", () => {
+    const changes: Array<{ start: Date | null; end: Date | null }> = [];
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: "2026-10-01",
+      onRangeChange: (range) => changes.push(range),
+    });
+
+    instance.setRange("2026-10-20", "2026-10-05");
+    expect(instance.getRange()).toEqual({
+      start: new Date(2026, 9, 5),
+      end: new Date(2026, 9, 20),
+    });
+
+    instance.clearRange();
+    expect(instance.getRange()).toEqual({ start: null, end: null });
+    expect(changes.at(-1)).toEqual({ start: null, end: null });
+
+    instance.destroy();
+  });
+
+  it("第三次点击开始一个新范围", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: "2026-10-01",
+    });
+
+    cellOf(instance.el, "2026-10-5").click();
+    cellOf(instance.el, "2026-10-10").click();
+    cellOf(instance.el, "2026-10-15").click();
+
+    expect(instance.getRange().start).toEqual(new Date(2026, 9, 15));
+    expect(instance.getRange().end).toBeNull();
+
+    instance.destroy();
+  });
+
+  it("双视图默认显示相邻两个月", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      months: 2,
+      initialDate: "2026-10-15",
+    });
+
+    expect(instance.el.classList.contains("cui--range")).toBe(true);
+    expect(instance.el.querySelectorAll(".cui__grid")).toHaveLength(2);
+    const title = instance.el.querySelector(".cui__title")?.textContent ?? "";
+    expect(title).toContain("10 月");
+    expect(title).toContain("11 月");
+
+    instance.nextMonth();
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 11 });
+    const nextTitle = instance.el.querySelector(".cui__title")?.textContent ?? "";
+    expect(nextTitle).toContain("11 月");
+    expect(nextTitle).toContain("12 月");
+
+    instance.destroy();
+  });
+
+  it("双视图可以跨月选择范围", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      months: 2,
+      initialDate: "2026-10-15",
+    });
+
+    const october = cellOf(instance.el, "2026-10-28");
+    const november = cellOf(instance.el, "2026-11-5");
+    october.click();
+    november.click();
+
+    expect(instance.getRange()).toEqual({
+      start: new Date(2026, 9, 28),
+      end: new Date(2026, 10, 5),
+    });
+    expect(october.classList.contains("is-range-start")).toBe(true);
+    expect(november.classList.contains("is-range-end")).toBe(true);
+
+    instance.destroy();
+  });
+
+  it("范围端点不会选中禁用日期", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: "2026-10-01",
+      disabledDates: ["2026-10-10"],
+    });
+
+    cellOf(instance.el, "2026-10-5").click();
+    cellOf(instance.el, "2026-10-10").click();
+    expect(instance.getRange()).toEqual({
+      start: new Date(2026, 9, 5),
+      end: null,
+    });
+
+    instance.destroy();
+  });
+});
+
+describe("折叠", () => {
+  const visibleRows = function (root: HTMLElement): HTMLElement[] {
+    return Array.from(root.querySelectorAll<HTMLElement>(".cui__week")).filter(
+      (row) => !row.hidden,
+    );
+  };
+
+  it("默认展开，未开启 collapsible 时不显示箭头", () => {
+    const instance = createCalendarUI(host(), { initialDate: "2026-10-15" });
+
+    expect(instance.el.querySelector(".cui__collapse")).toBeNull();
+    expect(instance.isCollapsed()).toBe(false);
+    instance.collapse();
+    expect(instance.isCollapsed()).toBe(false);
+
+    instance.destroy();
+  });
+
+  it("开启 collapsible 后底部有单状态箭头，折叠只显示选中行", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+      collapsible: true,
+    });
+    const button = instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!;
+
+    expect(button).not.toBeNull();
+    expect(button.textContent).toBe("⌃");
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+    expect(visibleRows(instance.el)).toHaveLength(6);
+
+    button.click();
+    expect(instance.isCollapsed()).toBe(true);
+    expect(button.textContent).toBe("⌄");
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+    const collapsedRows = visibleRows(instance.el);
+    expect(collapsedRows).toHaveLength(1);
+    expect(collapsedRows[0]).toBe(instance.el.querySelectorAll(".cui__week")[2]);
+
+    instance.select("2026-10-28");
+    expect(visibleRows(instance.el)[0]).toBe(instance.el.querySelectorAll(".cui__week")[4]);
+
+    instance.expand();
+    expect(instance.isCollapsed()).toBe(false);
+    expect(button.textContent).toBe("⌃");
+    expect(visibleRows(instance.el)).toHaveLength(6);
+
+    instance.destroy();
+  });
+
+  it("范围模式折叠时同时显示起点行和终点行", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: "2026-10-01",
+      collapsible: true,
+    });
+
+    cellOf(instance.el, "2026-10-5").click();
+    cellOf(instance.el, "2026-10-28").click();
+    instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!.click();
+
+    const rows = Array.from(instance.el.querySelectorAll<HTMLElement>(".cui__week"));
+    expect(visibleRows(instance.el)).toHaveLength(2);
+    expect(rows[1]?.hidden).toBe(false);
+    expect(rows[4]?.hidden).toBe(false);
+
+    instance.destroy();
+  });
+
+  it("双视图折叠时两个月份各自显示相关端点行", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      months: 2,
+      initialDate: "2026-10-01",
+      collapsible: true,
+    });
+
+    cellOf(instance.el, "2026-10-28").click();
+    cellOf(instance.el, "2026-11-5").click();
+    instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!.click();
+
+    const grids = Array.from(instance.el.querySelectorAll<HTMLElement>(".cui__grid"));
+    expect(grids).toHaveLength(2);
+    grids.forEach((grid) => {
+      const visible = Array.from(grid.querySelectorAll<HTMLElement>(".cui__week")).filter(
+        (row) => !row.hidden,
+      );
+      expect(visible).toHaveLength(1);
+    });
+
+    instance.destroy();
+  });
+
+  it("defaultCollapsed 可以默认折叠", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+      collapsible: true,
+      defaultCollapsed: true,
+    });
+
+    expect(instance.isCollapsed()).toBe(true);
+    expect(instance.el.querySelector(".cui__collapse")?.textContent).toBe("⌄");
+    expect(visibleRows(instance.el)).toHaveLength(1);
+
+    instance.destroy();
+  });
+});
+
 describe("主题", () => {
   it("默认是 auto", () => {
     const instance = createCalendarUI(host());
