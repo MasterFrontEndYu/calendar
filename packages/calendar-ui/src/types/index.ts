@@ -5,6 +5,7 @@ export type {
   CalendarDay,
   CalendarInstance,
   CalendarOptions,
+  CalendarTheme,
   DayDecoration,
   HeaderRenderContext,
   HeaderRenderer,

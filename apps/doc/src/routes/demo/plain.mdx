@@ -21,17 +21,18 @@ const a = createCalendarUI(hostA, {
 });
 ```
 
-## 实例 B：2026 年 12 月
+## 实例 B：2026 年 12 月 · 深色主题
 
-<PlainCalendar year={2026} month={12} weekStartsOn={0} locale="en-US" />
+<PlainCalendar year={2026} month={12} weekStartsOn={0} locale="en-US" theme="dark" />
 
 ```ts
 const b = createCalendarUI(hostB, {
   initialDate: new Date(2026, 11, 1),
   weekStartsOn: 0,
   locale: "en-US",
+  theme: "dark",
   onSelect: (day) => console.log(day.year, day.month, day.day),
 });
 ```
 
-两个实例的 `initialDate`、`weekStartsOn`、`locale` 完全独立；`destroy()` 也只影响自己。
+两个实例的 `initialDate`、`weekStartsOn`、`locale`、`theme` 完全独立；`destroy()` 也只影响自己。

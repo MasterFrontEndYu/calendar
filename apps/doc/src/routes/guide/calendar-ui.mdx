@@ -39,6 +39,7 @@ interface CalendarOptions<TData = null> {
   initialDate?: Date;
   weekStartsOn?: WeekStartsOn;
   locale?: CalendarLocale | CalendarLocaleName;
+  theme?: CalendarTheme;
   header?: boolean;
   renderHeader?: HeaderRenderer;
   adapter?: CalendarAdapter<TData>;
@@ -52,6 +53,7 @@ interface CalendarOptions<TData = null> {
 | `initialDate`   | `Date`                                 | 今天      | 初始展示和选中的日期              |
 | `weekStartsOn`  | `0 \| 1`                               | `1`       | 0 周日，1 周一                    |
 | `locale`        | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"` | 界面语言或自定义语言包            |
+| `theme`         | `"light" \| "dark" \| "auto"`          | `"auto"`  | 主题；auto 跟随 data-theme / 系统 |
 | `header`        | `boolean`                              | `true`    | 是否显示默认头部                  |
 | `renderHeader`  | `HeaderRenderer`                       | -         | 自定义头部，替换默认的 `‹ 标题 ›` |
 | `adapter`       | `CalendarAdapter<TData>`               | -         | 装饰适配器；不传就是纯公历        |
@@ -138,6 +140,8 @@ interface CalendarBadge {
 | `isVisible()`                                      | 是否可见                                          |
 | `showHeader()` / `hideHeader()` / `toggleHeader()` | 头部显示状态                                      |
 | `isHeaderVisible()`                                | 头部是否可见                                      |
+| `getTheme()`                                       | 当前主题                                          |
+| `setTheme(theme)`                                  | 切换主题，只改 `data-theme`，不重建 DOM           |
 | `destroy()`                                        | 移除 DOM 与事件监听                               |
 
 ## 适配器接口
@@ -206,7 +210,52 @@ interface CalendarLocale {
 
 内置 `zh-CN` / `en-US`，也可以直接传自定义对象。
 
-## 样式变量
+## 主题
+
+内置 `light`、`dark` 和 `auto`：
+
+```ts
+const instance = createCalendarUI(container, {
+  theme: "auto", // 默认
+});
+
+instance.getTheme(); // "auto"
+
+// 显式覆盖
+instance.setTheme("dark");
+instance.setTheme("light");
+instance.setTheme("auto"); // 回到自动
+```
+
+- 主题写在根元素 `.cui[data-theme="light|dark|auto"]`；
+- `setTheme()` 只改 `data-theme`，不会重建 DOM，也不会触发 `onSelect`；
+- `auto` 的优先级：
+  1. 最近的祖先 `[data-theme="dark"]`；
+  2. 最近的祖先 `[data-theme="light"]`；
+  3. 没有祖先主题时，跟随 `prefers-color-scheme`；
+- `color-scheme` 会跟着切换，原生滚动条、表单控件也会同步。
+
+所以页面级主题可以直接这样写：
+
+```html
+<html data-theme="dark">
+  <!-- 日历会跟着变深 -->
+</html>
+```
+
+```ts
+createCalendarUI(container, {
+  // 不传 theme，默认 auto
+});
+```
+
+需要强制某个日历不受页面影响时：
+
+```ts
+createCalendarUI(container, { theme: "light" });
+```
+
+两套主题的变量：
 
 ```css
 .cui {
@@ -220,9 +269,44 @@ interface CalendarLocale {
   --cui-hover: #f3f4f6;
   --cui-radius: 10px;
 }
+
+.cui[data-theme="dark"] {
+  --cui-bg: #161b22;
+  --cui-fg: #e6edf3;
+  --cui-muted: #8b949e;
+  --cui-border: #30363d;
+  --cui-accent: #1f6feb;
+  --cui-accent-fg: #ffffff;
+  --cui-rest: #ff7b72;
+  --cui-hover: #21262d;
+}
 ```
 
-暗色模式由样式表内置，`rest` 标记和副标题颜色都走变量。
+`auto` 的 `data-theme="auto"` 本身不带颜色，颜色由祖先 `[data-theme]` 或系统媒体查询决定；外部可以覆盖任一变量换色：
+
+```css
+.cui[data-theme="dark"] {
+  --cui-accent: #7c3aed;
+}
+```
+
+## 样式变量
+
+两套主题都只改变量，不改变布局和尺寸：
+
+| 变量              | 作用                          |
+| ----------------- | ----------------------------- |
+| `--cui-bg`        | 背景                          |
+| `--cui-fg`        | 主文字                        |
+| `--cui-muted`     | 星期、副标题                  |
+| `--cui-border`    | 边框                          |
+| `--cui-accent`    | 选中、今天、焦点、`work` 标记 |
+| `--cui-accent-fg` | 选中格文字                    |
+| `--cui-rest`      | `rest` 标记和副标题           |
+| `--cui-hover`     | 悬停背景                      |
+| `--cui-radius`    | 圆角                          |
+
+`rest` 标记和副标题颜色都走变量，暗色主题不需要额外选择器。
 
 ## 纯公历的 bundle 边界
 

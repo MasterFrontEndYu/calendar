@@ -3,6 +3,9 @@ import type { CalendarLocale, CalendarLocaleName } from "./locale";
 /** 一周从哪天开始：0 为周日，1 为周一 */
 export type WeekStartsOn = 0 | 1;
 
+/** 主题：light / dark 显式指定，auto 跟随最近的 data-theme 或系统偏好 */
+export type CalendarTheme = "light" | "dark" | "auto";
+
 /** 规范后的年月 */
 export interface YearMonth {
   year: number;
@@ -120,6 +123,8 @@ export interface CalendarOptions<TData = null> {
   weekStartsOn?: WeekStartsOn;
   /** 界面语言：内置 "zh-CN"（默认）/ "en-US"，也可直接传自定义语言包 */
   locale?: CalendarLocale | CalendarLocaleName;
+  /** 主题，默认 "auto"：跟随最近的 data-theme，没有则跟随系统 */
+  theme?: CalendarTheme;
   /** 是否显示头部，默认 true */
   header?: boolean;
   /** 自定义头部，替换默认的 ‹ 标题 › */
@@ -164,6 +169,10 @@ export interface CalendarInstance {
   toggleHeader(): void;
   /** 头部当前是否可见 */
   isHeaderVisible(): boolean;
+  /** 当前主题 */
+  getTheme(): CalendarTheme;
+  /** 切换主题，只改 data-theme，不重建 DOM */
+  setTheme(theme: CalendarTheme): void;
   /** 移除 DOM 与事件监听 */
   destroy(): void;
 }

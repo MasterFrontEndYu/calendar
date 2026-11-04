@@ -160,6 +160,7 @@ export type {
   CalendarDay,
   CalendarInstance,
   CalendarOptions,
+  CalendarTheme,
   DayDecoration,
   MonthInput,
   WeekStartsOn,

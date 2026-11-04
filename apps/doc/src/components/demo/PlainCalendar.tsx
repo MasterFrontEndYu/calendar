@@ -1,6 +1,6 @@
 import { createSignal, onSettled } from "solid-js";
 import { createCalendarUI } from "@sanguogege/calendar-ui";
-import type { WeekStartsOn } from "@sanguogege/calendar-ui";
+import type { CalendarTheme, WeekStartsOn } from "@sanguogege/calendar-ui";
 import "@sanguogege/calendar-ui/style.css";
 import "./demo.css";
 
@@ -9,6 +9,7 @@ export interface PlainCalendarProps {
   month: number;
   weekStartsOn?: WeekStartsOn;
   locale?: "zh-CN" | "en-US";
+  theme?: CalendarTheme;
 }
 
 export default function PlainCalendar(props: PlainCalendarProps) {
@@ -22,6 +23,7 @@ export default function PlainCalendar(props: PlainCalendarProps) {
       initialDate: new Date(props.year, props.month - 1, 1),
       weekStartsOn: props.weekStartsOn ?? 1,
       locale: props.locale ?? "zh-CN",
+      theme: props.theme,
       onSelect: (day) => setPicked(`${day.year}-${day.month}-${day.day}`),
     });
 

@@ -2,7 +2,7 @@ import { createGrid } from "./components/grid";
 import { createHeader } from "./components/header";
 import { createWeekdays } from "./components/weekdays";
 import { resolveLocale } from "./locales";
-import type { CalendarDay, CalendarInstance, CalendarOptions } from "./types";
+import type { CalendarDay, CalendarInstance, CalendarOptions, CalendarTheme } from "./types";
 import { buildDays } from "./utils/days";
 import { normalizeMonth, sameDay } from "./utils/date";
 import { node } from "./utils/dom";
@@ -20,6 +20,7 @@ export function createCalendarUI<TData = null>(
   const weekStartsOn = options.weekStartsOn ?? 1;
   const locale = resolveLocale(options.locale);
   const adapter = options.adapter;
+  let theme = options.theme ?? "auto";
   const today = new Date();
   const initial = options.initialDate ?? today;
 
@@ -30,6 +31,7 @@ export function createCalendarUI<TData = null>(
   };
 
   const root = node("div", "cui");
+  root.dataset.theme = theme;
   const weekdays = createWeekdays(weekStartsOn, locale);
 
   /** 按当前 state 生成 42 个格子 */
@@ -127,6 +129,11 @@ export function createCalendarUI<TData = null>(
       header.el.hidden = !header.el.hidden;
     },
     isHeaderVisible: () => !header.el.hidden,
+    getTheme: () => theme,
+    setTheme: (next: CalendarTheme) => {
+      theme = next;
+      root.dataset.theme = next;
+    },
     destroy: () => {
       header.destroy();
       grid.destroy();

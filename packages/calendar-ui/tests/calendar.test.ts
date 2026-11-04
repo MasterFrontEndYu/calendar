@@ -105,3 +105,40 @@ describe("createCalendarUI 纯公历", () => {
     instance.destroy();
   });
 });
+
+describe("主题", () => {
+  it("默认是 auto", () => {
+    const instance = createCalendarUI(host());
+
+    expect(instance.el.dataset.theme).toBe("auto");
+    expect(instance.getTheme()).toBe("auto");
+
+    instance.destroy();
+  });
+
+  it("可以通过 theme 指定 dark", () => {
+    const instance = createCalendarUI(host(), { theme: "dark" });
+
+    expect(instance.el.dataset.theme).toBe("dark");
+    expect(instance.getTheme()).toBe("dark");
+
+    instance.destroy();
+  });
+
+  it("setTheme 只改 data-theme，不重建 DOM", () => {
+    const instance = createCalendarUI(host(), { theme: "light" });
+    const grid = instance.el.querySelector(".cui__grid");
+
+    instance.setTheme("dark");
+
+    expect(instance.getTheme()).toBe("dark");
+    expect(instance.el.dataset.theme).toBe("dark");
+    expect(instance.el.querySelector(".cui__grid")).toBe(grid);
+
+    instance.setTheme("auto");
+    expect(instance.getTheme()).toBe("auto");
+    expect(instance.el.dataset.theme).toBe("auto");
+
+    instance.destroy();
+  });
+});

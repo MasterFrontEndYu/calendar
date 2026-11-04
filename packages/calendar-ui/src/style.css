@@ -1,4 +1,4 @@
-/* calendar-ui 的默认皮肤：所有颜色/尺寸都走 CSS 变量，外部改 :root 或 .cui 即可换主题 */
+/* calendar-ui 的默认皮肤：所有颜色/尺寸都走 CSS 变量，外部改 .cui 即可换主题 */
 .cui {
   --cui-bg: #ffffff;
   --cui-fg: #1f2328;
@@ -10,6 +10,7 @@
   --cui-hover: #f3f4f6;
   --cui-radius: 10px;
 
+  color-scheme: light;
   box-sizing: border-box;
   width: 100%;
   max-width: 420px;
@@ -21,6 +22,64 @@
   font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   line-height: 1.4;
+}
+
+/* 显式深色 */
+.cui[data-theme="dark"] {
+  --cui-bg: #161b22;
+  --cui-fg: #e6edf3;
+  --cui-muted: #8b949e;
+  --cui-border: #30363d;
+  --cui-accent: #1f6feb;
+  --cui-accent-fg: #ffffff;
+  --cui-rest: #ff7b72;
+  --cui-hover: #21262d;
+
+  color-scheme: dark;
+}
+
+/* auto：优先跟随最近的 data-theme="dark" */
+[data-theme="dark"] .cui[data-theme="auto"] {
+  --cui-bg: #161b22;
+  --cui-fg: #e6edf3;
+  --cui-muted: #8b949e;
+  --cui-border: #30363d;
+  --cui-accent: #1f6feb;
+  --cui-accent-fg: #ffffff;
+  --cui-rest: #ff7b72;
+  --cui-hover: #21262d;
+
+  color-scheme: dark;
+}
+
+/* auto 且没有 data-theme 时跟随系统 */
+@media (prefers-color-scheme: dark) {
+  .cui[data-theme="auto"] {
+    --cui-bg: #161b22;
+    --cui-fg: #e6edf3;
+    --cui-muted: #8b949e;
+    --cui-border: #30363d;
+    --cui-accent: #1f6feb;
+    --cui-accent-fg: #ffffff;
+    --cui-rest: #ff7b72;
+    --cui-hover: #21262d;
+
+    color-scheme: dark;
+  }
+
+  /* 外层明确 light 时，系统深色不覆盖 */
+  [data-theme="light"] .cui[data-theme="auto"] {
+    --cui-bg: #ffffff;
+    --cui-fg: #1f2328;
+    --cui-muted: #8b949e;
+    --cui-border: #e6e8eb;
+    --cui-accent: #2563eb;
+    --cui-accent-fg: #ffffff;
+    --cui-rest: #e5484d;
+    --cui-hover: #f3f4f6;
+
+    color-scheme: light;
+  }
 }
 
 .cui *,
@@ -177,15 +236,4 @@
 .cui[hidden],
 .cui__header[hidden] {
   display: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  .cui {
-    --cui-bg: #161b22;
-    --cui-fg: #e6edf3;
-    --cui-muted: #8b949e;
-    --cui-border: #30363d;
-    --cui-hover: #21262d;
-    --cui-rest: #ff7b72;
-  }
 }

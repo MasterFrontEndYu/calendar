@@ -9,6 +9,7 @@ export type {
   CalendarLocale,
   CalendarLocaleName,
   CalendarOptions,
+  CalendarTheme,
   DayDecoration,
   HeaderRenderContext,
   HeaderRenderer,

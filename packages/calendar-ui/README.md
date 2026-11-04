@@ -26,11 +26,29 @@ instance.destroy();
 | `initialDate`   | `Date`                                  | 初始日期，默认今天                |
 | `weekStartsOn`  | `0 \| 1`                                | 一周从哪天开始，默认 1            |
 | `locale`        | `CalendarLocale \| CalendarLocaleName`  | 界面语言，默认 `"zh-CN"`          |
+| `theme`         | `"light" \| "dark" \| "auto"`           | 主题，默认 `"auto"`               |
 | `header`        | `boolean`                               | 是否显示头部，默认 `true`         |
 | `renderHeader`  | `HeaderRenderer`                        | 自定义头部，替换默认的 `‹ 标题 ›` |
 | `adapter`       | `CalendarAdapter<TData>`                | 日历适配器；不传就是纯公历        |
 | `onSelect`      | `(day: CalendarDay<TData>) => void`     | 选中某一天时触发                  |
 | `onMonthChange` | `(year: number, month: number) => void` | 切换月份时触发                    |
+
+## 主题
+
+内置 `light` / `dark` / `auto` 主题：
+
+```ts
+const instance = createCalendarUI(container, { theme: "dark" });
+
+instance.getTheme(); // "dark"
+instance.setTheme("light");
+```
+
+- 主题写到 `.cui[data-theme="light|dark|auto"]`；
+- `setTheme()` 只改 `data-theme`，不重建 DOM；
+- `auto` 跟随最近的祖先 `data-theme`，没有则跟随系统；
+- 两套主题共用布局，只改变量；
+- 可通过 `--cui-bg`、`--cui-fg`、`--cui-accent`、`--cui-rest` 等变量覆盖。
 
 ## 适配器
 
