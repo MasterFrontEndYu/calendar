@@ -14,7 +14,7 @@ import PlainCalendar from "../../components/demo/PlainCalendar";
 
 ```ts
 const a = createCalendarUI(hostA, {
-  initialDate: new Date(2026, 9, 1),
+  initialDate: "2026-10-01",
   weekStartsOn: 1,
   locale: "zh-CN",
   onSelect: (day) => console.log(day.year, day.month, day.day),
@@ -27,7 +27,7 @@ const a = createCalendarUI(hostA, {
 
 ```ts
 const b = createCalendarUI(hostB, {
-  initialDate: new Date(2026, 11, 1),
+  initialDate: "2026-12-01",
   weekStartsOn: 0,
   locale: "en-US",
   theme: "dark",

@@ -49,6 +49,10 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
       month = nextMonth;
       render();
     },
+    setNavDisabled: (prevDisabled: boolean, nextDisabled: boolean) => {
+      prev.setDisabled(prevDisabled);
+      next.setDisabled(nextDisabled);
+    },
     destroy: () => {
       prev.destroy();
       next.destroy();

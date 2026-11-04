@@ -13,6 +13,8 @@ export interface NavOptions {
 /** 头部左右切换按钮的句柄 */
 export interface NavHandle {
   el: HTMLButtonElement;
+  /** 设置禁用状态，边界月份时使用 */
+  setDisabled(disabled: boolean): void;
   destroy(): void;
 }
 
@@ -37,6 +39,8 @@ export interface HeaderHandle {
   el: HTMLElement;
   /** 换月时更新标题或重绘自定义头部 */
   update(year: number, month: number): void;
+  /** 更新左右按钮的禁用状态 */
+  setNavDisabled(prevDisabled: boolean, nextDisabled: boolean): void;
   destroy(): void;
 }
 

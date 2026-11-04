@@ -179,6 +179,7 @@ interface CalendarDay<TData = null> {
   inCurrentMonth: boolean;
   isToday: boolean;
   isSelected: boolean;
+  isDisabled: boolean;
   subtitle: string;
   badge: CalendarBadge | null;
   data: TData | null;
@@ -187,6 +188,8 @@ interface CalendarDay<TData = null> {
 ```
 
 `onSelect`、`select()`、自定义头部都能拿到这个对象。`data` 是适配器返回的原始引用，核心不做拷贝。
+
+`isDisabled` 由 `minDate` / `maxDate` / `disabledDates` 计算，适配器不需要也不应该自己返回 disabled 字段；禁用日期在网格层就已被拦截。
 
 ## 完整例子：xiu / ban 数据
 
@@ -246,7 +249,7 @@ const adapter: CalendarAdapter<{ type: "holiday" | "makeup"; subtitle: string }>
 };
 
 createCalendarUI(container, {
-  initialDate: new Date(2026, 5, 1),
+  initialDate: "2026-06-01",
   adapter,
   onSelect: (day) => {
     console.log(day.subtitle); // "六月公司日" 等

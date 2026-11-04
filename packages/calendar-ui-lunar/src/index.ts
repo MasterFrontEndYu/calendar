@@ -157,6 +157,7 @@ export type {
   CalendarAdapter,
   CalendarBadge,
   CalendarDate,
+  CalendarDateInput,
   CalendarDay,
   CalendarInstance,
   CalendarOptions,

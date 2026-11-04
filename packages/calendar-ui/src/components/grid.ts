@@ -27,7 +27,7 @@ export const createGrid = function <TData = null>(options: GridOptions<TData>): 
 
     // 用索引取格子数据，比解析 data-date 快，也不受补位格影响
     const picked = days[cells.indexOf(cell as HTMLButtonElement)];
-    if (picked) options.onSelect(picked);
+    if (picked && !picked.isDisabled) options.onSelect(picked);
   };
 
   el.addEventListener("click", onClick);

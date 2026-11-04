@@ -50,17 +50,21 @@ export const buildDays = function <TData = null>(
     const badge = decoration?.badge ?? null;
     const subtitle = decoration?.subtitle ?? "";
     const key = `${date.year}-${date.month}-${date.day}`;
+    const isDisabled = options.isDisabled?.(date.date) ?? false;
 
     return {
       ...date,
       isToday: sameDay(date.date, options.today),
       isSelected: options.selected !== null && sameDay(date.date, options.selected),
+      isDisabled,
       subtitle,
       badge,
       data: decoration?.data ?? null,
       ariaLabel:
         decoration?.ariaLabel ??
-        [key, badge?.text ?? "", subtitle].filter((part) => part !== "").join(" "),
+        [key, badge?.text ?? "", subtitle, isDisabled ? "不可选" : ""]
+          .filter((part) => part !== "")
+          .join(" "),
     };
   });
 };

@@ -21,7 +21,7 @@ export default function LunarCalendar(props: LunarCalendarProps) {
 
     const custom = props.variant === "custom";
     const instance = createCalendarLunar(host, {
-      initialDate: custom ? new Date(2026, 0, 1) : new Date(2026, 9, 1),
+      initialDate: custom ? "2026-01-01" : "2026-10-01",
       holidays: custom ? CUSTOM_HOLIDAYS : undefined,
       onSelect: (day) => {
         const lunar = day.data ? `${day.data.lMonthCn}${day.data.lDayCn}` : "";

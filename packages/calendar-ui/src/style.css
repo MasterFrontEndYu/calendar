@@ -118,6 +118,15 @@
   background: var(--cui-hover);
 }
 
+.cui__nav:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cui__nav:disabled:hover {
+  background: transparent;
+}
+
 .cui__nav:focus-visible,
 .cui__day:focus-visible {
   outline: 2px solid var(--cui-accent);
@@ -212,6 +221,17 @@
 /* 状态 */
 .cui__day.is-outside {
   opacity: 0.35;
+}
+
+.cui__day.is-disabled,
+.cui__day:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cui__day.is-disabled:hover,
+.cui__day:disabled:hover {
+  background: transparent;
 }
 
 .cui__day[data-tone="rest"] .cui__day-sub {

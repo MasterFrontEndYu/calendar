@@ -6,6 +6,14 @@ export type WeekStartsOn = 0 | 1;
 /** 主题：light / dark 显式指定，auto 跟随最近的 data-theme 或系统偏好 */
 export type CalendarTheme = "light" | "dark" | "auto";
 
+/**
+ * 外部传入的日期
+ *
+ * 支持 Date，或本地日期字符串：
+ * `2026-10-01`、`2026-10-1`、`2026/10/01`、`2026/10/1`。
+ */
+export type CalendarDateInput = Date | string;
+
 /** 规范后的年月 */
 export interface YearMonth {
   year: number;
@@ -88,6 +96,8 @@ export interface CalendarDay<TData = null> extends CalendarDate {
   isToday: boolean;
   /** 是否当前选中 */
   isSelected: boolean;
+  /** 是否被 minDate / maxDate / disabledDates 禁止 */
+  isDisabled: boolean;
   /** 格子副标题，例如节气、节日、农历日 */
   subtitle: string;
   /** 左上角小标记 */
@@ -117,8 +127,14 @@ export type HeaderRenderer = (context: HeaderRenderContext) => HTMLElement;
 
 /** 创建日历时的配置 */
 export interface CalendarOptions<TData = null> {
-  /** 初始日期，默认今天 */
-  initialDate?: Date;
+  /** 初始日期，默认今天；超出约束时夹到最近的可选日期 */
+  initialDate?: CalendarDateInput;
+  /** 最小可选日期（包含） */
+  minDate?: CalendarDateInput;
+  /** 最大可选日期（包含） */
+  maxDate?: CalendarDateInput;
+  /** 禁止选中的日期，按本地年月日比较 */
+  disabledDates?: readonly CalendarDateInput[];
   /** 一周从哪天开始，默认 1（周一） */
   weekStartsOn?: WeekStartsOn;
   /** 界面语言：内置 "zh-CN"（默认）/ "en-US"，也可直接传自定义语言包 */
@@ -150,7 +166,7 @@ export interface CalendarInstance {
   /** 切到下个月 */
   nextMonth(): void;
   /** 选中某个日期 */
-  select(date: Date): void;
+  select(date: CalendarDateInput): void;
   /** 当前选中的日期 */
   getSelected(): Date | null;
   /** 显示整个日历 */
@@ -169,6 +185,14 @@ export interface CalendarInstance {
   toggleHeader(): void;
   /** 头部当前是否可见 */
   isHeaderVisible(): boolean;
+  /** 当前最小可选日期，未设置时为 null */
+  getMinDate(): Date | null;
+  /** 设置最小可选日期，传 null 取消 */
+  setMinDate(date: CalendarDateInput | null): void;
+  /** 当前最大可选日期，未设置时为 null */
+  getMaxDate(): Date | null;
+  /** 设置最大可选日期，传 null 取消 */
+  setMaxDate(date: CalendarDateInput | null): void;
   /** 当前主题 */
   getTheme(): CalendarTheme;
   /** 切换主题，只改 data-theme，不重建 DOM */

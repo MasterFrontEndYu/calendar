@@ -10,6 +10,11 @@ export const createNav = function (options: NavOptions): NavHandle {
 
   return {
     el,
+    setDisabled: (disabled: boolean) => {
+      el.disabled = disabled;
+      if (disabled) el.setAttribute("aria-disabled", "true");
+      else el.removeAttribute("aria-disabled");
+    },
     destroy: () => el.removeEventListener("click", options.onClick),
   };
 };

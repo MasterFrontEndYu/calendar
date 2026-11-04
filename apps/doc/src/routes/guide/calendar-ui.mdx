@@ -17,7 +17,7 @@ import { createCalendarUI } from "@sanguogege/calendar-ui";
 import "@sanguogege/calendar-ui/style.css";
 
 const instance = createCalendarUI(container, {
-  initialDate: new Date(2026, 9, 1),
+  initialDate: "2026-10-01",
   weekStartsOn: 1,
   locale: "zh-CN",
   onSelect: (day) => {
@@ -36,7 +36,10 @@ instance.destroy();
 
 ```ts
 interface CalendarOptions<TData = null> {
-  initialDate?: Date;
+  initialDate?: CalendarDateInput;
+  minDate?: CalendarDateInput;
+  maxDate?: CalendarDateInput;
+  disabledDates?: readonly CalendarDateInput[];
   weekStartsOn?: WeekStartsOn;
   locale?: CalendarLocale | CalendarLocaleName;
   theme?: CalendarTheme;
@@ -50,7 +53,10 @@ interface CalendarOptions<TData = null> {
 
 | 选项            | 类型                                   | 默认      | 说明                              |
 | --------------- | -------------------------------------- | --------- | --------------------------------- |
-| `initialDate`   | `Date`                                 | 今天      | 初始展示和选中的日期              |
+| `initialDate`   | `CalendarDateInput`                    | 今天      | 初始日期；越界时夹到最近可选日    |
+| `minDate`       | `CalendarDateInput`                    | -         | 最小可选日期（包含）              |
+| `maxDate`       | `CalendarDateInput`                    | -         | 最大可选日期（包含）              |
+| `disabledDates` | `readonly CalendarDateInput[]`         | `[]`      | 禁止选中的日期，按本地年月日比较  |
 | `weekStartsOn`  | `0 \| 1`                               | `1`       | 0 周日，1 周一                    |
 | `locale`        | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"` | 界面语言或自定义语言包            |
 | `theme`         | `"light" \| "dark" \| "auto"`          | `"auto"`  | 主题；auto 跟随 data-theme / 系统 |
@@ -73,6 +79,7 @@ interface CalendarDay<TData = null> {
   inCurrentMonth: boolean;
   isToday: boolean;
   isSelected: boolean;
+  isDisabled: boolean;
   subtitle: string;
   badge: CalendarBadge | null;
   data: TData | null;
@@ -87,6 +94,7 @@ interface CalendarDay<TData = null> {
 | `inCurrentMonth`         | 是否属于当前展示月份；`false` 是上下月补位格 |
 | `isToday`                | 是否今天                                     |
 | `isSelected`             | 是否当前选中                                 |
+| `isDisabled`             | 是否被 min/max 或 disabledDates 禁止         |
 | `subtitle`               | 日期下方副标题；纯公历为空字符串             |
 | `badge`                  | 左上角标记，见下                             |
 | `data`                   | 适配器透传的数据；纯公历为 `null`            |
@@ -140,9 +148,86 @@ interface CalendarBadge {
 | `isVisible()`                                      | 是否可见                                          |
 | `showHeader()` / `hideHeader()` / `toggleHeader()` | 头部显示状态                                      |
 | `isHeaderVisible()`                                | 头部是否可见                                      |
+| `getMinDate()` / `setMinDate(date)`                | 读取 / 设置最小可选日期，传 `null` 取消           |
+| `getMaxDate()` / `setMaxDate(date)`                | 读取 / 设置最大可选日期，传 `null` 取消           |
 | `getTheme()`                                       | 当前主题                                          |
 | `setTheme(theme)`                                  | 切换主题，只改 `data-theme`，不重建 DOM           |
 | `destroy()`                                        | 移除 DOM 与事件监听                               |
+
+## 日期输入
+
+`initialDate`、`minDate`、`maxDate`、`disabledDates`、`select()` 和 setter 都接受 `CalendarDateInput`：
+
+```ts
+type CalendarDateInput = Date | string;
+```
+
+字符串支持：
+
+```text
+2026-10-01
+2026-10-1
+2026/10/01
+2026/10/1
+```
+
+- 必须用同一种分隔符，`2026-10/01` 不合法；
+- 按本地年月日解析，不经过 `new Date(string)`，没有时区歧义；
+- 不存在的日期（如 `2026-02-30`）会抛 `RangeError`；
+- 格式错误会抛 `TypeError`；
+- 输出仍然是 `Date`：`day.date`、`getSelected()`、`getMinDate()` 等返回 `Date`。
+
+```ts
+createCalendarUI(container, {
+  initialDate: "2026-10-01",
+  minDate: "2026/10/5",
+  maxDate: "2026-10-20",
+});
+
+instance.select("2026-10-15");
+instance.setMinDate("2026/10/6");
+```
+
+## 日期约束
+
+三个选项可以单独用，也可以组合：
+
+```ts
+const instance = createCalendarUI(container, {
+  initialDate: "2026-10-10",
+  minDate: "2026-10-5",
+  maxDate: "2026-10-20",
+  disabledDates: ["2026-10-12"],
+});
+```
+
+| 选项            | 行为                             |
+| --------------- | -------------------------------- |
+| `minDate`       | 最小可选日期，包含当天           |
+| `maxDate`       | 最大可选日期，包含当天           |
+| `disabledDates` | 任意不可选日期，按本地年月日比较 |
+
+规则：
+
+- 边界外、`disabledDates` 中的日期会渲染为 disabled，不能点击或键盘选中；
+- `CalendarDay.isDisabled` 为 `true`，`aria-disabled="true"`；
+- 初始日期越界时夹到边界；如果边界日期也被禁用，会向最近的可选日期查找；
+- 翻月到边界月份时按钮禁用，`setMonth()` 越界会夹到边界月份；
+- `select()` 传入越界或禁用日期时直接忽略，不触发 `onSelect`；
+- `minDate > maxDate`、无效日期会抛错；所有日期都不可选时抛 `RangeError`。
+
+运行时调整：
+
+```ts
+instance.setMinDate("2026-10-15");
+instance.setMaxDate("2026-10-20");
+instance.getMinDate();
+instance.getMaxDate();
+
+instance.setMinDate(null); // 取消最小日期
+```
+
+setter 会重新校验，并把当前选中日期调整到最近的可用日期；失败时保持原状态不变。
 
 ## 适配器接口
 

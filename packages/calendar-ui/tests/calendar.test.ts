@@ -9,8 +9,8 @@ const host = function (): HTMLElement {
   return el;
 };
 
-const cellOf = function (root: HTMLElement, key: string): HTMLElement {
-  return root.querySelector(`.cui__day[data-date="${key}"]`) as HTMLElement;
+const cellOf = function (root: HTMLElement, key: string): HTMLButtonElement {
+  return root.querySelector(`.cui__day[data-date="${key}"]`) as HTMLButtonElement;
 };
 
 const subtitleOf = function (root: HTMLElement, key: string): string {
@@ -140,5 +140,229 @@ describe("主题", () => {
     expect(instance.el.dataset.theme).toBe("auto");
 
     instance.destroy();
+  });
+});
+
+describe("日期约束", () => {
+  it("minDate / maxDate 包含边界，边界外禁用", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 10),
+      minDate: new Date(2026, 9, 5),
+      maxDate: new Date(2026, 9, 20),
+    });
+
+    expect(cellOf(instance.el, "2026-10-4").disabled).toBe(true);
+    expect(cellOf(instance.el, "2026-10-5").disabled).toBe(false);
+    expect(cellOf(instance.el, "2026-10-20").disabled).toBe(false);
+    expect(cellOf(instance.el, "2026-10-21").disabled).toBe(true);
+    expect(cellOf(instance.el, "2026-10-4").getAttribute("aria-disabled")).toBe("true");
+    expect(cellOf(instance.el, "2026-10-4").getAttribute("aria-label")).toContain("不可选");
+
+    instance.destroy();
+  });
+
+  it("minDate / maxDate 可以单独设置", () => {
+    const onlyMin = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 10),
+      minDate: new Date(2026, 9, 10),
+    });
+    expect(cellOf(onlyMin.el, "2026-10-9").disabled).toBe(true);
+    expect(cellOf(onlyMin.el, "2026-10-11").disabled).toBe(false);
+    onlyMin.destroy();
+
+    const onlyMax = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 10),
+      maxDate: new Date(2026, 9, 10),
+    });
+    expect(cellOf(onlyMax.el, "2026-10-9").disabled).toBe(false);
+    expect(cellOf(onlyMax.el, "2026-10-11").disabled).toBe(true);
+    onlyMax.destroy();
+  });
+
+  it("接受 - 和 / 分隔的日期字符串", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-10",
+      minDate: "2026/10/5",
+      maxDate: "2026-10-20",
+      disabledDates: ["2026/10/12"],
+    });
+
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 10));
+    expect(cellOf(instance.el, "2026-10-4").disabled).toBe(true);
+    expect(cellOf(instance.el, "2026-10-5").disabled).toBe(false);
+    expect(cellOf(instance.el, "2026-10-12").disabled).toBe(true);
+
+    instance.select("2026/10/15");
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 15));
+
+    instance.setMinDate("2026/10/6");
+    expect(instance.getMinDate()).toEqual(new Date(2026, 9, 6));
+
+    instance.destroy();
+  });
+
+  it("拒绝不合法的日期字符串", () => {
+    expect(() => createCalendarUI(host(), { initialDate: "2026-02-30" })).toThrow(RangeError);
+    expect(() => createCalendarUI(host(), { initialDate: "2026-10/01" })).toThrow(TypeError);
+    expect(() => createCalendarUI(host(), { initialDate: "2026-13-01" })).toThrow(RangeError);
+  });
+
+  it("初始日期超出范围时夹到最近的可选日期", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 8, 1),
+      minDate: new Date(2026, 9, 5),
+      maxDate: new Date(2026, 9, 20),
+    });
+
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 5));
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 10 });
+
+    instance.destroy();
+  });
+
+  it("初始日期被禁用时选择距离最近的可选日期", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 10),
+      disabledDates: [new Date(2026, 9, 10), new Date(2026, 9, 11)],
+    });
+
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 9));
+
+    instance.destroy();
+  });
+
+  it("disabledDates 中的日期不可点击", () => {
+    let picked: CalendarDay | null = null;
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 1),
+      disabledDates: [new Date(2026, 9, 2), new Date(2026, 10, 2)],
+      onSelect: (day) => {
+        picked = day;
+      },
+    });
+
+    const disabled = cellOf(instance.el, "2026-10-2");
+    expect(disabled.disabled).toBe(true);
+    disabled.click();
+    expect(picked).toBeNull();
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 1));
+
+    cellOf(instance.el, "2026-10-3").click();
+    expect(picked).not.toBeNull();
+    expect(picked!.isDisabled).toBe(false);
+
+    instance.setMonth(2026, 11);
+    expect(cellOf(instance.el, "2026-11-2").disabled).toBe(true);
+
+    instance.destroy();
+  });
+
+  it("到达 min/max 月份时禁用翻月按钮，并夹住 setMonth", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 10),
+      minDate: new Date(2026, 9, 5),
+      maxDate: new Date(2026, 10, 20),
+    });
+    const nav = instance.el.querySelectorAll<HTMLButtonElement>(".cui__nav");
+
+    expect(nav[0]?.disabled).toBe(true);
+    expect(nav[1]?.disabled).toBe(false);
+
+    instance.setMonth(2026, 9);
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 10 });
+
+    instance.setMonth(2026, 12);
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 11 });
+    expect(nav[0]?.disabled).toBe(false);
+    expect(nav[1]?.disabled).toBe(true);
+
+    instance.destroy();
+  });
+
+  it("select() 忽略越界和禁用日期", () => {
+    let count = 0;
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 10),
+      minDate: new Date(2026, 9, 5),
+      maxDate: new Date(2026, 9, 20),
+      disabledDates: [new Date(2026, 9, 12)],
+      onSelect: () => {
+        count++;
+      },
+    });
+
+    instance.select(new Date(2026, 9, 4));
+    instance.select(new Date(2026, 9, 12));
+    instance.select(new Date(2026, 9, 21));
+    expect(count).toBe(0);
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 10));
+
+    instance.select(new Date(2026, 9, 15));
+    expect(count).toBe(1);
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 15));
+
+    instance.destroy();
+  });
+
+  it("setMinDate / setMaxDate 会调整当前选中日期", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 10),
+    });
+
+    expect(instance.getMinDate()).toBeNull();
+    expect(instance.getMaxDate()).toBeNull();
+
+    instance.setMinDate(new Date(2026, 9, 15));
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 15));
+
+    instance.setMaxDate(new Date(2026, 9, 20));
+    expect(instance.getMaxDate()).toEqual(new Date(2026, 9, 20));
+
+    instance.setMinDate(null);
+    instance.setMaxDate(new Date(2026, 9, 1));
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 1));
+    expect(instance.getMinDate()).toBeNull();
+
+    instance.destroy();
+  });
+
+  it("setMinDate 晚于 setMaxDate 时抛错且不改状态", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 10),
+      maxDate: new Date(2026, 9, 20),
+    });
+
+    expect(() => instance.setMinDate(new Date(2026, 9, 21))).toThrow(RangeError);
+    expect(instance.getMinDate()).toBeNull();
+    expect(instance.getSelected()).toEqual(new Date(2026, 9, 10));
+
+    instance.destroy();
+  });
+
+  it("创建时 minDate 晚于 maxDate 抛 RangeError", () => {
+    expect(() =>
+      createCalendarUI(host(), {
+        minDate: new Date(2026, 10, 1),
+        maxDate: new Date(2026, 9, 1),
+      }),
+    ).toThrow(RangeError);
+  });
+
+  it("约束下没有任何可选日期时抛 RangeError", () => {
+    expect(() =>
+      createCalendarUI(host(), {
+        minDate: new Date(2026, 9, 1),
+        maxDate: new Date(2026, 9, 1),
+        disabledDates: [new Date(2026, 9, 1)],
+      }),
+    ).toThrow(RangeError);
+  });
+
+  it("disabledDates 包含无效日期时抛 TypeError", () => {
+    expect(() =>
+      createCalendarUI(host(), {
+        disabledDates: [new Date(Number.NaN)],
+      }),
+    ).toThrow(TypeError);
   });
 });

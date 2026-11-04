@@ -31,7 +31,7 @@ export default function CustomCalendar() {
     if (!host) return;
 
     const instance = createCalendarUI(host, {
-      initialDate: new Date(2026, 5, 1),
+      initialDate: "2026-06-01",
       adapter,
       onSelect: (day) => {
         const extra = day.data ? (day.data.type === "holiday" ? "休" : "班") : "普通日";

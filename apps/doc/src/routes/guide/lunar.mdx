@@ -17,7 +17,7 @@ import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
 import "@sanguogege/calendar-ui/style.css";
 
 const instance = createCalendarLunar(container, {
-  initialDate: new Date(2026, 9, 1),
+  initialDate: "2026-10-01",
   onSelect: (day) => {
     day.subtitle; // "国庆节"
     day.badge; // { text: "休", tone: "rest" }

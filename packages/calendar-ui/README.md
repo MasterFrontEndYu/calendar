@@ -15,7 +15,7 @@ const instance = createCalendarUI(container, {
 });
 
 instance.nextMonth();
-instance.select(new Date(2026, 11, 1));
+instance.select("2026-12-01");
 instance.destroy();
 ```
 
@@ -23,7 +23,10 @@ instance.destroy();
 
 | 选项            | 类型                                    | 说明                              |
 | --------------- | --------------------------------------- | --------------------------------- |
-| `initialDate`   | `Date`                                  | 初始日期，默认今天                |
+| `initialDate`   | `CalendarDateInput`                     | 初始日期，默认今天                |
+| `minDate`       | `CalendarDateInput`                     | 最小可选日期（包含）              |
+| `maxDate`       | `CalendarDateInput`                     | 最大可选日期（包含）              |
+| `disabledDates` | `readonly CalendarDateInput[]`          | 禁止选中的日期                    |
 | `weekStartsOn`  | `0 \| 1`                                | 一周从哪天开始，默认 1            |
 | `locale`        | `CalendarLocale \| CalendarLocaleName`  | 界面语言，默认 `"zh-CN"`          |
 | `theme`         | `"light" \| "dark" \| "auto"`           | 主题，默认 `"auto"`               |
@@ -32,6 +35,33 @@ instance.destroy();
 | `adapter`       | `CalendarAdapter<TData>`                | 日历适配器；不传就是纯公历        |
 | `onSelect`      | `(day: CalendarDay<TData>) => void`     | 选中某一天时触发                  |
 | `onMonthChange` | `(year: number, month: number) => void` | 切换月份时触发                    |
+
+## 日期输入
+
+`CalendarDateInput = Date | string`，字符串支持 `2026-10-01`、`2026-10-1`、`2026/10/01`、`2026/10/1`，按本地年月日解析，不经过 `new Date(string)`。
+
+## 日期约束
+
+```ts
+const instance = createCalendarUI(container, {
+  minDate: "2026-10-05",
+  maxDate: "2026-10-20",
+  disabledDates: ["2026-10-12"],
+});
+
+instance.setMinDate("2026-10-06");
+instance.setMaxDate("2026-10-25");
+instance.getMinDate();
+instance.getMaxDate();
+```
+
+- `minDate` / `maxDate` 包含边界，可单独或同时设置；
+- `disabledDates` 按本地年月日比较，内部用 `Set` 查询；
+- 边界外和禁用日期渲染为 disabled，点击、键盘、`select()` 都不可选中；
+- 初始日期越界/被禁用时，自动寻找最近的可选日期；
+- 翻月按钮在边界月份禁用，`setMonth()` 越界会夹到边界；
+- `minDate > maxDate`、无效日期、没有任何可选日期都会抛错；
+- setter 失败时不会修改现有状态。
 
 ## 主题
 
@@ -73,6 +103,10 @@ interface CalendarAdapter<TData = unknown> {
 核心不解释 `badge` 和 `data` 的含义；`tone` 对应的颜色由 CSS 决定（内置 `rest` / `work` 两种，可通过 `--cui-rest`、`--cui-accent` 覆盖）。
 
 官方农历适配器见 `@sanguogege/calendar-ui-lunar`；第三方也可以按这个接口接入自己的日历。
+
+## 路线图
+
+后续功能（翻月动画、折叠当前行、范围选择、min/max、禁用日期、自定义 subtitle）记录在 [TODO.md](TODO.md)。
 
 ## 开发
 

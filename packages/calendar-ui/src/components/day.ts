@@ -43,7 +43,6 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknow
 
     num.textContent = String(day.day);
     sub.textContent = day.subtitle;
-    cell.setAttribute("aria-label", day.ariaLabel);
   }
 
   setDayState(cell, day);
@@ -54,7 +53,13 @@ export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay<u
   cell.classList.toggle("is-outside", !day.inCurrentMonth);
   cell.classList.toggle("is-today", day.isToday);
   cell.classList.toggle("is-selected", day.isSelected);
-  cell.tabIndex = day.inCurrentMonth ? 0 : -1;
+  cell.classList.toggle("is-disabled", day.isDisabled);
+  cell.disabled = day.isDisabled;
+  cell.tabIndex = day.inCurrentMonth && !day.isDisabled ? 0 : -1;
+  cell.setAttribute("aria-label", day.ariaLabel);
+
+  if (day.isDisabled) cell.setAttribute("aria-disabled", "true");
+  else cell.removeAttribute("aria-disabled");
 
   if (day.isSelected) cell.setAttribute("aria-pressed", "true");
   else cell.removeAttribute("aria-pressed");

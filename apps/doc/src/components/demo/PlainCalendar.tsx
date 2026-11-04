@@ -20,7 +20,7 @@ export default function PlainCalendar(props: PlainCalendarProps) {
     if (!host) return;
 
     const instance = createCalendarUI(host, {
-      initialDate: new Date(props.year, props.month - 1, 1),
+      initialDate: `${props.year}-${props.month}-01`,
       weekStartsOn: props.weekStartsOn ?? 1,
       locale: props.locale ?? "zh-CN",
       theme: props.theme,

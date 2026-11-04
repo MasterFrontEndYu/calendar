@@ -15,6 +15,8 @@ export interface BuildDaysOptions<TData = null> {
   selected: Date | null;
   /** 当前界面语言 */
   locale: CalendarLocale;
+  /** 判断某个日期是否不可选；不传表示全部都可用 */
+  isDisabled?: (date: Date) => boolean;
   /** 日历适配器；不传时就是纯公历 */
   adapter?: CalendarAdapter<TData>;
 }
