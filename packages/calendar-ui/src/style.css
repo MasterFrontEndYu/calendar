@@ -162,36 +162,31 @@
   gap: 4px;
 }
 
-/* 6 行日期；折叠时按行隐藏，节点仍然复用 */
+/* 6 行日期；折叠时按行收起，节点仍然复用 */
 .cui__grid {
   display: flex;
   flex-direction: column;
   gap: 0;
   contain: layout paint;
-  will-change: transform;
 }
 
 .cui__week {
   display: grid;
   min-height: 0;
-  max-height: 200px;
   margin-bottom: 4px;
   overflow: hidden;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
   opacity: 1;
-  transition:
-    max-height var(--cui-collapse-duration, 200ms) var(--cui-collapse-easing, ease),
-    opacity var(--cui-collapse-duration, 200ms) var(--cui-collapse-easing, ease),
-    margin-bottom var(--cui-collapse-duration, 200ms) var(--cui-collapse-easing, ease);
 }
 
 .cui__week:last-child {
   margin-bottom: 0;
 }
 
+/* 折叠动画由 JS 按真实行高驱动（见 components/grid.ts），这里只负责最终状态 */
 .cui__week.is-collapsed-hidden {
-  max-height: 0;
+  height: 0;
   margin-bottom: 0;
   opacity: 0;
   pointer-events: none;
@@ -213,60 +208,11 @@
   pointer-events: none;
 }
 
-.cui__grid.is-month-in-next {
-  animation: cui-month-in-next var(--cui-month-duration, 220ms) var(--cui-month-easing, ease) both;
-}
-
+/* 只在动画期间提升为合成层，动画结束后随类名一起移除 */
+.cui__grid.is-month-clone,
+.cui__grid.is-month-in-next,
 .cui__grid.is-month-in-prev {
-  animation: cui-month-in-prev var(--cui-month-duration, 220ms) var(--cui-month-easing, ease) both;
-}
-
-.cui__grid.is-month-out-next {
-  animation: cui-month-out-next var(--cui-month-duration, 220ms) var(--cui-month-easing, ease) both;
-}
-
-.cui__grid.is-month-out-prev {
-  animation: cui-month-out-prev var(--cui-month-duration, 220ms) var(--cui-month-easing, ease) both;
-}
-
-@keyframes cui-month-in-next {
-  from {
-    transform: translateX(100%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes cui-month-out-next {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(-100%);
-  }
-}
-
-@keyframes cui-month-in-prev {
-  from {
-    transform: translateX(-100%);
-  }
-
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes cui-month-out-prev {
-  from {
-    transform: translateX(0);
-  }
-
-  to {
-    transform: translateX(100%);
-  }
+  will-change: transform;
 }
 
 .cui--no-animation .cui__grid,

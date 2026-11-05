@@ -180,6 +180,25 @@ describe("节日", () => {
     expect(calendar.solarToLunar(2026, 11, 9).nljr).toContain("寒衣节");
     expect(calendar.solarToLunar(2026, 10, 1).gljr[0]).toBe("国庆节");
   });
+
+  it("闰月不过节", () => {
+    // 1903 闰五月初五、1900 闰八月十五
+    const leapMay = calendar.lunarToSolar(1903, 5, 5, true);
+    const leapAug = calendar.lunarToSolar(1900, 8, 15, true);
+    const normalMay = calendar.lunarToSolar(1903, 5, 5);
+    const normalAug = calendar.lunarToSolar(1900, 8, 15);
+
+    expect(leapMay.isLeap).toBe(true);
+    expect(leapAug.isLeap).toBe(true);
+    expect(calendar.solarToLunar(leapMay.cYear, leapMay.cMonth, leapMay.cDay).nljr).toEqual([]);
+    expect(calendar.solarToLunar(leapAug.cYear, leapAug.cMonth, leapAug.cDay).nljr).toEqual([]);
+    expect(calendar.solarToLunar(normalMay.cYear, normalMay.cMonth, normalMay.cDay).nljr).toContain(
+      "端午节",
+    );
+    expect(calendar.solarToLunar(normalAug.cYear, normalAug.cMonth, normalAug.cDay).nljr).toContain(
+      "中秋节",
+    );
+  });
 });
 
 describe("干支", () => {

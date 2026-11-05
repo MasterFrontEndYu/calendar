@@ -1,5 +1,5 @@
 import { MMDD_RE, describe, failType, isPlainObject } from "./Assert";
-import { mmddOf } from "./DateKey";
+import { isLunarMonthDay, isSolarMonthDay, mmddOf } from "./DateKey";
 import type { FestivalMap } from "../types";
 
 /** 没有节日时共用的空数组，冻结后不怕调用方误改 */
@@ -10,8 +10,9 @@ const NO_FESTIVAL: readonly string[] = Object.freeze([]) as readonly string[];
  * 任何格式错误都会抛出 TypeError，并指出具体是哪个 key。
  * @param input 待校验的节日表
  * @param path 出错时用于定位的路径，例如 "createCalendar.setFestival.sFtv"
+ * @param lunar 农历节日（true）还是公历节日（false），决定 MMDD 的合法天数
  */
-const normalizeFestivalMap = function (input: unknown, path: string): FestivalMap {
+const normalizeFestivalMap = function (input: unknown, path: string, lunar = false): FestivalMap {
   if (!isPlainObject(input)) {
     throw failType(path, `必须是对象，收到 ${describe(input)}`);
   }
@@ -22,6 +23,12 @@ const normalizeFestivalMap = function (input: unknown, path: string): FestivalMa
         `${path}.${key}`,
         `节日 key 必须是四位 "MMDD"（如 "0101"），收到 ${describe(key)}`,
       );
+    }
+    const month = Number(key.slice(0, 2));
+    const day = Number(key.slice(2));
+    const valid = lunar ? isLunarMonthDay(month, day) : isSolarMonthDay(month, day);
+    if (!valid) {
+      throw failType(`${path}.${key}`, `${lunar ? "农历" : "公历"}不存在 ${month} 月 ${day} 日`);
     }
     const value = input[key];
     if (!Array.isArray(value)) {

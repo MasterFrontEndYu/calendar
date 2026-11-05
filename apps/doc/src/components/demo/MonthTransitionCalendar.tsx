@@ -18,9 +18,12 @@ export default function MonthTransitionCalendar(props: MonthTransitionCalendarPr
 
     const instance = createCalendarUI(host, {
       initialDate: "2026-10-15",
-      monthTransition: "slide",
-      monthTransitionDuration: props.duration ?? 220,
-      monthTransitionEasing: props.easing ?? "ease",
+      animation: {
+        slide: {
+          duration: props.duration ?? 220,
+          easing: props.easing ?? "ease",
+        },
+      },
       onMonthChange: (year, nextMonth) => {
         setMonth(`${year}-${String(nextMonth).padStart(2, "0")}`);
       },

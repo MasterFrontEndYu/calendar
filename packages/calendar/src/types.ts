@@ -121,6 +121,14 @@ export interface LunarResult {
 }
 
 /**
+ * getHolidays 的选项
+ */
+export interface GetHolidaysOptions {
+  /** 默认 true：返回合并内置数据后的完整配置；false：只返回创建实例时传入的那部分 */
+  merged?: boolean;
+}
+
+/**
  * 固定了一份节假日配置的日历实例
  *
  * 由 createCalendar() 创建，配置在创建时固定，实例之间互不影响。
@@ -131,5 +139,5 @@ export interface Calendar {
   /** 农历转公历 */
   lunarToSolar(this: void, y: number, m: number, d: number, isLeapMonth?: boolean): LunarResult;
   /** 该实例当前配置的深拷贝，可再次用于 createCalendar() */
-  getHolidays(this: void): HolidaySnapshot;
+  getHolidays(this: void, options?: GetHolidaysOptions): HolidaySnapshot;
 }

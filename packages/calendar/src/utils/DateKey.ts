@@ -12,4 +12,17 @@ const mmddOf = function (m: number, d: number): string {
   return (MMDD[m] as string[])[d] as string;
 };
 
-export { mmddOf };
+/** 公历每个月的最大天数，2 月按闰年放宽到 29 */
+const SOLAR_MAX_DAY = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/** 公历 MMDD 是否对应真实存在的日期（例如 0231、0431 为 false） */
+const isSolarMonthDay = function (m: number, d: number): boolean {
+  return d >= 1 && d <= (SOLAR_MAX_DAY[m - 1] ?? 0);
+};
+
+/** 农历 MMDD：每个月最多 30 天 */
+const isLunarMonthDay = function (m: number, d: number): boolean {
+  return d >= 1 && d <= 30;
+};
+
+export { mmddOf, isSolarMonthDay, isLunarMonthDay };

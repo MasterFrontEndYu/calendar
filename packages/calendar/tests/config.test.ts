@@ -69,11 +69,23 @@ describe("createCalendar 配置校验", () => {
     ["年份越界", () => createCalendar({ setRest: { 2101: { xiu: [], ban: [] } } })],
     ["调休字段拼错", () => createCalendar({ setRest: { 2026: { xiu: [], baN: [] } } } as never)],
     ["调休日期不是 MMDD", () => createCalendar({ setRest: { 2026: { xiu: ["1-1"] } } })],
+    ["公历节日日期不存在", () => createCalendar({ setFestival: { sFtv: { "0230": ["x"] } } })],
+    ["调休日期不存在", () => createCalendar({ setRest: { 2026: { xiu: ["0230"] } } })],
+    [
+      "同一天既放假又补班",
+      () => createCalendar({ setRest: { 2026: { xiu: ["0301"], ban: ["0301"] } } }),
+    ],
     ["replace 不是布尔", () => createCalendar({}, { replace: 1 as never })],
   ];
 
   it.each(cases)("%s 抛 TypeError", (_name, fn) => {
     expect(fn).toThrow(TypeError);
+  });
+
+  it("农历节日允许 0230 这类日期", () => {
+    expect(() =>
+      createCalendar({ setFestival: { lFtv: { "0230": ["测试农历节日"] } } }),
+    ).not.toThrow();
   });
 
   it("错误信息带 createCalendar 和出错的字段路径", () => {

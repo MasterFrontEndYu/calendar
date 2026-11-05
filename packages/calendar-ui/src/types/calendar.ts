@@ -26,6 +26,32 @@ export interface CalendarRange {
 /** 自定义副标题：返回 null/undefined 时回退到 adapter 的 subtitle */
 export type SubtitleRenderer = (day: CalendarDate) => string | null | undefined;
 
+/** 翻月滑动动画；传了 slide 就开启，不传就是直接切换 */
+export interface SlideAnimationOptions {
+  /** 动画时长，单位 ms，默认 220 */
+  duration?: number;
+  /** 缓动函数，默认 "ease" */
+  easing?: string;
+}
+
+/** 折叠配置；传了 collapse 就显示底部折叠箭头并开启过渡 */
+export interface CollapseAnimationOptions {
+  /** 折叠时长，单位 ms，默认 200 */
+  duration?: number;
+  /** 缓动函数，默认 "ease" */
+  easing?: string;
+  /** 初始是否折叠，默认 false（展开） */
+  defaultCollapsed?: boolean;
+}
+
+/** 动画配置；整块不传时不做任何动画，也不显示折叠箭头 */
+export interface CalendarAnimationOptions {
+  /** 翻月滑动；`{}` 表示用默认时长和缓动 */
+  slide?: SlideAnimationOptions;
+  /** 折叠；`{}` 表示启用折叠并默认展开 */
+  collapse?: CollapseAnimationOptions;
+}
+
 /** 规范后的年月 */
 export interface YearMonth {
   year: number;
@@ -165,20 +191,13 @@ export interface CalendarOptions<TData = null> {
   locale?: CalendarLocale | CalendarLocaleName;
   /** 主题，默认 "auto"：跟随最近的 data-theme，没有则跟随系统 */
   theme?: CalendarTheme;
-  /** 是否允许折叠，默认 false；开启后底部出现上下箭头 */
-  collapsible?: boolean;
-  /** 初始是否折叠，默认 false；仅在 collapsible 为 true 时生效 */
-  defaultCollapsed?: boolean;
-  /** 翻月动画，默认 "slide"；设为 "none" 关闭 */
-  monthTransition?: "none" | "slide";
-  /** 翻月动画时长，单位 ms，默认 220 */
-  monthTransitionDuration?: number;
-  /** 翻月动画缓动，默认 "ease" */
-  monthTransitionEasing?: string;
-  /** 折叠高度动画时长，单位 ms，默认 200；设为 0 关闭 */
-  collapseTransitionDuration?: number;
-  /** 折叠高度动画缓动，默认 "ease" */
-  collapseTransitionEasing?: string;
+  /**
+   * 动画配置
+   *
+   * 不传时翻月直接切换、不显示折叠箭头。传了 `slide` 才开启滑动，
+   * 传了 `collapse` 才显示折叠箭头。
+   */
+  animation?: CalendarAnimationOptions;
   /** 自定义副标题；优先于 adapter.subtitle，返回 null/undefined 时回退 */
   subtitle?: SubtitleRenderer;
   /** 是否显示头部，默认 true */
@@ -231,14 +250,6 @@ export interface CalendarInstance {
   toggleHeader(): void;
   /** 头部当前是否可见 */
   isHeaderVisible(): boolean;
-  /** 折叠日历，只显示当前行；未开启 collapsible 时无效 */
-  collapse(): void;
-  /** 展开日历 */
-  expand(): void;
-  /** 切换折叠状态 */
-  toggleCollapsed(): void;
-  /** 是否处于折叠状态 */
-  isCollapsed(): boolean;
   /** 当前最小可选日期，未设置时为 null */
   getMinDate(): Date | null;
   /** 设置最小可选日期，传 null 取消 */

@@ -6,7 +6,7 @@ import CollapseCalendar from "../../components/demo/CollapseCalendar";
 
 # 折叠
 
-`collapsible: true` 时，底部出现单状态上下箭头。默认展开。
+配置 `animation.collapse` 后，底部出现单状态上下箭头；默认展开。折叠/展开由底部箭头控制，不提供额外的实例方法。
 
 ## 单选
 
@@ -14,8 +14,8 @@ import CollapseCalendar from "../../components/demo/CollapseCalendar";
 
 ```ts
 const instance = createCalendarUI(host, {
-  collapsible: true,
   initialDate: "2026-10-15",
+  animation: { collapse: {} },
 });
 ```
 
@@ -28,11 +28,25 @@ const instance = createCalendarUI(host, {
 ```ts
 const instance = createCalendarUI(host, {
   mode: "range",
-  collapsible: true,
   initialDate: "2026-10-15",
+  animation: { collapse: {} },
 });
 ```
 
 范围折叠时同时显示起点行和终点行；两个端点同一周时只显示一行。
+
+## 默认折叠
+
+```ts
+createCalendarUI(host, {
+  animation: {
+    collapse: { defaultCollapsed: true },
+  },
+});
+```
+
+- `collapse: {}`：开启折叠，默认 200ms / `ease`，初始展开；
+- `collapse.defaultCollapsed: true`：初始折叠；
+- `collapse.duration: 0`：保留箭头，但折叠/展开不做过渡。
 
 完整折叠 API 见 [calendar-ui 指南](/guide/calendar-ui)。

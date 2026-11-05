@@ -1,5 +1,5 @@
 import { MMDD_RE, describe, failType, isPlainObject } from "./Assert";
-import { mmddOf } from "./DateKey";
+import { isSolarMonthDay, mmddOf } from "./DateKey";
 import type { NormalizedRestEntry, RestEntry } from "../types";
 
 /** 预建索引，避免每次查询都做数组 includes */
@@ -32,6 +32,11 @@ const normalizeDayList = function (input: unknown, path: string): string[] {
     if (typeof day !== "string" || !MMDD_RE.test(day)) {
       throw failType(`${path}[${index}]`, `必须是四位 "MMDD"（如 "0101"），收到 ${describe(day)}`);
     }
+    const month = Number(day.slice(0, 2));
+    const date = Number(day.slice(2));
+    if (!isSolarMonthDay(month, date)) {
+      throw failType(`${path}[${index}]`, `公历不存在 ${month} 月 ${date} 日`);
+    }
     days.push(day);
   });
   return Array.from(new Set(days));
@@ -63,10 +68,23 @@ const normalizeRestMap = function (input: unknown, path: string): RestMap {
         throw failType(`${path}.${yearKey}.${field}`, `不认识的字段，只支持 xiu 与 ban`);
       }
     });
-    result[yearKey] = {
-      xiu: entry.xiu === undefined ? [] : normalizeDayList(entry.xiu, `${path}.${yearKey}.xiu`),
-      ban: entry.ban === undefined ? [] : normalizeDayList(entry.ban, `${path}.${yearKey}.ban`),
-    };
+    const xiu =
+      entry.xiu === undefined ? [] : normalizeDayList(entry.xiu, `${path}.${yearKey}.xiu`);
+    const ban =
+      entry.ban === undefined ? [] : normalizeDayList(entry.ban, `${path}.${yearKey}.ban`);
+
+    // 放假和补班来自同一份法定节假日安排，同一天不可能既放假又补班
+    const conflict = xiu.filter(function (day) {
+      return ban.indexOf(day) !== -1;
+    });
+    if (conflict.length > 0) {
+      throw failType(
+        `${path}.${yearKey}`,
+        `同一天不能既是放假日又是补班日：${conflict.join("、")}`,
+      );
+    }
+
+    result[yearKey] = { xiu, ban };
   });
   return result;
 };

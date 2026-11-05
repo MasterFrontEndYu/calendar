@@ -49,6 +49,50 @@ describe("createCalendar", () => {
     expect(utils.toAstro(4, 19)).toBe("白羊座");
   });
 
+  it("节日数组一律只读，动态节日也不可变", () => {
+    const calendar = createCalendar();
+    const dynamicSolar = calendar.solarToLunar(2026, 5, 10).gljr; // 母亲节
+    const dynamicLunar = calendar.solarToLunar(2026, 2, 16).nljr; // 除夕
+
+    expect(dynamicSolar).toContain("母亲节");
+    expect(dynamicLunar).toContain("除夕");
+    expect(Object.isFrozen(dynamicSolar)).toBe(true);
+    expect(Object.isFrozen(dynamicLunar)).toBe(true);
+    expect(() => (dynamicSolar as string[]).push("污染")).toThrow();
+    expect(() => (dynamicLunar as string[]).push("污染")).toThrow();
+  });
+
+  it("isLeapMonth 必须是布尔值", () => {
+    const calendar = createCalendar();
+
+    expect(() => calendar.lunarToSolar(2020, 4, 1, "true" as never)).toThrow(TypeError);
+    expect(() => calendar.lunarToSolar(2020, 4, 1, 1 as never)).toThrow(TypeError);
+    expect(calendar.lunarToSolar(2020, 4, 1, true).isLeap).toBe(true);
+  });
+
+  it("getHolidays({ merged: false }) 只导出用户传入的部分", () => {
+    const calendar = createCalendar({
+      setFestival: { sFtv: { "1115": ["A 节日"] } },
+      setRest: { 2027: { xiu: ["0104"] } },
+    });
+
+    const own = calendar.getHolidays({ merged: false });
+    expect(Object.keys(own.setFestival.sFtv)).toEqual(["1115"]);
+    expect(Object.keys(own.setFestival.lFtv)).toEqual([]);
+    expect(Object.keys(own.setRest)).toEqual(["2027"]);
+
+    const merged = calendar.getHolidays();
+    expect(Object.keys(merged.setFestival.sFtv).length).toBeGreaterThan(1);
+    expect(merged.setRest["2026"].xiu.length).toBeGreaterThan(0);
+  });
+
+  it("getHolidays 的 options 会被校验", () => {
+    const calendar = createCalendar();
+
+    expect(() => calendar.getHolidays({ merged: 1 as never })).toThrow(TypeError);
+    expect(() => calendar.getHolidays("x" as never)).toThrow(TypeError);
+  });
+
   it("默认导出就是 createCalendar", async () => {
     const module = await import("../src/index.ts");
     expect(module.default).toBe(module.createCalendar);

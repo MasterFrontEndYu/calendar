@@ -6,18 +6,18 @@ import MonthTransitionCalendar from "../../components/demo/MonthTransitionCalend
 
 # 翻月动画
 
-点击日历左右箭头翻月，旧月份会向一侧滑出，新月份从另一侧滑入，两页首尾相接。
+翻月动画默认关闭：不配置 `animation.slide` 时，切换月份是直接换内容。配置 `slide: {}` 即开启，默认 220ms / `ease`。
 
-## 默认动画
+## 开启滑动
 
 <MonthTransitionCalendar />
 
 ```ts
 const instance = createCalendarUI(host, {
   initialDate: "2026-10-15",
-  monthTransition: "slide",
-  monthTransitionDuration: 220,
-  monthTransitionEasing: "ease",
+  animation: {
+    slide: {}, // 等价于 { duration: 220, easing: "ease" }
+  },
   onMonthChange: (year, month) => {
     console.log(year, month);
   },
@@ -26,16 +26,14 @@ const instance = createCalendarUI(host, {
 
 ## 慢速 + linear
 
-把时长和缓动改大，能更明显看到横移过程：
-
 <MonthTransitionCalendar duration={600} easing="linear" />
 
 ```ts
 const instance = createCalendarUI(host, {
   initialDate: "2026-10-15",
-  monthTransition: "slide",
-  monthTransitionDuration: 600,
-  monthTransitionEasing: "linear",
+  animation: {
+    slide: { duration: 600, easing: "linear" },
+  },
 });
 ```
 
@@ -43,12 +41,11 @@ const instance = createCalendarUI(host, {
 
 ```ts
 createCalendarUI(host, {
-  monthTransition: "none",
+  // 不传 animation.slide 即可；animation: {} 也一样
 });
 ```
 
-- 默认 `slide`，220ms，`ease`；
+- `slide: {}` 开启滑动，缺省 220ms / `ease`；
+- 不配置 `animation.slide` 时翻月直接切换；
 - `prefers-reduced-motion: reduce` 下自动关闭；
 - 时长、缓动也可以通过 `.cui` 的 `--cui-month-duration`、`--cui-month-easing` 覆盖。
-
-完整选项见 [calendar-ui 指南](/guide/calendar-ui)。

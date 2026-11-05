@@ -22,6 +22,12 @@ import {
   toDateOnly,
 } from "./utils/date";
 import { node } from "./utils/dom";
+import {
+  normalizeEasing,
+  prefersReducedMotion,
+  readCssDuration,
+  readCssEasing,
+} from "./utils/motion";
 
 /** 没有显式 min/max 时，搜索可选日期的兜底范围 */
 const SEARCH_MIN = new Date(1900, 0, 1);
@@ -93,11 +99,6 @@ export function createCalendarUI<TData = null>(
   let theme = options.theme ?? "auto";
   const today = new Date();
 
-  const monthTransition = options.monthTransition ?? "slide";
-  if (monthTransition !== "none" && monthTransition !== "slide") {
-    throw new TypeError('[calendar-ui] monthTransition 必须是 "none" 或 "slide"');
-  }
-
   const readDuration = function (
     value: number | undefined,
     fallback: number,
@@ -110,25 +111,31 @@ export function createCalendarUI<TData = null>(
     return duration;
   };
 
-  const monthDuration = readDuration(
-    options.monthTransitionDuration,
-    220,
-    "monthTransitionDuration",
-  );
-  const monthEasing = options.monthTransitionEasing ?? "ease";
-  if (typeof monthEasing !== "string" || monthEasing.trim() === "") {
-    throw new TypeError("[calendar-ui] monthTransitionEasing 必须是非空字符串");
-  }
+  const readEasing = function (value: string | undefined, path: string): string {
+    const easing = value ?? "ease";
+    if (typeof easing !== "string" || easing.trim() === "") {
+      throw new TypeError(`[calendar-ui] ${path} 必须是非空字符串`);
+    }
+    return easing;
+  };
 
-  const collapseDuration = readDuration(
-    options.collapseTransitionDuration,
-    200,
-    "collapseTransitionDuration",
-  );
-  const collapseEasing = options.collapseTransitionEasing ?? "ease";
-  if (typeof collapseEasing !== "string" || collapseEasing.trim() === "") {
-    throw new TypeError("[calendar-ui] collapseTransitionEasing 必须是非空字符串");
+  // 动画默认全关：传了 slide 才滑，传了 collapse 才有折叠箭头
+  const animation = options.animation;
+  if (animation !== undefined && (animation === null || typeof animation !== "object")) {
+    throw new TypeError("[calendar-ui] animation 必须是对象");
   }
+  const slide = animation?.slide ?? null;
+  const collapseOptions = animation?.collapse ?? null;
+  const monthTransition = slide === null ? "none" : "slide";
+  const monthDuration = readDuration(slide?.duration, 220, "animation.slide.duration");
+  const monthEasing = readEasing(slide?.easing, "animation.slide.easing");
+  const collapsible = collapseOptions !== null;
+  const collapseDuration = readDuration(
+    collapseOptions?.duration,
+    200,
+    "animation.collapse.duration",
+  );
+  const collapseEasing = readEasing(collapseOptions?.easing, "animation.collapse.easing");
 
   const mode: CalendarMode = options.mode ?? "single";
   if (mode !== "single" && mode !== "range") {
@@ -204,8 +211,7 @@ export function createCalendarUI<TData = null>(
 
   let rangeStart: Date | null = null;
   let rangeEnd: Date | null = null;
-  const collapsible = options.collapsible === true;
-  let collapsed = collapsible && options.defaultCollapsed === true;
+  let collapsed = collapsible && collapseOptions?.defaultCollapsed === true;
   let collapseButton: HTMLButtonElement | null = null;
 
   const root = node("div", "cui");
@@ -271,9 +277,12 @@ export function createCalendarUI<TData = null>(
     );
   };
 
-  const updateCollapsedRows = function (dayLists: readonly CalendarDay<TData>[][]): void {
+  const updateCollapsedRows = function (
+    dayLists: readonly CalendarDay<TData>[][],
+    animate: boolean,
+  ): void {
     if (!collapsed) {
-      panels.forEach((panel) => panel.grid.setVisibleRows(null));
+      panels.forEach((panel) => panel.grid.setVisibleRows(null, animate));
       return;
     }
 
@@ -299,7 +308,10 @@ export function createCalendarUI<TData = null>(
         rows.add(first >= 0 ? Math.floor(first / 7) : 0);
       }
 
-      panel.grid.setVisibleRows([...rows].sort((a, b) => a - b));
+      panel.grid.setVisibleRows(
+        [...rows].sort((a, b) => a - b),
+        animate,
+      );
     });
   };
 
@@ -336,13 +348,13 @@ export function createCalendarUI<TData = null>(
     header.setNavDisabled(first <= min, last >= max);
   }
 
-  function render(): void {
+  function render(animateRows = true): void {
     header.update(state.year, state.month);
     const dayLists = panels.map((_, index) => currentDays(index));
     panels.forEach((panel, index) => panel.grid.render(dayLists[index]!));
     updatePanelLabels();
     updateNav();
-    updateCollapsedRows(dayLists);
+    updateCollapsedRows(dayLists, animateRows);
     updateCollapseButton();
   }
 
@@ -396,10 +408,31 @@ export function createCalendarUI<TData = null>(
     options.onSelect?.(days.find((item) => sameDay(item.date, day.date)) ?? day);
   }
 
-  let monthAnimationToken = 0;
-  let monthOldLayers: HTMLElement[] = [];
+  interface MonthAnimation {
+    token: number;
+    layers: HTMLElement[];
+    animations: Animation[];
+    timer: ReturnType<typeof setTimeout>;
+  }
 
-  function clearMonthAnimation(): void {
+  let monthAnimationToken = 0;
+  let monthAnimation: MonthAnimation | null = null;
+
+  /** 结束翻月动画：各层留在终点，并移除旧月份的克隆层 */
+  function stopMonthAnimation(): void {
+    const active = monthAnimation;
+    if (active === null) return;
+
+    monthAnimation = null;
+    clearTimeout(active.timer);
+    active.animations.forEach((animation) => {
+      try {
+        animation.cancel();
+      } catch {
+        // 浏览器已经回收了这段动画
+      }
+    });
+    active.layers.forEach((layer) => layer.remove());
     panels.forEach((panel) => {
       panel.grid.el.classList.remove(
         "is-month-in-next",
@@ -408,31 +441,95 @@ export function createCalendarUI<TData = null>(
         "is-month-out-prev",
       );
     });
-    monthOldLayers.forEach((layer) => layer.remove());
-    monthOldLayers = [];
   }
 
-  function captureMonthSnapshot(): void {
-    clearMonthAnimation();
-    panels.forEach((panel) => {
+  /** 克隆旧月份作为离场层；折叠行在换月后由 syncLayerRows 对齐 */
+  function captureMonthSnapshot(): HTMLElement[] {
+    return panels.map((panel) => {
       const clone = panel.grid.el.cloneNode(true) as HTMLElement;
       clone.classList.add("is-month-clone");
+      clone.classList.remove(
+        "is-month-in-next",
+        "is-month-in-prev",
+        "is-month-out-next",
+        "is-month-out-prev",
+      );
       clone.setAttribute("aria-hidden", "true");
       clone.querySelectorAll("button").forEach((button) => {
         button.tabIndex = -1;
       });
       panel.viewport.append(clone);
-      monthOldLayers.push(clone);
+      return clone;
     });
   }
 
-  function animateMonth(direction: 1 | -1): void {
-    panels.forEach((panel, index) => {
-      const oldLayer = monthOldLayers[index];
-      void panel.viewport.offsetWidth;
-      panel.grid.el.classList.add(direction === 1 ? "is-month-in-next" : "is-month-in-prev");
-      oldLayer?.classList.add(direction === 1 ? "is-month-out-next" : "is-month-out-prev");
+  /** 离场层和新月份用同一套折叠行，两层高度一致，滑动时不会露出空隙 */
+  function syncLayerRows(layers: readonly HTMLElement[]): void {
+    layers.forEach((layer, index) => {
+      const sourceRows = panels[index]?.grid.el.querySelectorAll<HTMLElement>(".cui__week");
+      const layerRows = layer.querySelectorAll<HTMLElement>(".cui__week");
+      sourceRows?.forEach((source, rowIndex) => {
+        const target = layerRows[rowIndex];
+        if (target === undefined) return;
+
+        const hidden = source.classList.contains("is-collapsed-hidden");
+        target.classList.toggle("is-collapsed-hidden", hidden);
+        target.toggleAttribute("inert", hidden);
+        if (hidden) target.setAttribute("aria-hidden", "true");
+        else target.removeAttribute("aria-hidden");
+      });
     });
+  }
+
+  /**
+   * 用 Web Animations 驱动翻月
+   *
+   * 不靠切换类名重启动画，也就不需要在点击处理里强制同步一次布局；
+   * 快速连点时上一段会被 stopMonthAnimation 直接停到终点，不会叠加克隆层。
+   */
+  function startMonthAnimation(
+    direction: 1 | -1,
+    layers: readonly HTMLElement[],
+    duration: number,
+    easing: string,
+  ): void {
+    const enter = `translateX(${direction * 100}%)`;
+    const leave = `translateX(${-direction * 100}%)`;
+    const inClass = direction === 1 ? "is-month-in-next" : "is-month-in-prev";
+    const outClass = direction === 1 ? "is-month-out-next" : "is-month-out-prev";
+    const animations: Animation[] = [];
+
+    panels.forEach((panel, index) => {
+      const grid = panel.grid.el;
+      const oldLayer = layers[index] ?? null;
+      grid.classList.add(inClass);
+      oldLayer?.classList.add(outClass);
+
+      if (typeof grid.animate !== "function") return;
+      animations.push(
+        grid.animate([{ transform: enter }, { transform: "translateX(0)" }], {
+          duration,
+          easing,
+          fill: "both",
+        }),
+      );
+      if (oldLayer !== null) {
+        animations.push(
+          oldLayer.animate([{ transform: "translateX(0)" }, { transform: leave }], {
+            duration,
+            easing,
+            fill: "both",
+          }),
+        );
+      }
+    });
+
+    const token = ++monthAnimationToken;
+    const timer = setTimeout(() => {
+      if (monthAnimation?.token === token) stopMonthAnimation();
+    }, duration + 80);
+
+    monthAnimation = { token, layers: [...layers], animations, timer };
   }
 
   function goTo(year: number, month: number): void {
@@ -453,24 +550,23 @@ export function createCalendarUI<TData = null>(
     if (nextIndex === currentIndex) return;
 
     const direction = nextIndex > currentIndex ? 1 : -1;
-    const reduceMotion =
-      typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const shouldAnimate = monthTransition === "slide" && monthDuration > 0 && !reduceMotion;
+    const rootStyle = getComputedStyle(root);
+    const duration = readCssDuration(rootStyle, "--cui-month-duration", monthDuration);
+    const easing = normalizeEasing(readCssEasing(rootStyle, "--cui-month-easing", monthEasing));
+    const shouldAnimate = monthTransition === "slide" && duration > 0 && !prefersReducedMotion();
 
-    if (shouldAnimate) captureMonthSnapshot();
-    else clearMonthAnimation();
+    // 先把上一段停在终点：快速连点时不会让旧克隆和新动画同时存在
+    stopMonthAnimation();
 
+    const layers = shouldAnimate ? captureMonthSnapshot() : [];
     state.year = next.year;
     state.month = next.month;
-    render();
 
-    if (shouldAnimate) {
-      animateMonth(direction);
-      const token = ++monthAnimationToken;
-      setTimeout(() => {
-        if (token === monthAnimationToken) clearMonthAnimation();
-      }, monthDuration + 80);
-    }
+    // 折叠行瞬时切换：行高过渡和位移动画同时跑会让每一帧都触发布局
+    render(false);
+    syncLayerRows(layers);
+
+    if (shouldAnimate) startMonthAnimation(direction, layers, duration, easing);
 
     options.onMonthChange?.(state.year, state.month);
   }
@@ -553,7 +649,8 @@ export function createCalendarUI<TData = null>(
 
   root.classList.add("cui--no-animation");
   container.appendChild(root);
-  render();
+  // 首次渲染不播折叠动画
+  render(false);
   root.classList.remove("cui--no-animation");
 
   return {
@@ -664,10 +761,6 @@ export function createCalendarUI<TData = null>(
       header.el.hidden = !header.el.hidden;
     },
     isHeaderVisible: () => !header.el.hidden,
-    collapse: () => applyCollapse(true),
-    expand: () => applyCollapse(false),
-    toggleCollapsed,
-    isCollapsed: () => collapsed,
     getMinDate: () => (minDate === null ? null : new Date(minDate)),
     setMinDate: (date: CalendarDateInput | null) => {
       applyBounds(readDate(date, "setMinDate(date)"), maxDate);
@@ -682,6 +775,8 @@ export function createCalendarUI<TData = null>(
       root.dataset.theme = next;
     },
     destroy: () => {
+      stopMonthAnimation();
+      collapseButton?.removeEventListener("click", toggleCollapsed);
       header.destroy();
       panels.forEach((panel) => panel.grid.destroy());
       root.remove();

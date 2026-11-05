@@ -47,11 +47,11 @@ createCalendar().solarToLunar(2027, 1, 4).ban; // false
 
 ## 实例方法
 
-| 方法                                  | 说明                                          |
-| ------------------------------------- | --------------------------------------------- |
-| `solarToLunar(y?, m?, d?)`            | 公历转农历；不传参数返回今天                  |
-| `lunarToSolar(y, m, d, isLeapMonth?)` | 农历转公历                                    |
-| `getHolidays()`                       | 当前配置的深拷贝，可再传给 `createCalendar()` |
+| 方法                                  | 说明                                                     |
+| ------------------------------------- | -------------------------------------------------------- |
+| `solarToLunar(y?, m?, d?)`            | 公历转农历；不传参数返回今天                             |
+| `lunarToSolar(y, m, d, isLeapMonth?)` | 农历转公历，`isLeapMonth` 只接受布尔值                   |
+| `getHolidays(options?)`               | 当前配置的深拷贝；`{ merged: false }` 只导出你传入的部分 |
 
 ```ts
 const calendar = createCalendar();
@@ -62,8 +62,11 @@ calendar.solarToLunar(2026, 10, 1);
 calendar.lunarToSolar(2024, 1, 1); // 2024-02-10
 calendar.lunarToSolar(2020, 4, 1, true); // 闰四月
 
+// 完整配置（内置 + 你注入的）
 const snapshot = calendar.getHolidays();
-const copy = createCalendar(snapshot);
+
+// 只导出你注入的部分，方便存到后端或单独维护
+const own = calendar.getHolidays({ merged: false });
 ```
 
 ## LunarResult
@@ -156,6 +159,19 @@ const copy = createCalendar(snapshot);
 ```
 
 `getHolidays()` 返回深拷贝，不会共享内部数组。
+
+注意：`getHolidays()` 返回的是**当前生效的配置**（含内置数据）。如果实例是用 `{ replace: true }` 建的空配置，快照就是空的；再传给 `createCalendar()` 时若不带 `{ replace: true }`，内置数据会重新合并回来。想只导出自己注入的部分用 `getHolidays({ merged: false })`。
+
+## 校验规则
+
+| 规则          | 说明                                                  |
+| ------------- | ----------------------------------------------------- |
+| 公历 MMDD     | 必须真实存在，`0230`、`0431` 这类会直接抛 `TypeError` |
+| 农历 MMDD     | 每月最多 30 天（农历任意月都可能是 30 天）            |
+| `xiu` / `ban` | 同一天不能既放假又补班，冲突会抛 `TypeError`          |
+| 闰月节日      | 闰月不过节：闰五月初五不算端午、闰八月十五不算中秋    |
+| `isLeapMonth` | 只接受布尔值，传 `"true"`、`1` 会抛 `TypeError`       |
+| 年份          | `setRest` 的 key 必须在 1900-2100 之间                |
 
 ## 工具函数
 

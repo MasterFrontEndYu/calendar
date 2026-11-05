@@ -25,9 +25,10 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknow
   if (cell.dataset.date !== key) {
     cell.dataset.date = key;
 
-    const tag = cell.querySelector(".cui__day-tag") as HTMLElement;
-    const num = cell.querySelector(".cui__day-num") as HTMLElement;
-    const sub = cell.querySelector(".cui__day-sub") as HTMLElement;
+    // 结构固定为 tag → num → sub，按兄弟节点取比三次 querySelector 便宜
+    const tag = cell.firstElementChild as HTMLElement;
+    const num = tag.nextElementSibling as HTMLElement;
+    const sub = num.nextElementSibling as HTMLElement;
     const badge = day.badge;
 
     tag.textContent = badge?.text ?? "";

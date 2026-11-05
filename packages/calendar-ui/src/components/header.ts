@@ -20,26 +20,32 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
   let year = options.year;
   let month = options.month;
 
-  const render = () => {
-    el.replaceChildren();
+  const titleText = (): string =>
+    options.title ? options.title(year, month) : options.locale.monthTitle(year, month);
 
-    if (options.renderer) {
-      el.append(
-        options.renderer({
-          year,
-          month,
-          locale: options.locale,
-          prevMonth: options.onPrev,
-          nextMonth: options.onNext,
-        }),
-      );
-      return;
-    }
+  const renderDefault = (): void => {
+    // 默认头部只建一次节点：换月时重建会把正在聚焦的翻月按钮挪出 DOM，
+    // 焦点掉到 body，键盘用户每翻一个月就要重新找按钮。
+    if (el.childElementCount === 0) el.append(prev.el, title, next.el);
+    const nextTitle = titleText();
+    if (title.textContent !== nextTitle) title.textContent = nextTitle;
+  };
 
-    title.textContent = options.title
-      ? options.title(year, month)
-      : options.locale.monthTitle(year, month);
-    el.append(prev.el, title, next.el);
+  const renderCustom = (): void => {
+    el.replaceChildren(
+      options.renderer!({
+        year,
+        month,
+        locale: options.locale,
+        prevMonth: options.onPrev,
+        nextMonth: options.onNext,
+      }),
+    );
+  };
+
+  const render = (): void => {
+    if (options.renderer) renderCustom();
+    else renderDefault();
   };
 
   render();

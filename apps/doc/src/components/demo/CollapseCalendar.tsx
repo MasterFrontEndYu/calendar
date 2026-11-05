@@ -29,8 +29,8 @@ export default function CollapseCalendar(props: CollapseCalendarProps) {
 
     const instance = createCalendarUI(host, {
       mode: props.mode ?? "single",
-      collapsible: true,
       initialDate: "2026-10-15",
+      animation: { collapse: {} },
       onRangeChange: (next) => setRange(formatRange(next)),
     });
 

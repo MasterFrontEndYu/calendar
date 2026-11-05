@@ -2,6 +2,7 @@ export { createCalendarUI } from "./calendar";
 export { enUS, locales, resolveLocale, zhCN } from "./locales";
 export type {
   CalendarAdapter,
+  CalendarAnimationOptions,
   CalendarBadge,
   CalendarDate,
   CalendarDateInput,
@@ -13,10 +14,12 @@ export type {
   CalendarOptions,
   CalendarRange,
   CalendarTheme,
+  CollapseAnimationOptions,
   DayDecoration,
   HeaderRenderContext,
   HeaderRenderer,
   MonthInput,
+  SlideAnimationOptions,
   SubtitleRenderer,
   WeekStartsOn,
   YearMonth,

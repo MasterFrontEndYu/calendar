@@ -35,7 +35,7 @@ const FESTIVAL_DATA = festivalJson as unknown as Record<string, unknown>;
 
 const BASE = createResolved(
   normalizeFestivalMap(FESTIVAL_DATA.sFtv, "data/festival.json.sFtv"),
-  normalizeFestivalMap(FESTIVAL_DATA.lFtv, "data/festival.json.lFtv"),
+  normalizeFestivalMap(FESTIVAL_DATA.lFtv, "data/festival.json.lFtv", true),
   normalizeRestMap(restJson, "data/rest.json"),
 );
 
@@ -97,7 +97,7 @@ const resolveConfig = function (
     if (festivalConfig.lFtv !== undefined) {
       lFtv = mergeFestivalMap(
         from.lFtv,
-        normalizeFestivalMap(festivalConfig.lFtv, `${path}.setFestival.lFtv`),
+        normalizeFestivalMap(festivalConfig.lFtv, `${path}.setFestival.lFtv`, true),
       );
     }
   }

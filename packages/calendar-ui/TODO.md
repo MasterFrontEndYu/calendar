@@ -39,9 +39,10 @@ API：
 
 ```ts
 interface CalendarOptions {
-  monthTransition?: "none" | "slide"; // 默认 slide
-  monthTransitionDuration?: number; // 默认 220ms
-  monthTransitionEasing?: string; // 默认 ease
+  animation?: {
+    // 传了 slide 才开启滑动；不传则直接切换
+    slide?: { duration?: number; easing?: string }; // 默认 220ms / ease
+  };
 }
 ```
 
@@ -63,28 +64,27 @@ interface CalendarOptions {
 - 默认选中日期（`initialDate`，不传就是今天）所在行作为折叠行；
 - 折叠时隐藏其他行，保留星期表头和当前行；
 - 选中日期变化后，折叠行跟随移动到新选中日期所在周；
-- 展开 / 折叠通过 `max-height`、`opacity`、`margin` 过渡；
+- 展开 / 折叠按真实行高做 `height`、`opacity`、`margin` 过渡；不用 `max-height`，
+  否则 200px 到 0 的可见变化只落在缓动尾部，看起来像突然弹一下；
+- 折叠状态下翻月时行状态瞬时切换，离场层同步同一组行，避免位移和行高过渡同时触发布局；
 - 折叠状态下仍可左右翻月、选中日期；
 - 范围模式显示起点行和终点行；
 - 双视图每个月份只显示属于该月的端点行；
-- 与 1.1 的横移动画组合时，先完成翻月，再更新折叠行；
+- 与 1.1 的横移动画组合时，折叠行随离场层一起瞬时切换，两层高度保持一致；
 - reduced motion 下直接显示/隐藏。
 
 API：
 
 ```ts
 interface CalendarOptions {
-  collapsible?: boolean; // 是否允许折叠，默认 false
-  defaultCollapsed?: boolean; // 初始是否折叠，默认 false
-  collapseTransitionDuration?: number; // 默认 200ms
-  collapseTransitionEasing?: string; // 默认 ease
-}
-
-interface CalendarInstance {
-  collapse(): void;
-  expand(): void;
-  toggleCollapsed(): void;
-  isCollapsed(): boolean;
+  animation?: {
+    // 传了 collapse 才显示折叠箭头；不传则没有折叠
+    collapse?: {
+      duration?: number; // 默认 200ms
+      easing?: string; // 默认 ease
+      defaultCollapsed?: boolean; // 默认 false（展开）
+    };
+  };
 }
 ```
 
@@ -160,14 +160,14 @@ interface CalendarInstance {
 
 行为：
 
-- 默认展开，只有 `collapsible: true` 才显示底部单状态上下箭头；
-- `defaultCollapsed` 默认 `false`；
+- 只有配置了 `animation.collapse` 才显示底部单状态上下箭头；
+- `animation.collapse.defaultCollapsed` 默认 `false`（展开）；
 - 单选：折叠后显示选中日期所在周；默认选中日期决定初始行；
 - 范围：折叠后同时显示起点行和终点行；两个端点同一周时只显示一行；
 - 双视图：每个月份只显示属于该月的端点行；没有端点时显示该月第一行；
 - 当前行包含完整 7 天，包括上下月补位格；
 - 折叠状态下仍可点击其他日期，选中变化后行跟随；
-- `collapse()` / `expand()` / `toggleCollapsed()` / `isCollapsed()` 已提供。
+- 折叠/展开只通过底部箭头操作，不暴露实例方法。
 
 验收：
 
@@ -290,7 +290,6 @@ interface CalendarOptions {
 
 ```ts
 type CalendarMode = "single" | "range";
-type MonthTransition = "none" | "slide";
 
 interface CalendarOptions<TData = null> {
   mode?: CalendarMode;
@@ -298,23 +297,15 @@ interface CalendarOptions<TData = null> {
   minDate?: CalendarDateInput;
   maxDate?: CalendarDateInput;
   disabledDates?: readonly CalendarDateInput[];
-  collapsible?: boolean;
-  defaultCollapsed?: boolean;
-  monthTransition?: MonthTransition;
-  monthTransitionDuration?: number;
-  monthTransitionEasing?: string;
-  collapseTransitionDuration?: number;
-  collapseTransitionEasing?: string;
+  animation?: {
+    slide?: { duration?: number; easing?: string };
+    collapse?: { duration?: number; easing?: string; defaultCollapsed?: boolean };
+  };
   subtitle?: (day: CalendarDate) => string | null | undefined;
   onRangeChange?: (range: CalendarRange) => void;
 }
 
 interface CalendarInstance {
-  collapse(): void;
-  expand(): void;
-  toggleCollapsed(): void;
-  isCollapsed(): boolean;
-
   getRange(): CalendarRange;
   setRange(start: CalendarDateInput | null, end?: CalendarDateInput | null): void;
   clearRange(): void;

@@ -287,21 +287,34 @@ describe("折叠", () => {
     );
   };
 
-  it("默认展开，未开启 collapsible 时不显示箭头", () => {
+  it("不配置 animation 时没有折叠箭头，也没有翻月动画", () => {
     const instance = createCalendarUI(host(), { initialDate: "2026-10-15" });
 
     expect(instance.el.querySelector(".cui__collapse")).toBeNull();
-    expect(instance.isCollapsed()).toBe(false);
-    instance.collapse();
-    expect(instance.isCollapsed()).toBe(false);
+    expect(visibleRows(instance.el)).toHaveLength(6);
+
+    instance.nextMonth();
+    expect(instance.el.querySelector(".is-month-clone")).toBeNull();
 
     instance.destroy();
   });
 
-  it("开启 collapsible 后底部有单状态箭头，折叠只显示选中行", () => {
+  it("只配置 collapse 时翻月仍然直接切换", () => {
     const instance = createCalendarUI(host(), {
       initialDate: "2026-10-15",
-      collapsible: true,
+      animation: { collapse: {} },
+    });
+
+    instance.nextMonth();
+    expect(instance.el.querySelector(".is-month-clone")).toBeNull();
+
+    instance.destroy();
+  });
+
+  it("配置 animation.collapse 后底部有单状态箭头，折叠只显示选中行", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+      animation: { collapse: {} },
     });
     const button = instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!;
 
@@ -311,7 +324,6 @@ describe("折叠", () => {
     expect(visibleRows(instance.el)).toHaveLength(6);
 
     button.click();
-    expect(instance.isCollapsed()).toBe(true);
     expect(button.textContent).toBe("⌄");
     expect(button.getAttribute("aria-expanded")).toBe("false");
     const collapsedRows = visibleRows(instance.el);
@@ -321,9 +333,9 @@ describe("折叠", () => {
     instance.select("2026-10-28");
     expect(visibleRows(instance.el)[0]).toBe(instance.el.querySelectorAll(".cui__week")[4]);
 
-    instance.expand();
-    expect(instance.isCollapsed()).toBe(false);
+    button.click();
     expect(button.textContent).toBe("⌃");
+    expect(button.getAttribute("aria-expanded")).toBe("true");
     expect(visibleRows(instance.el)).toHaveLength(6);
 
     instance.destroy();
@@ -333,7 +345,7 @@ describe("折叠", () => {
     const instance = createCalendarUI(host(), {
       mode: "range",
       initialDate: "2026-10-01",
-      collapsible: true,
+      animation: { collapse: {} },
     });
 
     cellOf(instance.el, "2026-10-5").click();
@@ -353,7 +365,7 @@ describe("折叠", () => {
       mode: "range",
       months: 2,
       initialDate: "2026-10-01",
-      collapsible: true,
+      animation: { collapse: {} },
     });
 
     cellOf(instance.el, "2026-10-28").click();
@@ -372,15 +384,15 @@ describe("折叠", () => {
     instance.destroy();
   });
 
-  it("defaultCollapsed 可以默认折叠", () => {
+  it("collapse.defaultCollapsed 可以默认折叠", () => {
     const instance = createCalendarUI(host(), {
       initialDate: "2026-10-15",
-      collapsible: true,
-      defaultCollapsed: true,
+      animation: { collapse: { defaultCollapsed: true } },
     });
+    const button = instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!;
 
-    expect(instance.isCollapsed()).toBe(true);
-    expect(instance.el.querySelector(".cui__collapse")?.textContent).toBe("⌄");
+    expect(button.textContent).toBe("⌄");
+    expect(button.getAttribute("aria-expanded")).toBe("false");
     expect(visibleRows(instance.el)).toHaveLength(1);
 
     instance.destroy();
@@ -388,12 +400,12 @@ describe("折叠", () => {
 });
 
 describe("动画配置", () => {
-  it("把时长和缓动写入 CSS 变量", () => {
+  it("把 animation 里的时长和缓动写入 CSS 变量", () => {
     const instance = createCalendarUI(host(), {
-      monthTransitionDuration: 300,
-      monthTransitionEasing: "linear",
-      collapseTransitionDuration: 150,
-      collapseTransitionEasing: "ease-in",
+      animation: {
+        slide: { duration: 300, easing: "linear" },
+        collapse: { duration: 150, easing: "ease-in" },
+      },
     });
 
     expect(instance.el.style.getPropertyValue("--cui-month-duration")).toBe("300ms");
@@ -404,31 +416,49 @@ describe("动画配置", () => {
     instance.destroy();
   });
 
-  it("拒绝负的动画时长", () => {
-    expect(() => createCalendarUI(host(), { monthTransitionDuration: -1 })).toThrow(TypeError);
-    expect(() => createCalendarUI(host(), { collapseTransitionDuration: Number.NaN })).toThrow(
+  it("slide: {} / collapse: {} 使用默认时长和缓动", () => {
+    const instance = createCalendarUI(host(), {
+      animation: { slide: {}, collapse: {} },
+    });
+
+    expect(instance.el.style.getPropertyValue("--cui-month-duration")).toBe("220ms");
+    expect(instance.el.style.getPropertyValue("--cui-month-easing")).toBe("ease");
+    expect(instance.el.style.getPropertyValue("--cui-collapse-duration")).toBe("200ms");
+    expect(instance.el.style.getPropertyValue("--cui-collapse-easing")).toBe("ease");
+
+    instance.destroy();
+  });
+
+  it("拒绝负的动画时长和空缓动", () => {
+    expect(() => createCalendarUI(host(), { animation: { slide: { duration: -1 } } })).toThrow(
+      TypeError,
+    );
+    expect(() =>
+      createCalendarUI(host(), { animation: { collapse: { duration: Number.NaN } } }),
+    ).toThrow(TypeError);
+    expect(() => createCalendarUI(host(), { animation: { slide: { easing: "  " } } })).toThrow(
       TypeError,
     );
   });
 
-  it("monthTransition: none 不添加翻月动画类", () => {
+  it("默认不添加翻月动画类", () => {
     const instance = createCalendarUI(host(), {
       initialDate: "2026-10-15",
-      monthTransition: "none",
     });
 
     instance.nextMonth();
     expect(instance.el.querySelector(".cui__grid")?.classList.contains("is-month-in-next")).toBe(
       false,
     );
+    expect(instance.el.querySelector(".is-month-clone")).toBeNull();
 
     instance.destroy();
   });
 
-  it("slide 会添加对应的翻月动画类", () => {
+  it("配置 animation.slide 后添加对应的翻月动画类", () => {
     const instance = createCalendarUI(host(), {
       initialDate: "2026-10-15",
-      monthTransition: "slide",
+      animation: { slide: {} },
     });
     const grid = instance.el.querySelector(".cui__grid")!;
 
@@ -446,6 +476,55 @@ describe("动画配置", () => {
       instance.el.querySelector(".is-month-clone")?.classList.contains("is-month-out-prev"),
     ).toBe(true);
 
+    instance.destroy();
+  });
+
+  it("翻月时保留头部按钮焦点", () => {
+    const instance = createCalendarUI(host(), { initialDate: "2026-10-15" });
+    const next = instance.el.querySelectorAll<HTMLButtonElement>(".cui__nav")[1]!;
+
+    next.focus();
+    next.click();
+
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 11 });
+    expect(document.activeElement).toBe(next);
+
+    instance.destroy();
+  });
+
+  it("折叠状态下翻月，离场层和当前网格保持相同的可见行", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+      animation: { slide: {}, collapse: {} },
+    });
+
+    instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!.click();
+    instance.nextMonth();
+
+    const grid = instance.el.querySelector(".cui__grid")!;
+    const clone = instance.el.querySelector(".cui__grid.is-month-clone")!;
+    expect(clone).not.toBeNull();
+
+    const hiddenRows = (root: Element): boolean[] =>
+      Array.from(root.querySelectorAll<HTMLElement>(".cui__week")).map((row) =>
+        row.classList.contains("is-collapsed-hidden"),
+      );
+
+    expect(hiddenRows(clone)).toEqual(hiddenRows(grid));
+    expect(hiddenRows(clone).filter(Boolean)).toHaveLength(5);
+
+    instance.destroy();
+  });
+
+  it("默认翻月不残留离场层", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+    });
+
+    instance.nextMonth();
+    instance.prevMonth();
+
+    expect(instance.el.querySelectorAll(".is-month-clone")).toHaveLength(0);
     instance.destroy();
   });
 });

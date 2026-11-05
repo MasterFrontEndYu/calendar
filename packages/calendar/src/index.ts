@@ -26,8 +26,8 @@ import {
   nthWeekdayOfMonth,
 } from "./utils/SolarFunction";
 
-import { assertInteger, failRange } from "./utils/Assert";
-import { festivalList } from "./utils/SetFestival";
+import { assertInteger, describe, failRange, failType, isPlainObject } from "./utils/Assert";
+import { festivalList, NO_FESTIVAL } from "./utils/SetFestival";
 import { restOf } from "./utils/SetRest";
 import { createStandaloneConfig, snapshotOf } from "./config";
 import type { ResolvedConfig } from "./config";
@@ -42,6 +42,7 @@ export type {
   RestConfig,
   HolidayConfig,
   HolidaySnapshot,
+  GetHolidaysOptions,
   SetHolidayOptions,
 } from "./types";
 
@@ -92,19 +93,26 @@ const solarFestivals = function (
   if (m === 11 && d === nthWeekdayOfMonth(y, 11, 4, 4)) add("感恩节");
 
   // 没有浮动节日时直接返回配置里的只读数组，省掉一次拷贝
-  return extra.length === 0 ? base : base.concat(extra);
+  return extra.length === 0 ? base : Object.freeze(base.concat(extra));
 };
 
-/** 某一天的农历节日，除夕按“腊月最后一天”计算，不写死 12-30 */
+/**
+ * 某一天的农历节日，除夕按“腊月最后一天”计算，不写死 12-30
+ *
+ * 闰月不过节：闰五月初五不算端午、闰八月十五不算中秋。
+ */
 const lunarFestivals = function (
   lYear: number,
   lMonth: number,
   lDay: number,
+  isLeap: boolean,
   lFtv: Record<string, string[]>,
 ): readonly string[] {
+  if (isLeap) return NO_FESTIVAL;
+
   const base = festivalList(lFtv, lMonth, lDay);
   if (lMonth === 12 && lDay === lMonthDays(lYear, 12) && base.indexOf("除夕") === -1) {
-    return base.concat("除夕");
+    return Object.freeze(base.concat("除夕"));
   }
   return base;
 };
@@ -160,7 +168,7 @@ const computeLunar = function (
     xiu: isXiu,
     ban: isBan,
     gljr: solarFestivals(sy, sm, sd, config.sFtv),
-    nljr: lunarFestivals(year, month, day, config.lFtv),
+    nljr: lunarFestivals(year, month, day, isLeap, config.lFtv),
     lYear: year,
     lMonth: month,
     lDay: day,
@@ -219,8 +227,11 @@ const lunarToSolarWith = function (
 ): LunarResult {
   const year = assertInteger("lunarToSolar(year)", y, MIN_YEAR, MAX_YEAR);
   const month = assertInteger("lunarToSolar(month)", m, 1, 12);
+  if (isLeapMonth !== undefined && typeof isLeapMonth !== "boolean") {
+    throw failType("lunarToSolar(isLeapMonth)", `必须是布尔值，收到 ${describe(isLeapMonth)}`);
+  }
   const leap = leapMonth(year);
-  const wantLeap = Boolean(isLeapMonth);
+  const wantLeap = isLeapMonth === true;
   if (wantLeap && leap !== month) {
     failRange(
       "lunarToSolar(isLeapMonth)",
@@ -264,14 +275,27 @@ const createCalendar = function (
   options: SetHolidayOptions = {},
 ): Calendar {
   const resolved = createStandaloneConfig(config, options);
+  // 只保留用户传入的那部分（从空配置开始合并），供 getHolidays({ merged: false }) 使用
+  const own = createStandaloneConfig(config, { replace: true });
 
   return {
     /** 公历转农历，不传参返回今天 */
     solarToLunar: (y, m, d) => solarToLunarWith(resolved, y, m, d),
     /** 农历转公历 */
     lunarToSolar: (y, m, d, isLeapMonth) => lunarToSolarWith(resolved, y, m, d, isLeapMonth),
-    /** 当前配置的深拷贝 */
-    getHolidays: () => snapshotOf(resolved),
+    /** 当前配置的深拷贝；merged 为 false 时只导出用户传入的部分 */
+    getHolidays: (getOptions) => {
+      if (getOptions !== undefined && !isPlainObject(getOptions)) {
+        throw failType("getHolidays(options)", `必须是对象，收到 ${describe(getOptions)}`);
+      }
+      if (getOptions?.merged !== undefined && typeof getOptions.merged !== "boolean") {
+        throw failType(
+          "getHolidays(options).merged",
+          `必须是布尔值，收到 ${describe(getOptions.merged)}`,
+        );
+      }
+      return snapshotOf(getOptions?.merged === false ? own : resolved);
+    },
   };
 };
 

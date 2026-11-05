@@ -59,7 +59,11 @@ export interface GridHandle<TData = null> {
   render(days: CalendarDay<TData>[]): void;
   /** 只更新选中/今天等状态类，不动文本 */
   updateState(days: CalendarDay<TData>[]): void;
-  /** 折叠时只显示指定行；传 null 显示全部 6 行 */
-  setVisibleRows(rows: readonly number[] | null): void;
+  /**
+   * 折叠时只显示指定行；传 null 显示全部 6 行
+   *
+   * animate 为 false 时直接切换（翻月时使用），避免和位移动画同时触发布局。
+   */
+  setVisibleRows(rows: readonly number[] | null, animate?: boolean): void;
   destroy(): void;
 }
