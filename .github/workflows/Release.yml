@@ -40,8 +40,11 @@ jobs:
           registry-url: https://registry.npmjs.org
           scope: "@sanguogege"
 
-      - name: Check, test and build
-        run: vp run ready
+      - name: Build
+        run: vp run -r build
+
+      - name: Check and test
+        run: vp check && vp run -r test
 
       - name: Publish unpublished packages
         env:
