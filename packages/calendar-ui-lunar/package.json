@@ -1,8 +1,31 @@
 {
   "name": "@sanguogege/calendar-ui-lunar",
   "version": "0.0.1",
+  "description": "把 @sanguogege/calendar 接入 calendar-ui 的官方农历适配器",
+  "keywords": [
+    "calendar",
+    "calendar-ui",
+    "lunar",
+    "农历"
+  ],
+  "homepage": "https://github.com/sanguogege/calendar/tree/master/packages/calendar-ui-lunar#readme",
+  "bugs": {
+    "url": "https://github.com/sanguogege/calendar/issues"
+  },
+  "license": "MIT",
+  "author": "sanguogege@outlook.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sanguogege/calendar.git",
+    "directory": "packages/calendar-ui-lunar"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./src/index.ts",
   "exports": {
@@ -13,11 +36,16 @@
       "require": "./dist/index.cjs"
     }
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "scripts": {
     "build": "vp pack",
     "dev": "vp pack --watch",
     "test": "vp test",
-    "typecheck": "vp check"
+    "typecheck": "vp check",
+    "prepublishOnly": "vp run build"
   },
   "dependencies": {
     "@sanguogege/calendar": "workspace:*",

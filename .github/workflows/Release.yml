@@ -1,21 +1,25 @@
 name: Release
 
-# 版本号由人工修改（packages/calendar/package.json 的 version）。
-# 触发：package.json 有改动，或手动 Run workflow。
-# 真正发布前用 `vp view` 对比 npm 上的版本，版本没变就跳过。
+# 发布流程：
+# 1. bun changeset
+# 2. bun changeset version
+# 3. 提交并 push 到 master
+# 4. 本 workflow 检测三个 package.json 的版本变化，发布尚未出现在 npm 的版本
 on:
   push:
     branches:
       - master
     paths:
       - "packages/calendar/package.json"
+      - "packages/calendar-ui/package.json"
+      - "packages/calendar-ui-lunar/package.json"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-calendar
+  group: release-packages
   cancel-in-progress: false
 
 jobs:
@@ -27,7 +31,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 装 vp / Node / bun 并执行 vp install；registry-url 会在 $RUNNER_TEMP 写 .npmrc
+      # 装 vp / Node / bun，并执行 vp install
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1.22.0
         with:
@@ -36,56 +40,50 @@ jobs:
           registry-url: https://registry.npmjs.org
           scope: "@sanguogege"
 
-      - name: Detect version change
-        id: version
-        run: |
-          set -euo pipefail
-          current=$(node -p "require('./packages/calendar/package.json').version")
-          published=$(vp view @sanguogege/calendar version 2>/dev/null | tail -n 1 || true)
-
-          echo "package.json: $current"
-          echo "npm:          ${published:-<未发布>}"
-
-          {
-            echo "version=$current"
-            if [ "$published" = "$current" ]; then
-              echo "changed=false"
-            else
-              echo "changed=true"
-            fi
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Skip publish (version unchanged)
-        if: steps.version.outputs.changed != 'true'
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-        run: echo "::notice::版本 ${VERSION} 已发布到 npm，跳过。"
-
-      # 等价于 vp check && vp run -r test && vp run -r build
       - name: Check, test and build
-        if: steps.version.outputs.changed == 'true'
         run: vp run ready
 
-      - name: Publish to npm
-        if: steps.version.outputs.changed == 'true'
-        working-directory: packages/calendar
-        run: vp pm publish
+      - name: Publish unpublished packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Tag and create GitHub release
-        if: steps.version.outputs.changed == 'true'
-        env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          tag="@sanguogege/calendar@${VERSION}"
-          if git rev-parse --verify --quiet "refs/tags/${tag}" > /dev/null; then
-            echo "tag ${tag} 已存在，跳过创建"
-          else
-            git tag "${tag}"
-            git push origin "${tag}"
-            gh release create "${tag}" --title "${tag}" --generate-notes
+
+          packages=(
+            "packages/calendar"
+            "packages/calendar-ui"
+            "packages/calendar-ui-lunar"
+          )
+          published=()
+
+          for dir in "${packages[@]}"; do
+            name=$(node -p "require('./${dir}/package.json').name")
+            version=$(node -p "require('./${dir}/package.json').version")
+            existing=$(npm view "${name}@${version}" version 2>/dev/null | tail -n 1 || true)
+
+            if [ "$existing" = "$version" ]; then
+              echo "::notice title=Skip ${name}::${name}@${version} 已存在于 npm"
+              continue
+            fi
+
+            echo "::notice title=Publish ${name}::发布 ${name}@${version}"
+            (cd "$dir" && bun publish --access public)
+            published+=("${name}@${version}")
+          done
+
+          if [ "${#published[@]}" -eq 0 ]; then
+            echo "::notice::没有需要发布的版本"
           fi
+
+          for spec in "${published[@]}"; do
+            if ! git rev-parse --verify --quiet "refs/tags/${spec}" > /dev/null; then
+              git tag "${spec}"
+              git push origin "${spec}"
+            fi
+
+            if ! gh release view "${spec}" > /dev/null 2>&1; then
+              gh release create "${spec}" --title "${spec}" --generate-notes
+            fi
+          done
