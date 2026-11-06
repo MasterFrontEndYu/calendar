@@ -32,6 +32,10 @@
   "jsdelivr": "./dist/index.iife.js",
   "exports": {
     ".": {
+      "source": {
+        "types": "./src/index.ts",
+        "default": "./src/index.ts"
+      },
       "import": {
         "types": "./dist/index.d.mts",
         "default": "./dist/index.mjs"

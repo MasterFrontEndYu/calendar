@@ -5,6 +5,8 @@
     "module": "ESNext",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
+    "customConditions": ["source"],
+    "resolveJsonModule": true,
     "types": ["node"],
 
     "strict": true,
