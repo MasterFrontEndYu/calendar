@@ -11,7 +11,7 @@
     "isolatedModules": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "customConditions": ["source"],
+    "customConditions": ["development"],
     "noEmit": true,
 
     // Type Checking & Safety

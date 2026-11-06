@@ -21,7 +21,8 @@
     "directory": "packages/calendar"
   },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "type": "module",
   "sideEffects": false,
@@ -32,7 +33,7 @@
   "jsdelivr": "./dist/index.iife.js",
   "exports": {
     ".": {
-      "source": {
+      "development": {
         "types": "./src/index.ts",
         "default": "./src/index.ts"
       },
