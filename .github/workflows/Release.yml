@@ -72,7 +72,7 @@ jobs:
             fi
 
             echo "::notice title=Publish ${name}::发布 ${name}@${version}"
-            (cd "$dir" && bun publish --access public)
+            (cd "$dir" && npm publish --access public)
             published+=("${name}@${version}")
           done
 
