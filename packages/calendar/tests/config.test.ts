@@ -117,7 +117,7 @@ describe("休息与调休", () => {
   it("xiu / ban 与周末无关，只看 rest.json", () => {
     expect(calendar.solarToLunar(2026, 10, 31)).toMatchObject({ xiu: false, ban: false });
     expect(calendar.solarToLunar(2026, 10, 27)).toMatchObject({ xiu: false, ban: false });
-    expect(calendar.solarToLunar(2027, 1, 2)).toMatchObject({ xiu: false, ban: false });
+    expect(calendar.solarToLunar(2027, 1, 9)).toMatchObject({ xiu: false, ban: false });
   });
 
   it("法定节假日即使在工作日也休息", () => {
@@ -160,5 +160,31 @@ describe("休息与调休", () => {
     for (let d = 1; d <= 7; d++) expect(xiu(10, d)).toBe(true);
     expect(ban(9, 20)).toBe(true);
     expect(ban(10, 10)).toBe(true);
+  });
+
+  it("2027 内置数据与国务院通知一致", () => {
+    const xiu = (m: number, d: number) => calendar.solarToLunar(2027, m, d).xiu;
+    const ban = (m: number, d: number) => calendar.solarToLunar(2027, m, d).ban;
+
+    for (let d = 1; d <= 3; d++) expect(xiu(1, d)).toBe(true);
+    expect(ban(1, 31)).toBe(true);
+
+    // 除夕（2/5）到正月初八（2/13）连休 9 天
+    for (let d = 5; d <= 13; d++) expect(xiu(2, d)).toBe(true);
+    expect(calendar.solarToLunar(2027, 2, 5).nljr).toContain("除夕");
+    expect(calendar.solarToLunar(2027, 2, 6).nljr).toContain("春节");
+    expect(ban(2, 14)).toBe(true);
+
+    for (let d = 3; d <= 5; d++) expect(xiu(4, d)).toBe(true);
+
+    for (let d = 1; d <= 5; d++) expect(xiu(5, d)).toBe(true);
+    expect(ban(5, 8)).toBe(true);
+
+    expect(xiu(6, 9)).toBe(true);
+    expect(xiu(9, 15)).toBe(true);
+
+    for (let d = 1; d <= 7; d++) expect(xiu(10, d)).toBe(true);
+    expect(ban(9, 26)).toBe(true);
+    expect(ban(10, 9)).toBe(true);
   });
 });
