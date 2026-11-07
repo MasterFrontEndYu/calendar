@@ -26,10 +26,10 @@ import {
   nthWeekdayOfMonth,
 } from "./utils/SolarFunction";
 
-import { assertInteger, describe, failRange, failType, isPlainObject } from "./utils/Assert";
+import { assertInteger, assertPlainObject, describe, failRange, failType } from "./utils/Assert";
 import { festivalList, NO_FESTIVAL } from "./utils/SetFestival";
 import { restOf } from "./utils/SetRest";
-import { createStandaloneConfig, snapshotOf } from "./config";
+import { createCalendarConfig, snapshotOf } from "./config";
 import type { ResolvedConfig } from "./config";
 import type { Calendar, HolidayConfig, LunarResult, SetHolidayOptions } from "./types";
 
@@ -127,10 +127,6 @@ const computeLunar = function (
   sd: number,
 ): LunarResult {
   const utc = Date.UTC(sy, sm - 1, sd);
-  if (utc < MIN_SOLAR_UTC || utc > MAX_SOLAR_UTC) {
-    failRange("solarToLunar", `${sy}-${sm}-${sd} 超出 1900-01-31 ~ 2100-12-31 的支持范围`);
-  }
-
   const offset = Math.round((utc - MIN_SOLAR_UTC) / DAY_MS);
   const { year, offsetInYear } = resolveLunarYear(offset);
 
@@ -149,20 +145,20 @@ const computeLunar = function (
   const dayOfWeek = weekdayOf(sy, sm, sd);
   const firstTermDay = getTerm(sy, sm * 2 - 1);
   const secondTermDay = getTerm(sy, sm * 2);
-  const lichunDay = getTerm(sy, 3);
 
   let term: string | null = null;
   if (firstTermDay === sd) term = getSolarTerm(sm * 2 - 2);
   if (secondTermDay === sd) term = getSolarTerm(sm * 2 - 1);
 
+  // xiu / ban 只由 rest.json 决定，与周末无关；同一天不会既放假又补班，两种状态互斥
   const restState = restOf(config.restIndex, sy, sm, sd);
-  const isBan = restState === 2;
-  // 0=普通日、1=放假、2=补班，三者互斥；xiu / ban 只由 rest.json 决定，与周末无关
-  const isXiu = restState === 1;
+  const isXiu = restState === "xiu";
+  const isBan = restState === "ban";
 
   const dayCyclical = utc / DAY_MS - (sd - 1) + 25567 + 10;
   const gzDayOffset = dayCyclical + sd - 1;
-  const ganzhiYear = sm > 2 || (sm === 2 && sd >= lichunDay) ? sy : sy - 1;
+  // 只有 2 月才需要立春当天的日期，其它月份不去查节气表
+  const ganzhiYear = sm > 2 || (sm === 2 && sd >= getTerm(sy, 3)) ? sy : sy - 1;
 
   return {
     xiu: isXiu,
@@ -205,7 +201,8 @@ const solarToLunarWith = function (
 ): LunarResult {
   if (y === undefined && m === undefined && d === undefined) {
     const now = new Date();
-    return computeLunar(config, now.getFullYear(), now.getMonth() + 1, now.getDate());
+    const today = validateSolar(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    return computeLunar(config, today.year, today.month, today.day);
   }
   if (y === undefined || m === undefined || d === undefined) {
     failRange(
@@ -274,27 +271,24 @@ const createCalendar = function (
   config: HolidayConfig = {},
   options: SetHolidayOptions = {},
 ): Calendar {
-  const resolved = createStandaloneConfig(config, options);
-  // 只保留用户传入的那部分（从空配置开始合并），供 getHolidays({ merged: false }) 使用
-  const own = createStandaloneConfig(config, { replace: true });
+  // 用户配置只校验一次；只有一份可查询的配置，own 只在 getHolidays 需要时生成快照
+  const { merged, snapshotOwn } = createCalendarConfig(config, options);
 
   return {
     /** 公历转农历，不传参返回今天 */
-    solarToLunar: (y, m, d) => solarToLunarWith(resolved, y, m, d),
+    solarToLunar: (y, m, d) => solarToLunarWith(merged, y, m, d),
     /** 农历转公历 */
-    lunarToSolar: (y, m, d, isLeapMonth) => lunarToSolarWith(resolved, y, m, d, isLeapMonth),
+    lunarToSolar: (y, m, d, isLeapMonth) => lunarToSolarWith(merged, y, m, d, isLeapMonth),
     /** 当前配置的深拷贝；merged 为 false 时只导出用户传入的部分 */
     getHolidays: (getOptions) => {
-      if (getOptions !== undefined && !isPlainObject(getOptions)) {
-        throw failType("getHolidays(options)", `必须是对象，收到 ${describe(getOptions)}`);
-      }
+      if (getOptions !== undefined) assertPlainObject(getOptions, "getHolidays(options)");
       if (getOptions?.merged !== undefined && typeof getOptions.merged !== "boolean") {
         throw failType(
           "getHolidays(options).merged",
           `必须是布尔值，收到 ${describe(getOptions.merged)}`,
         );
       }
-      return snapshotOf(getOptions?.merged === false ? own : resolved);
+      return getOptions?.merged === false ? snapshotOwn() : snapshotOf(merged);
     },
   };
 };

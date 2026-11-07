@@ -32,6 +32,9 @@ export interface NormalizedRestEntry {
   ban: string[];
 }
 
+/** 规范化后的调休表，key 为年份 */
+export type RestMap = Record<string, NormalizedRestEntry>;
+
 /**
  * 调休配置，key 为年份，value 为该年的放假/补班日
  */
