@@ -15,8 +15,8 @@
       "version": "0.0.0",
       "dependencies": {
         "@kobalte/solidbase": "3.0.0",
-        "@sanguogege/calendar-ui": "workspace:*",
-        "@sanguogege/calendar-ui-lunar": "workspace:*",
+        "@sanguo-dev/calendar-ui": "workspace:*",
+        "@sanguo-dev/calendar-ui-lunar": "workspace:*",
         "@solidjs/meta": "^1.0.0-next.2",
         "@solidjs/router": "2.0.0-next.37",
         "@solidjs/web": "^2.0.0-rc.20",
@@ -38,8 +38,8 @@
       },
     },
     "packages/calendar": {
-      "name": "@sanguogege/calendar",
-      "version": "2.0.0",
+      "name": "@sanguo-dev/calendar",
+      "version": "1.0.0",
       "devDependencies": {
         "@types/node": "catalog:",
         "typescript": "catalog:",
@@ -48,8 +48,8 @@
       },
     },
     "packages/calendar-ui": {
-      "name": "@sanguogege/calendar-ui",
-      "version": "0.0.1",
+      "name": "@sanguo-dev/calendar-ui",
+      "version": "0.0.2",
       "devDependencies": {
         "@types/node": "catalog:",
         "jsdom": "^25.0.1",
@@ -59,11 +59,11 @@
       },
     },
     "packages/calendar-ui-lunar": {
-      "name": "@sanguogege/calendar-ui-lunar",
-      "version": "0.0.1",
+      "name": "@sanguo-dev/calendar-ui-lunar",
+      "version": "0.0.2",
       "dependencies": {
-        "@sanguogege/calendar": "workspace:*",
-        "@sanguogege/calendar-ui": "workspace:*",
+        "@sanguo-dev/calendar": "workspace:*",
+        "@sanguo-dev/calendar-ui": "workspace:*",
       },
       "devDependencies": {
         "@types/node": "catalog:",
@@ -426,11 +426,11 @@
 
     "@polka/url": ["@polka/url@1.0.0-next.29", "", {}, "sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww=="],
 
-    "@sanguogege/calendar": ["@sanguogege/calendar@workspace:packages/calendar"],
+    "@sanguo-dev/calendar": ["@sanguo-dev/calendar@workspace:packages/calendar"],
 
-    "@sanguogege/calendar-ui": ["@sanguogege/calendar-ui@workspace:packages/calendar-ui"],
+    "@sanguo-dev/calendar-ui": ["@sanguo-dev/calendar-ui@workspace:packages/calendar-ui"],
 
-    "@sanguogege/calendar-ui-lunar": ["@sanguogege/calendar-ui-lunar@workspace:packages/calendar-ui-lunar"],
+    "@sanguo-dev/calendar-ui-lunar": ["@sanguo-dev/calendar-ui-lunar@workspace:packages/calendar-ui-lunar"],
 
     "@shikijs/core": ["@shikijs/core@3.23.0", "", { "dependencies": { "@shikijs/types": "3.23.0", "@shikijs/vscode-textmate": "^10.0.2", "@types/hast": "^3.0.4", "hast-util-to-html": "^9.0.5" } }, "sha512-NSWQz0riNb67xthdm5br6lAkvpDJRTgB36fxlo37ZzM2yq0PQFFzbd8psqC2XMPgCzo1fW6cVi18+ArJ44wqgA=="],
 

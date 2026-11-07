@@ -1,4 +1,10 @@
-# @sanguogege/calendar
+# @sanguo-dev/calendar
+
+## 1.0.1
+
+### Patch Changes
+
+- 迁移：github和npm 都迁移到新的组织 sanguogege -> sanguo-dev
 
 ## 2.0.1
 

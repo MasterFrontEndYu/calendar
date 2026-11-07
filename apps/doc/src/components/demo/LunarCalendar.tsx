@@ -1,7 +1,7 @@
 import { createSignal, onSettled } from "solid-js";
-import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
-import "@sanguogege/calendar-ui/style.css";
-import "@sanguogege/calendar-ui-lunar/theme.css";
+import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
+import "@sanguo-dev/calendar-ui/style.css";
+import "@sanguo-dev/calendar-ui-lunar/theme.css";
 import "./demo.css";
 
 export interface LunarCalendarProps {

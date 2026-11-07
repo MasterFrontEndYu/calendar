@@ -8,15 +8,15 @@ title: 指南
 
 | 包                              | 作用                               | 运行时依赖                 |
 | ------------------------------- | ---------------------------------- | -------------------------- |
-| `@sanguogege/calendar`          | 公历 / 农历换算、节气、节日、调休  | 零依赖                     |
-| `@sanguogege/calendar-ui`       | 纯公历 DOM 日历核心                | 零依赖                     |
-| `@sanguogege/calendar-ui-lunar` | 把 `calendar` 接入 UI 的官方适配器 | `calendar` + `calendar-ui` |
+| `@sanguo-dev/calendar`          | 公历 / 农历换算、节气、节日、调休  | 零依赖                     |
+| `@sanguo-dev/calendar-ui`       | 纯公历 DOM 日历核心                | 零依赖                     |
+| `@sanguo-dev/calendar-ui-lunar` | 把 `calendar` 接入 UI 的官方适配器 | `calendar` + `calendar-ui` |
 
 ## 怎么选
 
-- 只要日期数据：`@sanguogege/calendar`
-- 只要公历日历：`@sanguogege/calendar-ui`
-- 要农历、节气、节日、休班：`@sanguogege/calendar-ui-lunar`
+- 只要日期数据：`@sanguo-dev/calendar`
+- 只要公历日历：`@sanguo-dev/calendar-ui`
+- 要农历、节气、节日、休班：`@sanguo-dev/calendar-ui-lunar`
 - 有自己的历法 / 节假日接口：实现 `CalendarAdapter`，传给 `createCalendarUI`
 
 ## 三个包的文档

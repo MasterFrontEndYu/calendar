@@ -2,28 +2,28 @@
 
 公历 / 农历日历工具集：纯 TypeScript 换算核心、零依赖 DOM 日历组件，以及官方农历适配器。
 
-[![docs - GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-2ea44f?logo=githubpages&logoColor=white)](https://sanguogege.github.io/calendar/)
+[![docs - GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-2ea44f?logo=githubpages&logoColor=white)](https://sanguo-dev.github.io/calendar/)
 [![docs - Netlify](https://img.shields.io/badge/docs-Netlify-00c7b7?logo=netlify&logoColor=white)](https://calendardocs.netlify.app/)
-[![license](https://img.shields.io/npm/l/@sanguogege/calendar.svg?color=blue)](packages/calendar/LICENSE)
+[![license](https://img.shields.io/npm/l/@sanguo-dev/calendar.svg?color=blue)](packages/calendar/LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D22.18-339933?logo=node.js&logoColor=white)](package.json)
 
 ## 三个包
 
 | 包                                         | 版本                         | 下载                         | 说明                                    | README                                         |
 | ------------------------------------------ | ---------------------------- | ---------------------------- | --------------------------------------- | ---------------------------------------------- |
-| [@sanguogege/calendar][npm-cal]            | [![npm][v-cal]][npm-cal]     | [![dm][dm-cal]][npm-cal]     | 公历 / 农历换算、节气、干支、节日与调休 | [README](packages/calendar/README.md)          |
-| [@sanguogege/calendar-ui][npm-ui]          | [![npm][v-ui]][npm-ui]       | [![dm][dm-ui]][npm-ui]       | 纯 DOM、零依赖的公历日历 UI             | [README](packages/calendar-ui/README.md)       |
-| [@sanguogege/calendar-ui-lunar][npm-lunar] | [![npm][v-lunar]][npm-lunar] | [![dm][dm-lunar]][npm-lunar] | 把农历接入 calendar-ui 的官方适配器     | [README](packages/calendar-ui-lunar/README.md) |
+| [@sanguo-dev/calendar][npm-cal]            | [![npm][v-cal]][npm-cal]     | [![dm][dm-cal]][npm-cal]     | 公历 / 农历换算、节气、干支、节日与调休 | [README](packages/calendar/README.md)          |
+| [@sanguo-dev/calendar-ui][npm-ui]          | [![npm][v-ui]][npm-ui]       | [![dm][dm-ui]][npm-ui]       | 纯 DOM、零依赖的公历日历 UI             | [README](packages/calendar-ui/README.md)       |
+| [@sanguo-dev/calendar-ui-lunar][npm-lunar] | [![npm][v-lunar]][npm-lunar] | [![dm][dm-lunar]][npm-lunar] | 把农历接入 calendar-ui 的官方适配器     | [README](packages/calendar-ui-lunar/README.md) |
 
-[npm-cal]: https://www.npmjs.com/package/@sanguogege/calendar
-[npm-ui]: https://www.npmjs.com/package/@sanguogege/calendar-ui
-[npm-lunar]: https://www.npmjs.com/package/@sanguogege/calendar-ui-lunar
-[v-cal]: https://img.shields.io/npm/v/@sanguogege/calendar.svg?label=%20&color=cb3837
-[v-ui]: https://img.shields.io/npm/v/@sanguogege/calendar-ui.svg?label=%20&color=cb3837
-[v-lunar]: https://img.shields.io/npm/v/@sanguogege/calendar-ui-lunar.svg?label=%20&color=cb3837
-[dm-cal]: https://img.shields.io/npm/dm/@sanguogege/calendar.svg?label=%20
-[dm-ui]: https://img.shields.io/npm/dm/@sanguogege/calendar-ui.svg?label=%20
-[dm-lunar]: https://img.shields.io/npm/dm/@sanguogege/calendar-ui-lunar.svg?label=%20
+[npm-cal]: https://www.npmjs.com/package/@sanguo-dev/calendar
+[npm-ui]: https://www.npmjs.com/package/@sanguo-dev/calendar-ui
+[npm-lunar]: https://www.npmjs.com/package/@sanguo-dev/calendar-ui-lunar
+[v-cal]: https://img.shields.io/npm/v/@sanguo-dev/calendar.svg?label=%20&color=cb3837
+[v-ui]: https://img.shields.io/npm/v/@sanguo-dev/calendar-ui.svg?label=%20&color=cb3837
+[v-lunar]: https://img.shields.io/npm/v/@sanguo-dev/calendar-ui-lunar.svg?label=%20&color=cb3837
+[dm-cal]: https://img.shields.io/npm/dm/@sanguo-dev/calendar.svg?label=%20
+[dm-ui]: https://img.shields.io/npm/dm/@sanguo-dev/calendar-ui.svg?label=%20
+[dm-lunar]: https://img.shields.io/npm/dm/@sanguo-dev/calendar-ui-lunar.svg?label=%20
 
 ## 特性
 
@@ -36,14 +36,14 @@
 ## 快速开始
 
 ```bash
-bun add @sanguogege/calendar
-bun add @sanguogege/calendar-ui @sanguogege/calendar-ui-lunar
+bun add @sanguo-dev/calendar
+bun add @sanguo-dev/calendar-ui @sanguo-dev/calendar-ui-lunar
 ```
 
 ### 只要日期换算
 
 ```ts
-import createCalendar from "@sanguogege/calendar";
+import createCalendar from "@sanguo-dev/calendar";
 
 const calendar = createCalendar();
 const day = calendar.solarToLunar(2026, 10, 1);
@@ -57,8 +57,8 @@ day.xiu; // true
 ### 只要公历日历
 
 ```ts
-import { createCalendarUI } from "@sanguogege/calendar-ui";
-import "@sanguogege/calendar-ui/style.css";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
 
 const ui = createCalendarUI(container, { initialDate: "2026-10-01" });
 ui.select("2026-10-08");
@@ -67,9 +67,9 @@ ui.select("2026-10-08");
 ### 公历 + 农历 + 节假日
 
 ```ts
-import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
-import "@sanguogege/calendar-ui/style.css";
-import "@sanguogege/calendar-ui-lunar/theme.css";
+import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
+import "@sanguo-dev/calendar-ui/style.css";
+import "@sanguo-dev/calendar-ui-lunar/theme.css";
 
 const ui = createCalendarLunar(container, {
   initialDate: "2026-10-01",
@@ -89,7 +89,7 @@ const ui = createCalendarLunar(container, {
 
 | 站点         | 地址                                                                    |
 | ------------ | ----------------------------------------------------------------------- |
-| GitHub Pages | [sanguogege.github.io/calendar](https://sanguogege.github.io/calendar/) |
+| GitHub Pages | [sanguo-dev.github.io/calendar](https://sanguo-dev.github.io/calendar/) |
 | Netlify      | [calendardocs.netlify.app](https://calendardocs.netlify.app/)           |
 
 ## 开发

@@ -7,12 +7,12 @@ title: calendar-ui-lunar
 `calendar-ui` 的官方农历适配器。
 
 ```bash
-bun add @sanguogege/calendar-ui @sanguogege/calendar-ui-lunar
+bun add @sanguo-dev/calendar-ui @sanguo-dev/calendar-ui-lunar
 ```
 
 ```ts
-import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
-import "@sanguogege/calendar-ui/style.css";
+import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
+import "@sanguo-dev/calendar-ui/style.css";
 
 const instance = createCalendarLunar(container, {
   initialDate: "2026-10-01",
@@ -81,8 +81,8 @@ createCalendarLunar(container, {
 不想用包装入口时，可以把适配器直接传给核心：
 
 ```ts
-import { createCalendarUI } from "@sanguogege/calendar-ui";
-import { createLunarAdapter } from "@sanguogege/calendar-ui-lunar";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import { createLunarAdapter } from "@sanguo-dev/calendar-ui-lunar";
 
 const adapter = createLunarAdapter({
   holidays: { setRest: { 2027: { xiu: ["0101"], ban: ["0104"] } } },

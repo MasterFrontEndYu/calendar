@@ -2,8 +2,8 @@
  * calendar-ui-lunar 的默认皮肤：农历喜庆红，淡色不刺眼。
  *
  * 用法（两个文件都要）：
- *   import "@sanguogege/calendar-ui/style.css";
- *   import "@sanguogege/calendar-ui-lunar/theme.css";
+ *   import "@sanguo-dev/calendar-ui/style.css";
+ *   import "@sanguo-dev/calendar-ui-lunar/theme.css";
  *
  * 只想局部换色时，用自己的容器包一层，例如：
  *   .my-calendar .cui--lunar { --cui-accent: #c2410c; }

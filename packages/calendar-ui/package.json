@@ -1,6 +1,6 @@
 {
-  "name": "@sanguogege/calendar-ui",
-  "version": "0.0.2",
+  "name": "@sanguo-dev/calendar-ui",
+  "version": "0.0.3",
   "description": "纯 DOM、零依赖的公历日历核心，支持范围选择、折叠、主题和适配器",
   "keywords": [
     "calendar",
@@ -9,15 +9,15 @@
     "range",
     "solid"
   ],
-  "homepage": "https://github.com/sanguogege/calendar/tree/master/packages/calendar-ui#readme",
+  "homepage": "https://github.com/sanguo-dev/calendar/tree/master/packages/calendar-ui#readme",
   "bugs": {
-    "url": "https://github.com/sanguogege/calendar/issues"
+    "url": "https://github.com/sanguo-dev/calendar/issues"
   },
   "license": "MIT",
   "author": "sanguogege@outlook.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sanguogege/calendar.git",
+    "url": "git+https://github.com/sanguo-dev/calendar.git",
     "directory": "packages/calendar-ui"
   },
   "files": [

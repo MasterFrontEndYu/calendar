@@ -1,6 +1,6 @@
 import { createSignal, onSettled } from "solid-js";
-import { createCalendarUI } from "@sanguogege/calendar-ui";
-import "@sanguogege/calendar-ui/style.css";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
 import "./demo.css";
 
 export interface MonthTransitionCalendarProps {

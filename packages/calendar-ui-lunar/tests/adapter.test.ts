@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import { zhCN } from "@sanguogege/calendar-ui";
-import type { CalendarDate, MonthInput } from "@sanguogege/calendar-ui";
+import { zhCN } from "@sanguo-dev/calendar-ui";
+import type { CalendarDate, MonthInput } from "@sanguo-dev/calendar-ui";
 import { createLunarAdapter } from "../src/index.ts";
 
 const dateOf = function (year: number, month: number, day: number): CalendarDate {

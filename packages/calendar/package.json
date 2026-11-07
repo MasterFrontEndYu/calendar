@@ -1,6 +1,6 @@
 {
-  "name": "@sanguogege/calendar",
-  "version": "2.0.1",
+  "name": "@sanguo-dev/calendar",
+  "version": "1.0.1",
   "description": "ts版本的日历生成器 LTS",
   "keywords": [
     "calendar",
@@ -9,15 +9,15 @@
     "日历",
     "阳历"
   ],
-  "homepage": "https://github.com/sanguogege/calendar#readme",
+  "homepage": "https://github.com/sanguo-dev/calendar#readme",
   "bugs": {
-    "url": "https://github.com/sanguogege/calendar/issues"
+    "url": "https://github.com/sanguo-dev/calendar/issues"
   },
   "license": "MIT",
   "author": "sanguogege@outlook.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sanguogege/calendar.git",
+    "url": "git+https://github.com/sanguo-dev/calendar.git",
     "directory": "packages/calendar"
   },
   "files": [

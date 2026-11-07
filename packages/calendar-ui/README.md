@@ -5,8 +5,8 @@
 ## 用法
 
 ```ts
-import { createCalendarUI } from "@sanguogege/calendar-ui";
-import "@sanguogege/calendar-ui/style.css";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
 
 const instance = createCalendarUI(container, {
   weekStartsOn: 1, // 0 周日 / 1 周一（默认）
@@ -179,7 +179,7 @@ interface CalendarAdapter<TData = unknown> {
 
 核心不解释 `badge` 和 `data` 的含义；`tone` 对应的颜色由 CSS 决定（内置 `rest` / `work` 两种，可通过 `--cui-rest`、`--cui-accent` 覆盖）。
 
-官方农历适配器见 `@sanguogege/calendar-ui-lunar`；第三方也可以按这个接口接入自己的日历。
+官方农历适配器见 `@sanguo-dev/calendar-ui-lunar`；第三方也可以按这个接口接入自己的日历。
 
 ## 路线图
 

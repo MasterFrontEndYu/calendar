@@ -1,4 +1,4 @@
-/** 第三方节假日数据源：不依赖 @sanguogege/calendar */
+/** 第三方节假日数据源：不依赖 @sanguo-dev/calendar */
 export type CompanyRestType = "holiday" | "makeup";
 
 /** 和 setRest 相同的形状：按年列出放假 / 补班的 MMDD，names 提供副标题 */

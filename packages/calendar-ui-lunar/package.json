@@ -1,22 +1,22 @@
 {
-  "name": "@sanguogege/calendar-ui-lunar",
-  "version": "0.0.2",
-  "description": "把 @sanguogege/calendar 接入 calendar-ui 的官方农历适配器",
+  "name": "@sanguo-dev/calendar-ui-lunar",
+  "version": "0.0.3",
+  "description": "把 @sanguo-dev/calendar 接入 calendar-ui 的官方农历适配器",
   "keywords": [
     "calendar",
     "calendar-ui",
     "lunar",
     "农历"
   ],
-  "homepage": "https://github.com/sanguogege/calendar/tree/master/packages/calendar-ui-lunar#readme",
+  "homepage": "https://github.com/sanguo-dev/calendar/tree/master/packages/calendar-ui-lunar#readme",
   "bugs": {
-    "url": "https://github.com/sanguogege/calendar/issues"
+    "url": "https://github.com/sanguo-dev/calendar/issues"
   },
   "license": "MIT",
   "author": "sanguogege@outlook.com",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sanguogege/calendar.git",
+    "url": "git+https://github.com/sanguo-dev/calendar.git",
     "directory": "packages/calendar-ui-lunar"
   },
   "files": [
@@ -52,8 +52,8 @@
     "prepublishOnly": "vp run build"
   },
   "dependencies": {
-    "@sanguogege/calendar": "workspace:*",
-    "@sanguogege/calendar-ui": "workspace:*"
+    "@sanguo-dev/calendar": "workspace:*",
+    "@sanguo-dev/calendar-ui": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

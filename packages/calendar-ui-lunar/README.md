@@ -1,13 +1,13 @@
 # calendar-ui-lunar
 
-`@sanguogege/calendar-ui` 的官方农历适配器，把 `@sanguogege/calendar` 的农历、节气、节日和调休数据接到纯公历核心上。
+`@sanguo-dev/calendar-ui` 的官方农历适配器，把 `@sanguo-dev/calendar` 的农历、节气、节日和调休数据接到纯公历核心上。
 
 ## 用法
 
 ```ts
-import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
-import "@sanguogege/calendar-ui/style.css";
-import "@sanguogege/calendar-ui-lunar/theme.css";
+import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
+import "@sanguo-dev/calendar-ui/style.css";
+import "@sanguo-dev/calendar-ui-lunar/theme.css";
 
 const instance = createCalendarLunar(container, {
   weekStartsOn: 1,
@@ -22,17 +22,17 @@ const instance = createCalendarLunar(container, {
 自带一套农历喜庆红（淡色系）皮肤，`createCalendarLunar()` 会给根节点加 `cui--lunar` 类：
 
 ```ts
-import "@sanguogege/calendar-ui/style.css";
-import "@sanguogege/calendar-ui-lunar/theme.css";
+import "@sanguo-dev/calendar-ui/style.css";
+import "@sanguo-dev/calendar-ui-lunar/theme.css";
 ```
 
 - light / dark / auto 三种主题都有对应配色；
 - 只改某个实例时，用自己的容器包一层：`.my-calendar .cui--lunar { --cui-accent: #c2410c; }`；
-- 不引入 `theme.css` 时就是 `@sanguogege/calendar-ui` 的默认皮肤。
+- 不引入 `theme.css` 时就是 `@sanguo-dev/calendar-ui` 的默认皮肤。
 
 ## 选项
 
-在 `@sanguogege/calendar-ui` 的全部选项之外，额外支持：
+在 `@sanguo-dev/calendar-ui` 的全部选项之外，额外支持：
 
 | 选项              | 类型            | 说明                                                   |
 | ----------------- | --------------- | ------------------------------------------------------ |
@@ -63,8 +63,8 @@ const hongKong = createCalendarLunar(hostB, { holidays: hongKongHolidays });
 ## 直接使用适配器
 
 ```ts
-import { createCalendarUI } from "@sanguogege/calendar-ui";
-import { createLunarAdapter } from "@sanguogege/calendar-ui-lunar";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import { createLunarAdapter } from "@sanguo-dev/calendar-ui-lunar";
 
 const adapter = createLunarAdapter({
   holidays: { setRest: { 2027: { xiu: ["0101"], ban: ["0104"] } } },

@@ -1,6 +1,6 @@
-import createCalendar from "@sanguogege/calendar";
-import type { HolidayConfig, LunarResult } from "@sanguogege/calendar";
-import { createCalendarUI } from "@sanguogege/calendar-ui";
+import createCalendar from "@sanguo-dev/calendar";
+import type { HolidayConfig, LunarResult } from "@sanguo-dev/calendar";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
 import type {
   CalendarAdapter,
   CalendarDate,
@@ -9,7 +9,7 @@ import type {
   CalendarOptions,
   DayDecoration,
   MonthInput,
-} from "@sanguogege/calendar-ui";
+} from "@sanguo-dev/calendar-ui";
 
 export interface LunarAdapterOptions {
   /** 本适配器使用的节假日 / 调休配置；不传时使用内置数据 */
@@ -108,7 +108,7 @@ const decorateDate = function (
   };
 };
 
-/** 创建使用 @sanguogege/calendar 的农历适配器 */
+/** 创建使用 @sanguo-dev/calendar 的农历适配器 */
 export const createLunarAdapter = function (
   options: LunarAdapterOptions = {},
 ): CalendarAdapter<LunarResult> {
@@ -173,5 +173,5 @@ export type {
   MonthInput,
   WeekStartsOn,
   YearMonth,
-} from "@sanguogege/calendar-ui";
-export type { HolidayConfig, LunarResult } from "@sanguogege/calendar";
+} from "@sanguo-dev/calendar-ui";
+export type { HolidayConfig, LunarResult } from "@sanguo-dev/calendar";

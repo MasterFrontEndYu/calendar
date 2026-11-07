@@ -36,7 +36,7 @@ jobs:
           cache: true
 
       # 先构建 workspace 包，再构建文档站；doc 的生产构建会读取
-      # @sanguogege/calendar-ui / -lunar 的 dist。
+      # @sanguo-dev/calendar-ui / -lunar 的 dist。
       - name: Build
         run: vp run -r build
         env:

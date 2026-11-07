@@ -66,7 +66,7 @@ export default defineConfig(({ command }) => {
             ],
           },
           socialLinks: {
-            github: "https://github.com/sanguogege/calendar",
+            github: "https://github.com/sanguo-dev/calendar",
           },
           text: {
             editPage: "编辑此页",

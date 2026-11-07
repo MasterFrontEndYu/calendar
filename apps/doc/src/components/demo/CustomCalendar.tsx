@@ -1,7 +1,7 @@
 import { createSignal, onSettled } from "solid-js";
-import { createCalendarUI } from "@sanguogege/calendar-ui";
-import type { CalendarAdapter } from "@sanguogege/calendar-ui";
-import "@sanguogege/calendar-ui/style.css";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import type { CalendarAdapter } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
 import { getCompanyRest } from "../../demo/company-holidays";
 import type { CompanyRest } from "../../demo/company-holidays";
 import "./demo.css";

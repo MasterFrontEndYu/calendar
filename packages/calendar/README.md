@@ -3,13 +3,13 @@
 零依赖的公历 / 农历换算库，支持农历、节气、干支、生肖、节日和调休。
 
 ```bash
-bun add @sanguogege/calendar
+bun add @sanguo-dev/calendar
 ```
 
 ## 快速开始
 
 ```ts
-import createCalendar from "@sanguogege/calendar";
+import createCalendar from "@sanguo-dev/calendar";
 
 const calendar = createCalendar();
 
@@ -192,7 +192,7 @@ const copy = createCalendar(snapshot);
 `utils` 是具名导出的无状态函数，不读取实例配置：
 
 ```ts
-import { utils } from "@sanguogege/calendar";
+import { utils } from "@sanguo-dev/calendar";
 
 utils.lYearDays(2026);
 utils.leapMonth(2026);

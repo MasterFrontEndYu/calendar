@@ -7,11 +7,11 @@ title: calendar
 零依赖的公历 / 农历换算库。
 
 ```bash
-bun add @sanguogege/calendar
+bun add @sanguo-dev/calendar
 ```
 
 ```ts
-import createCalendar, { utils } from "@sanguogege/calendar";
+import createCalendar, { utils } from "@sanguo-dev/calendar";
 
 const calendar = createCalendar(); // 内置数据
 const day = calendar.solarToLunar(2026, 10, 1);
@@ -146,7 +146,7 @@ const copy = createCalendar(snapshot);
 `utils` 是无状态具名导出：
 
 ```ts
-import { utils } from "@sanguogege/calendar";
+import { utils } from "@sanguo-dev/calendar";
 
 utils.lYearDays(2026);
 utils.leapMonth(2026);

@@ -27,7 +27,7 @@ SolidBase 会在构建时预渲染 `src/routes` 下的页面；`apps/doc/dist/cl
 
 - 在仓库 `Settings → Pages → Build and deployment` 里把 Source 设为 **GitHub Actions**；
 - push 到 `master`（或手动 Run workflow）会构建全部 workspace 包，然后部署 `apps/doc/dist/client`；
-- 项目站点地址是 `https://sanguogege.github.io/calendar/`。
+- 项目站点地址是 `https://sanguo-dev.github.io/calendar/`。
 
 GitHub workflow 的 Build 步骤设置了：
 
@@ -47,7 +47,7 @@ const base = command === "build" ? (process.env.DOC_BASE ?? "/") : "/";
 - GitHub Pages 项目站点用 `/calendar/`；
 - 如果仓库改名或绑定自定义域名，改 workflow 里的 `DOC_BASE` 即可。
 
-构建必须是 `vp run -r build`，不能只构建 `apps/doc`：文档站依赖 `@sanguogege/calendar-ui` 和 `-lunar` 的 `dist`，这两个目录不在 git 里。
+构建必须是 `vp run -r build`，不能只构建 `apps/doc`：文档站依赖 `@sanguo-dev/calendar-ui` 和 `-lunar` 的 `dist`，这两个目录不在 git 里。
 
 ## Netlify
 
@@ -123,6 +123,6 @@ vite.config.ts             SolidBase / Solid 插件与主题配置
 
 ## 相关包
 
-- `@sanguogege/calendar`：公历 / 农历换算
-- `@sanguogege/calendar-ui`：纯公历 DOM 核心
-- `@sanguogege/calendar-ui-lunar`：官方农历适配器
+- `@sanguo-dev/calendar`：公历 / 农历换算
+- `@sanguo-dev/calendar-ui`：纯公历 DOM 核心
+- `@sanguo-dev/calendar-ui-lunar`：官方农历适配器

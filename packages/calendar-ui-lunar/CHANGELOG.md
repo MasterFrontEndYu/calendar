@@ -1,4 +1,13 @@
-# @sanguogege/calendar-ui-lunar
+# @sanguo-dev/calendar-ui-lunar
+
+## 0.0.3
+
+### Patch Changes
+
+- 迁移：github和npm 都迁移到新的组织 sanguogege -> sanguo-dev
+- Updated dependencies
+  - @sanguo-dev/calendar@1.0.1
+  - @sanguo-dev/calendar-ui@0.0.3
 
 ## 0.0.2
 
