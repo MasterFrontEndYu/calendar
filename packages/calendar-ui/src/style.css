@@ -264,6 +264,16 @@
   line-height: 1.1;
 }
 
+/* 周末：日期数字固定用节假日红（--cui-rest），不由节假日数据决定 */
+.cui__day.is-weekend .cui__day-num {
+  color: var(--cui-rest);
+}
+
+/* 选中时数字跟随反白色，避免红底红字 */
+.cui__day.is-selected .cui__day-num {
+  color: currentColor;
+}
+
 .cui__day-sub {
   max-width: 100%;
   overflow: hidden;

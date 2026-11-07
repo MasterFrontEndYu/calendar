@@ -1,0 +1,66 @@
+/*
+ * calendar-ui-lunar 的默认皮肤：农历喜庆红，淡色不刺眼。
+ *
+ * 用法（两个文件都要）：
+ *   import "@sanguogege/calendar-ui/style.css";
+ *   import "@sanguogege/calendar-ui-lunar/theme.css";
+ *
+ * 只想局部换色时，用自己的容器包一层，例如：
+ *   .my-calendar .cui--lunar { --cui-accent: #c2410c; }
+ */
+.cui.cui--lunar {
+  --cui-bg: #fffbf9;
+  --cui-fg: #43302e;
+  --cui-muted: #a68c87;
+  --cui-border: #f2ded9;
+  --cui-accent: #c86055;
+  --cui-accent-fg: #fffdfc;
+  --cui-rest: #c94f45;
+  --cui-hover: #fbefec;
+  --cui-radius: 12px;
+}
+
+/* 显式深色，或外层 data-theme="dark" 时跟随 */
+.cui.cui--lunar[data-theme="dark"],
+[data-theme="dark"] .cui.cui--lunar[data-theme="auto"] {
+  --cui-bg: #1b1413;
+  --cui-fg: #f3e6e3;
+  --cui-muted: #a98f8a;
+  --cui-border: #3a2b29;
+  --cui-accent: #e28277;
+  --cui-accent-fg: #2a1210;
+  --cui-rest: #ef8d83;
+  --cui-hover: #2a1e1d;
+
+  color-scheme: dark;
+}
+
+/* auto 跟随系统 */
+@media (prefers-color-scheme: dark) {
+  .cui.cui--lunar[data-theme="auto"] {
+    --cui-bg: #1b1413;
+    --cui-fg: #f3e6e3;
+    --cui-muted: #a98f8a;
+    --cui-border: #3a2b29;
+    --cui-accent: #e28277;
+    --cui-accent-fg: #2a1210;
+    --cui-rest: #ef8d83;
+    --cui-hover: #2a1e1d;
+
+    color-scheme: dark;
+  }
+
+  /* 外层明确 light 时，系统深色不覆盖 */
+  [data-theme="light"] .cui.cui--lunar[data-theme="auto"] {
+    --cui-bg: #fffbf9;
+    --cui-fg: #43302e;
+    --cui-muted: #a68c87;
+    --cui-border: #f2ded9;
+    --cui-accent: #c86055;
+    --cui-accent-fg: #fffdfc;
+    --cui-rest: #c94f45;
+    --cui-hover: #fbefec;
+
+    color-scheme: light;
+  }
+}

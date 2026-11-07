@@ -147,10 +147,15 @@ export const createCalendarLunar = function (
 ): CalendarInstance {
   const { holidays, replaceHolidays, adapter, ...rest } = options;
 
-  return createCalendarUI<LunarResult>(container, {
+  const instance = createCalendarUI<LunarResult>(container, {
     ...rest,
     adapter: adapter ?? createLunarAdapter({ holidays, replaceHolidays }),
   });
+
+  // 农历皮肤类名，配合 theme.css 使用；用户不引入 theme.css 时没有副作用
+  instance.el.classList.add("cui--lunar");
+
+  return instance;
 };
 
 export type {

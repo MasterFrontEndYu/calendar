@@ -155,7 +155,7 @@ instance.setTheme("light");
 - `setTheme()` 只改 `data-theme`，不重建 DOM；
 - `auto` 跟随最近的祖先 `data-theme`，没有则跟随系统；
 - 两套主题共用布局，只改变量；
-- 可通过 `--cui-bg`、`--cui-fg`、`--cui-accent`、`--cui-rest` 等变量覆盖。
+- 可通过 `--cui-bg`、`--cui-fg`、`--cui-accent`、`--cui-rest` 等变量覆盖；\n- 周末的日期数字固定用 `--cui-rest`（和法定节假日同色），由 `.cui__day.is-weekend` 控制，与节假日数据无关。
 
 ## 适配器
 

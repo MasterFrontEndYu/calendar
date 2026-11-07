@@ -7,6 +7,7 @@
 ```ts
 import { createCalendarLunar } from "@sanguogege/calendar-ui-lunar";
 import "@sanguogege/calendar-ui/style.css";
+import "@sanguogege/calendar-ui-lunar/theme.css";
 
 const instance = createCalendarLunar(container, {
   weekStartsOn: 1,
@@ -15,6 +16,19 @@ const instance = createCalendarLunar(container, {
   },
 });
 ```
+
+## 主题
+
+自带一套农历喜庆红（淡色系）皮肤，`createCalendarLunar()` 会给根节点加 `cui--lunar` 类：
+
+```ts
+import "@sanguogege/calendar-ui/style.css";
+import "@sanguogege/calendar-ui-lunar/theme.css";
+```
+
+- light / dark / auto 三种主题都有对应配色；
+- 只改某个实例时，用自己的容器包一层：`.my-calendar .cui--lunar { --cui-accent: #c2410c; }`；
+- 不引入 `theme.css` 时就是 `@sanguogege/calendar-ui` 的默认皮肤。
 
 ## 选项
 

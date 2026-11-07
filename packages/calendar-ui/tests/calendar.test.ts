@@ -55,6 +55,17 @@ describe("createCalendarUI 纯公历", () => {
     instance.destroy();
   });
 
+  it("周末日期固定带 is-weekend，与节假日数据无关", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 1) });
+
+    // 2026-10-03 周六、10-04 周日；10-05 周一
+    expect(cellOf(instance.el, "2026-10-3").classList.contains("is-weekend")).toBe(true);
+    expect(cellOf(instance.el, "2026-10-4").classList.contains("is-weekend")).toBe(true);
+    expect(cellOf(instance.el, "2026-10-5").classList.contains("is-weekend")).toBe(false);
+
+    instance.destroy();
+  });
+
   it("adapter 的 42 个装饰按索引渲染", () => {
     let input: MonthInput | null = null;
     const adapter: CalendarAdapter<null> = {

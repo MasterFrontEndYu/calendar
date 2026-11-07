@@ -1,5 +1,11 @@
 # @sanguogege/calendar
 
+## 2.0.1
+
+### Patch Changes
+
+- fix: ss
+
 ## 2.0.0
 
 ### Major Changes

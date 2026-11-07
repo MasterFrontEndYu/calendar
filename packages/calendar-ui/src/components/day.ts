@@ -1,6 +1,12 @@
 import type { CalendarDay } from "../types";
 import { node } from "../utils/dom";
 
+/** 周末判断：只看公历星期，与节日 / 调休数据无关 */
+const isWeekend = function (year: number, month: number, day: number): boolean {
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  return weekday === 0 || weekday === 6;
+};
+
 /**
  * 建一个空的日期格
  *
@@ -44,6 +50,9 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknow
 
     num.textContent = String(day.day);
     sub.textContent = day.subtitle;
+
+    // 周六 / 周日固定标红：和法定节假日同色，但不由节假日数据决定
+    cell.classList.toggle("is-weekend", isWeekend(day.year, day.month, day.day));
   }
 
   setDayState(cell, day);
