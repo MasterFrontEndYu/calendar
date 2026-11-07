@@ -31,9 +31,8 @@
     "eslint-plugin-solid": "~0.18.1",
     "filesystem-routing": "0.4.0",
     "jsdom": "^25.0.1",
-    "oxlint": "~1.79.0",
+    "oxlint": "^1.92.0",
     "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "^5.0.0"
+    "vite": "catalog:"
   }
 }
