@@ -4,7 +4,7 @@
 
 ### Patch Changes
 
-- add: color in weekend ,and new theme in calendar-ui-lunar
+- add: and new theme in calendar-ui-lunar
 - Updated dependencies
 - Updated dependencies
   - @sanguogege/calendar-ui@0.0.2
