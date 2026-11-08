@@ -13,6 +13,7 @@ export type {
   CalendarMode,
   CalendarOptions,
   CalendarRange,
+  CalendarSize,
   CalendarTheme,
   CollapseAnimationOptions,
   DayDecoration,

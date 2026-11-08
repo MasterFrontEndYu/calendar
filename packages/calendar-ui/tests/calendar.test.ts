@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vite-plus/test";
-import type { CalendarAdapter, CalendarDay, MonthInput } from "../src/index.ts";
+import type { CalendarAdapter, CalendarDay, CalendarSize, MonthInput } from "../src/index.ts";
 import { createCalendarUI } from "../src/index.ts";
 
 const host = function (): HTMLElement {
@@ -796,6 +796,69 @@ describe("日期约束", () => {
     expect(() =>
       createCalendarUI(host(), {
         disabledDates: [new Date(Number.NaN)],
+      }),
+    ).toThrow(TypeError);
+  });
+});
+
+describe("尺寸模板", () => {
+  it("默认使用 normal 模板", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 1) });
+
+    expect(instance.el.dataset.size).toBe("normal");
+
+    instance.destroy();
+  });
+
+  it("size 写到 data-size，DOM 结构不变", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 1),
+      size: "fill",
+    });
+
+    expect(instance.el.dataset.size).toBe("fill");
+    expect(instance.el.querySelectorAll(".cui__grid")).toHaveLength(1);
+
+    instance.destroy();
+  });
+
+  it("min 档没有副标题时不加 cui--sub", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 1),
+      size: "min",
+    });
+
+    expect(instance.el.classList.contains("cui--sub")).toBe(false);
+
+    instance.destroy();
+  });
+
+  it("min 档出现副标题后加 cui--sub，且不会再移除", () => {
+    let withSubtitle = false;
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 1),
+      size: "min",
+      subtitle: (day) => (withSubtitle && day.day === 15 ? "初八" : null),
+    });
+
+    expect(instance.el.classList.contains("cui--sub")).toBe(false);
+
+    withSubtitle = true;
+    instance.setMonth(2026, 11);
+    expect(instance.el.classList.contains("cui--sub")).toBe(true);
+
+    withSubtitle = false;
+    instance.setMonth(2026, 10);
+    expect(instance.el.classList.contains("cui--sub")).toBe(true);
+
+    instance.destroy();
+  });
+
+  it("非法 size 抛 TypeError", () => {
+    expect(() =>
+      createCalendarUI(host(), {
+        initialDate: new Date(2026, 9, 1),
+        size: "big" as unknown as CalendarSize,
       }),
     ).toThrow(TypeError);
   });

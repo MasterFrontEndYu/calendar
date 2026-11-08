@@ -7,6 +7,15 @@ export type WeekStartsOn = 0 | 1;
 export type CalendarTheme = "light" | "dark" | "auto";
 
 /**
+ * 尺寸模板
+ *
+ * - `min`：最小。纯数字为 24px 方格；出现副标题（农历、节气）时整块放大到 36px 方格
+ * - `normal`：正常大小，固定 46px 方格，纯数字和带副标题一样大
+ * - `fill`：跟随容器宽度等比放大，方格最小 48px
+ */
+export type CalendarSize = "min" | "normal" | "fill";
+
+/**
  * 外部传入的日期
  *
  * 支持 Date，或本地日期字符串：
@@ -191,6 +200,8 @@ export interface CalendarOptions<TData = null> {
   locale?: CalendarLocale | CalendarLocaleName;
   /** 主题，默认 "auto"：跟随最近的 data-theme，没有则跟随系统 */
   theme?: CalendarTheme;
+  /** 尺寸模板，默认 "normal"：min 最小 / normal 正常 / fill 跟随容器 */
+  size?: CalendarSize;
   /**
    * 动画配置
    *

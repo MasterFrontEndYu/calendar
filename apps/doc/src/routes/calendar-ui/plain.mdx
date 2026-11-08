@@ -37,4 +37,30 @@ const b = createCalendarUI(hostB, {
 
 两个实例的初始月份、周起始、语言、主题完全独立；`destroy()` 也只影响自己。
 
+## 最小（min）
+
+24px 正方形格子，没有副标题时整块只有 194px 宽：
+
+<PlainCalendar year={2026} month={10} size="min" />
+
+```ts
+const c = createCalendarUI(hostC, {
+  initialDate: "2026-10-01",
+  size: "min",
+});
+```
+
+## 铺满容器（fill）
+
+容器有多宽就铺多宽，格子保持正方形跟着放大，最小 48px：
+
+<PlainCalendar year={2026} month={10} size="fill" />
+
+```ts
+const d = createCalendarUI(hostD, {
+  initialDate: "2026-10-01",
+  size: "fill",
+});
+```
+
 完整选项见 [calendar-ui 指南](/guide/calendar-ui)。

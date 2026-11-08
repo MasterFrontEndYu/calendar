@@ -69,7 +69,6 @@ ui.select("2026-10-08");
 ```ts
 import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
 import "@sanguo-dev/calendar-ui/style.css";
-import "@sanguo-dev/calendar-ui-lunar/theme.css";
 
 const ui = createCalendarLunar(container, {
   initialDate: "2026-10-01",

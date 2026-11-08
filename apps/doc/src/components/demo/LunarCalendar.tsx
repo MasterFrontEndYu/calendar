@@ -1,11 +1,13 @@
 import { createSignal, onSettled } from "solid-js";
 import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
+import type { CalendarSize } from "@sanguo-dev/calendar-ui";
 import "@sanguo-dev/calendar-ui/style.css";
-import "@sanguo-dev/calendar-ui-lunar/theme.css";
+import "./lunar-theme.css";
 import "./demo.css";
 
 export interface LunarCalendarProps {
   variant?: "builtin" | "custom";
+  size?: CalendarSize;
 }
 
 const CUSTOM_HOLIDAYS = {
@@ -23,6 +25,7 @@ export default function LunarCalendar(props: LunarCalendarProps) {
     const custom = props.variant === "custom";
     const instance = createCalendarLunar(host, {
       initialDate: custom ? "2026-01-01" : "2026-10-01",
+      size: props.size,
       holidays: custom ? CUSTOM_HOLIDAYS : undefined,
       onSelect: (day) => {
         console.log("选中日期", day);
@@ -31,6 +34,9 @@ export default function LunarCalendar(props: LunarCalendarProps) {
         setPicked(`${day.year}-${day.month}-${day.day} ${lunar} ${state}`);
       },
     });
+
+    // 演示实例级自定义样式：给根节点加自己的类，配色写在 lunar-theme.css
+    instance.el.classList.add("cui--lunar-demo");
 
     return () => instance.destroy();
   });

@@ -1,6 +1,6 @@
 import { createSignal, onSettled } from "solid-js";
 import { createCalendarUI } from "@sanguo-dev/calendar-ui";
-import type { CalendarTheme, WeekStartsOn } from "@sanguo-dev/calendar-ui";
+import type { CalendarSize, CalendarTheme, WeekStartsOn } from "@sanguo-dev/calendar-ui";
 import "@sanguo-dev/calendar-ui/style.css";
 import "./demo.css";
 
@@ -10,6 +10,7 @@ export interface PlainCalendarProps {
   weekStartsOn?: WeekStartsOn;
   locale?: "zh-CN" | "en-US";
   theme?: CalendarTheme;
+  size?: CalendarSize;
 }
 
 export default function PlainCalendar(props: PlainCalendarProps) {
@@ -24,6 +25,7 @@ export default function PlainCalendar(props: PlainCalendarProps) {
       weekStartsOn: props.weekStartsOn ?? 1,
       locale: props.locale ?? "zh-CN",
       theme: props.theme,
+      size: props.size,
       onSelect: (day) => setPicked(`${day.year}-${day.month}-${day.day}`),
     });
 
@@ -31,7 +33,7 @@ export default function PlainCalendar(props: PlainCalendarProps) {
   });
 
   return (
-    <div class="demo-calendar">
+    <div class={`demo-calendar${props.size === "fill" ? " demo-calendar--fill" : ""}`}>
       <div ref={(el) => (host = el)} />
       <p class="demo-result">选中：{picked()}</p>
     </div>

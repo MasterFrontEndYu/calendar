@@ -1,5 +1,13 @@
-/* calendar-ui 的默认皮肤：所有颜色/尺寸都走 CSS 变量，外部改 .cui 即可换主题 */
+/*
+ * calendar-ui 的默认皮肤：颜色 / 尺寸全部走 CSS 变量，外部改 .cui 即可换主题、调尺寸
+ *
+ * 三套尺寸模板，写在 .cui[data-size] 上，单元格一律正方形：
+ *   min     最小：纯数字 24px 格；一旦有副标题（农历 / 节气）整块放大到 36px 格
+ *   normal  正常：40px 格，纯数字和带副标题一样大（默认）
+ *   fill    随容器：格子按容器宽度等比放大，最小不小于 44px
+ */
 .cui {
+  /* —— 颜色 —— */
   --cui-bg: #ffffff;
   --cui-fg: #1f2328;
   --cui-muted: #8b949e;
@@ -8,15 +16,46 @@
   --cui-accent-fg: #ffffff;
   --cui-rest: #e5484d;
   --cui-hover: #f3f4f6;
-  --cui-radius: 10px;
+  --cui-radius: 8px;
+
+  /* —— 尺寸：min 预设（纯数字 24px 格） —— */
+  --cui-cell-size: 24px;
+  --cui-border-width: 1px;
+  --cui-pad: 6px;
+  --cui-column-gap: 2px;
+  --cui-row-gap: 2px;
+  --cui-month-gap: 8px;
+  --cui-header-pad: 2px 0 4px;
+  --cui-header-gap: 4px;
+  --cui-title-size: 12px;
+  --cui-nav-size: 20px;
+  --cui-nav-radius: 5px;
+  --cui-nav-font: 12px;
+  --cui-weekday-size: 10px;
+  --cui-weekday-pad: 2px 0;
+  --cui-cell-pad: 1px;
+  --cui-cell-gap: 1px;
+  --cui-cell-radius: 4px;
+  --cui-num-size: 12px;
+  --cui-sub-size: 9px;
+  --cui-sub-line: 1.1;
+  --cui-tag-size: 10px;
+  --cui-collapse-size: 11px;
+
+  /* 单月宽度 = 7 个格子 + 6 条列间距 + 左右内边距 + 左右边框 */
+  --cui-max-width: calc(
+    7 * var(--cui-cell-size) + 6 * var(--cui-column-gap) + 2 * var(--cui-pad) + 2 *
+      var(--cui-border-width)
+  );
 
   color-scheme: light;
   box-sizing: border-box;
+  container-type: inline-size;
   width: 100%;
-  max-width: 420px;
+  max-width: var(--cui-max-width);
   overflow: hidden;
-  padding: 12px;
-  border: 1px solid var(--cui-border);
+  padding: var(--cui-pad);
+  border: var(--cui-border-width) solid var(--cui-border);
   border-radius: var(--cui-radius);
   background: var(--cui-bg);
   color: var(--cui-fg);
@@ -25,25 +64,123 @@
   line-height: 1.4;
 }
 
-/* 双月范围视图 */
-.cui--range {
-  max-width: 900px;
+/*
+ * min + 副标题：整块放大一档。
+ * 24px 的格子里塞两行字会挤，所以有副标题时统一换成 36px 格；
+ * 由 JS 在首次渲染出现副标题后加 .cui--sub（只增不减，避免换月时整块跳动）。
+ */
+.cui[data-size="min"].cui--sub {
+  --cui-cell-size: 36px;
+  --cui-num-size: 13px;
+  --cui-cell-pad: 2px;
+  --cui-cell-gap: 2px;
 }
 
+/* normal：纯数字 / 带副标题同尺寸，统一 46px 格 */
+.cui[data-size="normal"] {
+  --cui-cell-size: 46px;
+  --cui-pad: 12px;
+  --cui-column-gap: 4px;
+  --cui-row-gap: 4px;
+  --cui-month-gap: 16px;
+  --cui-header-pad: 4px 2px 8px;
+  --cui-header-gap: 8px;
+  --cui-title-size: 14px;
+  --cui-nav-size: 28px;
+  --cui-nav-radius: 7px;
+  --cui-nav-font: 15px;
+  --cui-weekday-size: 12px;
+  --cui-weekday-pad: 4px 0;
+  --cui-cell-pad: 1px;
+  --cui-cell-gap: 2px;
+  --cui-cell-radius: 8px;
+  --cui-num-size: 15px;
+  --cui-sub-size: 10px;
+  --cui-sub-line: 1.15;
+  --cui-tag-size: 9px;
+  --cui-collapse-size: 13px;
+}
+
+/*
+ * fill：宽度铺满容器，格子跟着放大。
+ *
+ * 日期格的 cqi 到 .cui__viewport（每个月的宽度），双月时两个月各算各的；
+ * 头部、星期表头、折叠按钮的 cqi 到 .cui（整块宽度）。
+ */
+.cui[data-size="fill"] {
+  --cui-max-width: none;
+  --cui-pad: 12px;
+  --cui-column-gap: 4px;
+  --cui-row-gap: 4px;
+  --cui-month-gap: 16px;
+  --cui-header-pad: 4px 2px 10px;
+  --cui-header-gap: 8px;
+  --cui-title-size: clamp(15px, 3.2cqi, 26px);
+  --cui-nav-size: clamp(28px, 6cqi, 44px);
+  --cui-nav-radius: 8px;
+  --cui-nav-font: clamp(14px, 3.4cqi, 24px);
+  --cui-weekday-size: clamp(11px, 2.2cqi, 16px);
+  --cui-weekday-pad: 4px 0;
+  --cui-cell-pad: 3px;
+  --cui-cell-gap: 2px;
+  --cui-cell-radius: 8px;
+  --cui-num-size: clamp(15px, 3.2cqi, 28px);
+  --cui-sub-size: clamp(10px, 2.2cqi, 16px);
+  --cui-sub-line: 1.2;
+  --cui-tag-size: clamp(9px, 1.8cqi, 14px);
+  --cui-collapse-size: 14px;
+
+  /* 比 normal 的 40px 大：fill 的格子最小 44px，再窄就横向溢出 */
+  min-width: calc(
+    7 * 48px + 6 * var(--cui-column-gap) + 2 * var(--cui-pad) + 2 * var(--cui-border-width)
+  );
+}
+
+/* 双月：两列月份 + 月间距 + 左右内边距 + 左右边框 */
+.cui--range {
+  --cui-max-width: calc(
+    14 * var(--cui-cell-size) + 12 * var(--cui-column-gap) + var(--cui-month-gap) + 2 *
+      var(--cui-pad) + 2 * var(--cui-border-width)
+  );
+}
+
+/* fill 不设上限 */
+.cui[data-size="fill"].cui--range {
+  --cui-max-width: none;
+}
+
+/* 双月范围视图 */
 .cui__months {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--cui-month-gap);
 }
 
 .cui__month {
   min-width: 0;
 }
 
-@media (max-width: 720px) {
-  .cui__months {
+/*
+ * 容器装不下两个月时上下排列：
+ * - normal 上下排列后仍保持 40px 格，所以把月份宽度收回到单月宽度并居中；
+ * - fill 上下排列后继续铺满容器；
+ * - min 不折行，格子直接按比例缩小（它本来就是最小档）。
+ */
+@container (max-width: 719px) {
+  .cui[data-size="fill"] .cui__months {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+@container (max-width: 707px) {
+  .cui[data-size="normal"] .cui__months {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cui[data-size="normal"] .cui__month {
+  width: min(100%, calc(7 * var(--cui-cell-size) + 6 * var(--cui-column-gap)));
+  justify-self: center;
 }
 
 /* 显式深色 */
@@ -115,23 +252,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 4px 2px 10px;
+  gap: var(--cui-header-gap);
+  padding: var(--cui-header-pad);
 }
 
 .cui__title {
   font-weight: 600;
-  font-size: 15px;
+  font-size: var(--cui-title-size);
 }
 
 .cui__nav {
-  width: 30px;
-  height: 30px;
+  width: var(--cui-nav-size);
+  height: var(--cui-nav-size);
   border: 1px solid var(--cui-border);
-  border-radius: 8px;
+  border-radius: var(--cui-nav-radius);
   background: transparent;
   color: var(--cui-fg);
-  font-size: 16px;
+  font-size: var(--cui-nav-font);
   line-height: 1;
   cursor: pointer;
 }
@@ -159,7 +296,7 @@
 .cui__weekdays {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: var(--cui-column-gap);
 }
 
 /* 6 行日期；折叠时按行收起，节点仍然复用 */
@@ -173,10 +310,10 @@
 .cui__week {
   display: grid;
   min-height: 0;
-  margin-bottom: 4px;
+  margin-bottom: var(--cui-row-gap);
   overflow: hidden;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: var(--cui-column-gap);
   opacity: 1;
 }
 
@@ -200,6 +337,8 @@
   position: relative;
   min-width: 0;
   overflow: hidden;
+  /* 每个月的宽度：日期格 / 副标题的 cqi 以它为准，双月时各算各的 */
+  container-type: inline-size;
 }
 
 .cui__grid.is-month-clone {
@@ -230,28 +369,29 @@
 }
 
 .cui__weekday {
-  padding: 4px 0;
+  padding: var(--cui-weekday-pad);
   color: var(--cui-muted);
-  font-size: 12px;
+  font-size: var(--cui-weekday-size);
   text-align: center;
 }
 
-/* 日期格 */
+/* 日期格：正方形，高度永远等于列宽 */
 .cui__day {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  min-height: 46px;
-  padding: 4px 2px;
+  gap: var(--cui-cell-gap);
+  padding: var(--cui-cell-pad);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--cui-cell-radius);
   background: transparent;
   color: inherit;
   font: inherit;
   cursor: pointer;
+  align-self: start;
+  aspect-ratio: 1;
 }
 
 .cui__day:hover {
@@ -259,7 +399,7 @@
 }
 
 .cui__day-num {
-  font-size: 15px;
+  font-size: var(--cui-num-size);
   font-weight: 500;
   line-height: 1.1;
 }
@@ -278,20 +418,35 @@
   max-width: 100%;
   overflow: hidden;
   color: var(--cui-muted);
-  font-size: 11px;
+  font-size: var(--cui-sub-size);
+  line-height: var(--cui-sub-line);
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* 没有副标题时不占位：纯数字格才能真正只包住数字 */
+.cui__day-sub:empty {
+  display: none;
 }
 
 /* 左上角的休 / 班标记 */
 .cui__day-tag {
   position: absolute;
-  top: 3px;
-  left: 4px;
-  font-size: 10px;
+  top: 2px;
+  left: 3px;
+  font-size: var(--cui-tag-size);
   font-weight: 600;
   line-height: 1;
   pointer-events: none;
+}
+
+/* 最小档格子小，用 transform 把标记再压一点，不影响布局 */
+.cui[data-size="min"] .cui__day-tag {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  transform: scale(0.8);
+  transform-origin: top left;
 }
 
 .cui__day-tag[hidden] {
@@ -366,7 +521,7 @@
   background: transparent;
   color: var(--cui-muted);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--cui-collapse-size);
   line-height: 1;
   cursor: pointer;
 }

@@ -7,7 +7,6 @@
 ```ts
 import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
 import "@sanguo-dev/calendar-ui/style.css";
-import "@sanguo-dev/calendar-ui-lunar/theme.css";
 
 const instance = createCalendarLunar(container, {
   weekStartsOn: 1,
@@ -17,18 +16,28 @@ const instance = createCalendarLunar(container, {
 });
 ```
 
-## 主题
+## 自定义样式
 
-自带一套农历喜庆红（淡色系）皮肤，`createCalendarLunar()` 会给根节点加 `cui--lunar` 类：
+核心包只提供 `@sanguo-dev/calendar-ui/style.css` 的默认皮肤，本包不再自带额外样式，也不会给根节点加任何类名。
 
-```ts
-import "@sanguo-dev/calendar-ui/style.css";
-import "@sanguo-dev/calendar-ui-lunar/theme.css";
+要给某个实例换肤色，直接在根节点上覆写 CSS 变量：
+
+```css
+/* 只影响加了类的那个实例 */
+.cui.cui--lunar-demo {
+  --cui-bg: #fffbf9;
+  --cui-fg: #43302e;
+  --cui-accent: #c86055;
+  --cui-rest: #c94f45;
+  --cui-radius: 12px;
+}
 ```
 
-- light / dark / auto 三种主题都有对应配色；
-- 只改某个实例时，用自己的容器包一层：`.my-calendar .cui--lunar { --cui-accent: #c2410c; }`；
-- 不引入 `theme.css` 时就是 `@sanguo-dev/calendar-ui` 的默认皮肤。
+```ts
+instance.el.classList.add("cui--lunar-demo");
+```
+
+完整示例（含 light / dark / auto 三套配色）见文档站 [calendar-ui-lunar 演示](/calendar-ui-lunar) 的源码 `apps/doc/src/components/demo/lunar-theme.css`。
 
 ## 选项
 

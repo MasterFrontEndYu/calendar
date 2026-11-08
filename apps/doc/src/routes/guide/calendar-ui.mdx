@@ -37,6 +37,7 @@ interface CalendarOptions<TData = null> {
   weekStartsOn?: WeekStartsOn;
   locale?: CalendarLocale | CalendarLocaleName;
   theme?: CalendarTheme;
+  size?: CalendarSize;
   header?: boolean;
   renderHeader?: HeaderRenderer;
   adapter?: CalendarAdapter<TData>;
@@ -52,25 +53,26 @@ interface CalendarAnimationOptions {
 }
 ```
 
-| 选项            | 类型                                   | 默认       | 说明                           |
-| --------------- | -------------------------------------- | ---------- | ------------------------------ |
-| `initialDate`   | `CalendarDateInput`                    | 今天       | 初始日期；越界时夹到最近可选日 |
-| `minDate`       | `CalendarDateInput`                    | -          | 最小可选日期（包含）           |
-| `maxDate`       | `CalendarDateInput`                    | -          | 最大可选日期（包含）           |
-| `disabledDates` | `readonly CalendarDateInput[]`         | `[]`       | 禁止选中的日期                 |
-| `mode`          | `"single" \| "range"`                  | `"single"` | 单选 / 范围                    |
-| `months`        | `1 \| 2`                               | `1`        | 范围模式显示月数               |
-| `animation`     | `CalendarAnimationOptions`             | -          | 动画与折叠，默认全关           |
-| `weekStartsOn`  | `0 \| 1`                               | `1`        | 0 周日，1 周一                 |
-| `locale`        | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"`  | 界面语言                       |
-| `theme`         | `"light" \| "dark" \| "auto"`          | `"auto"`   | 主题                           |
-| `header`        | `boolean`                              | `true`     | 是否显示头部                   |
-| `renderHeader`  | `HeaderRenderer`                       | -          | 自定义头部                     |
-| `adapter`       | `CalendarAdapter<TData>`               | -          | 装饰适配器                     |
-| `subtitle`      | `SubtitleRenderer`                     | -          | 自定义副标题，优先于 adapter   |
-| `onSelect`      | `(day) => void`                        | -          | 选中日期                       |
-| `onRangeChange` | `(range) => void`                      | -          | 范围变化                       |
-| `onMonthChange` | `(year, month) => void`                | -          | 换月                           |
+| 选项            | 类型                                   | 默认       | 说明                             |
+| --------------- | -------------------------------------- | ---------- | -------------------------------- |
+| `initialDate`   | `CalendarDateInput`                    | 今天       | 初始日期；越界时夹到最近可选日   |
+| `minDate`       | `CalendarDateInput`                    | -          | 最小可选日期（包含）             |
+| `maxDate`       | `CalendarDateInput`                    | -          | 最大可选日期（包含）             |
+| `disabledDates` | `readonly CalendarDateInput[]`         | `[]`       | 禁止选中的日期                   |
+| `mode`          | `"single" \| "range"`                  | `"single"` | 单选 / 范围                      |
+| `months`        | `1 \| 2`                               | `1`        | 范围模式显示月数                 |
+| `animation`     | `CalendarAnimationOptions`             | -          | 动画与折叠，默认全关             |
+| `weekStartsOn`  | `0 \| 1`                               | `1`        | 0 周日，1 周一                   |
+| `locale`        | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"`  | 界面语言                         |
+| `theme`         | `"light" \| "dark" \| "auto"`          | `"auto"`   | 主题                             |
+| `size`          | `"min" \| "normal" \| "fill"`          | `"normal"` | 尺寸模板：最小 / 正常 / 跟随容器 |
+| `header`        | `boolean`                              | `true`     | 是否显示头部                     |
+| `renderHeader`  | `HeaderRenderer`                       | -          | 自定义头部                       |
+| `adapter`       | `CalendarAdapter<TData>`               | -          | 装饰适配器                       |
+| `subtitle`      | `SubtitleRenderer`                     | -          | 自定义副标题，优先于 adapter     |
+| `onSelect`      | `(day) => void`                        | -          | 选中日期                         |
+| `onRangeChange` | `(range) => void`                      | -          | 范围变化                         |
+| `onMonthChange` | `(year, month) => void`                | -          | 换月                             |
 
 ## 日期输入
 
@@ -148,6 +150,30 @@ instance.setTheme("dark");
 - `light` / `dark` / `auto`；
 - `auto` 跟随最近的祖先 `data-theme`，没有则跟随系统；
 - `setTheme()` 只改 `data-theme`，不重建 DOM。
+
+## 尺寸
+
+```ts
+type CalendarSize = "min" | "normal" | "fill";
+
+createCalendarUI(container, { size: "min" }); // 最小
+createCalendarUI(container, { size: "normal" }); // 正常（默认）
+createCalendarUI(container, { size: "fill" }); // 跟随容器宽度
+```
+
+| 模板     | 格子                  | 整块宽度      | 说明                                 |
+| -------- | --------------------- | ------------- | ------------------------------------ |
+| `min`    | 24px（有副标题 36px） | 194px / 278px | 纯数字最小；出现副标题后整块放大一档 |
+| `normal` | 46px                  | 372px         | 纯数字和带副标题一样大               |
+| `fill`   | ≥48px，随容器放大     | 100% 容器     | 随容器宽度变化，格子始终正方形       |
+
+- 所有日期格都是正方形；
+- `min`：一旦出现过副标题就放大到 36px 格，之后不再缩回，避免翻月时整块跳动；
+- `normal`：固定 46px 格，副标题多少都不改变尺寸；
+- `fill`：最小 48px 格，容器更窄时整块会超出容器宽度（保持正方形而不是压扁）；
+- 双月（`months: 2`）装不下时自动上下排列，`normal` 会保持 46px 格并居中；
+- 尺寸走 CSS 变量（`--cui-cell-size`、`--cui-pad`、`--cui-num-size`、`--cui-sub-size`、`--cui-tag-size` 等），可整体覆盖；
+- 运行时切换：`instance.el.dataset.size = "fill"`。
 
 ## 动画
 

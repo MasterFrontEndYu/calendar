@@ -152,9 +152,6 @@ export const createCalendarLunar = function (
     adapter: adapter ?? createLunarAdapter({ holidays, replaceHolidays }),
   });
 
-  // 农历皮肤类名，配合 theme.css 使用；用户不引入 theme.css 时没有副作用
-  instance.el.classList.add("cui--lunar");
-
   return instance;
 };
 
@@ -168,6 +165,7 @@ export type {
   CalendarMode,
   CalendarOptions,
   CalendarRange,
+  CalendarSize,
   CalendarTheme,
   DayDecoration,
   MonthInput,

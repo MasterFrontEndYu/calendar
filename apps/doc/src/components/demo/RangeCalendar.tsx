@@ -41,7 +41,7 @@ export default function RangeCalendar(props: RangeCalendarProps) {
   });
 
   return (
-    <div class={`demo-calendar${props.months === 2 ? " demo-calendar--range" : ""}`}>
+    <div class="demo-calendar">
       <div ref={(el) => (host = el)} />
       <p class="demo-result">{range()}</p>
     </div>

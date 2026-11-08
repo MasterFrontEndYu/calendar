@@ -25,7 +25,6 @@ describe("LunarCalendar", () => {
   it("使用内置 2026 数据渲染副标题和休班标记", () => {
     const instance = createCalendarLunar(host(), { initialDate: new Date(2026, 9, 1) });
 
-    expect(instance.el.classList.contains("cui--lunar")).toBe(true);
     expect(subtitleOf(instance.el, "2026-10-1")).toBe("国庆节");
     expect(tagOf(instance.el, "2026-10-1")).toBe("休");
     expect(cellOf(instance.el, "2026-10-1").dataset.tone).toBe("rest");

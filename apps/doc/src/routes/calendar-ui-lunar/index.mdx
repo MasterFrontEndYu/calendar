@@ -30,6 +30,34 @@ const instance = createCalendarLunar(container, {
 - `xiu` 显示休，`ban` 显示班；
 - `day.data` 是完整 `LunarResult`。
 
+## 最小（min）
+
+有副标题时整块从 194px 放大到 278px，格子 36px 正方形：
+
+<LunarCalendar variant="builtin" size="min" />
+
+```ts
+createCalendarLunar(container, { size: "min" });
+```
+
+## 自定义样式
+
+演示里的农历配色不是包自带的，而是示例给实例加了类、再覆写 CSS 变量（示例源码 `apps/doc/src/components/demo/lunar-theme.css`）：
+
+```ts
+instance.el.classList.add("cui--lunar-demo");
+```
+
+```css
+.cui.cui--lunar-demo {
+  --cui-bg: #fffbf9;
+  --cui-accent: #c86055;
+  --cui-rest: #c94f45;
+}
+```
+
+核心只提供 `style.css` 的默认皮肤，配色按实例覆盖即可，light / dark / auto 都还生效。
+
 [自定义 holidays](/calendar-ui-lunar/custom)
 
 完整选项和 `day.data` 字段见 [calendar-ui-lunar 指南](/guide/calendar-ui-lunar)。

@@ -9,6 +9,7 @@ import type {
   CalendarMode,
   CalendarOptions,
   CalendarRange,
+  CalendarSize,
   CalendarTheme,
 } from "./types";
 import { buildDays } from "./utils/days";
@@ -97,6 +98,10 @@ export function createCalendarUI<TData = null>(
   const locale = resolveLocale(options.locale);
   const adapter = options.adapter;
   let theme = options.theme ?? "auto";
+  const size: CalendarSize = options.size ?? "normal";
+  if (size !== "min" && size !== "normal" && size !== "fill") {
+    throw new TypeError("[calendar-ui] size 必须是 min、normal 或 fill");
+  }
   const today = new Date();
 
   const readDuration = function (
@@ -213,9 +218,17 @@ export function createCalendarUI<TData = null>(
   let rangeEnd: Date | null = null;
   let collapsed = collapsible && collapseOptions?.defaultCollapsed === true;
   let collapseButton: HTMLButtonElement | null = null;
+  /**
+   * 是否出现过副标题
+   *
+   * 只增不减：min 档一旦出现副标题就整块放大，之后再遇到没副标题的月份也不缩回去，
+   * 否则每次翻月整块尺寸都会跳一下。
+   */
+  let hasSubtitle = false;
 
   const root = node("div", "cui");
   root.dataset.theme = theme;
+  root.dataset.size = size;
   root.style.setProperty("--cui-month-duration", `${monthDuration}ms`);
   root.style.setProperty("--cui-month-easing", monthEasing);
   root.style.setProperty("--cui-collapse-duration", `${collapseDuration}ms`);
@@ -351,6 +364,13 @@ export function createCalendarUI<TData = null>(
   function render(animateRows = true): void {
     header.update(state.year, state.month);
     const dayLists = panels.map((_, index) => currentDays(index));
+
+    // 最小档按「有没有副标题」切换格宽；normal / fill 不受影响
+    if (!hasSubtitle && dayLists.some((days) => days.some((day) => day.subtitle !== ""))) {
+      hasSubtitle = true;
+      root.classList.add("cui--sub");
+    }
+
     panels.forEach((panel, index) => panel.grid.render(dayLists[index]!));
     updatePanelLabels();
     updateNav();

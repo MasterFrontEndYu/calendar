@@ -34,6 +34,7 @@ instance.destroy();
 | `weekStartsOn`  | `0 \| 1`                                | 一周从哪天开始，默认 1            |
 | `locale`        | `CalendarLocale \| CalendarLocaleName`  | 界面语言，默认 `"zh-CN"`          |
 | `theme`         | `"light" \| "dark" \| "auto"`           | 主题，默认 `"auto"`               |
+| `size`          | `"min" \| "normal" \| "fill"`           | 尺寸模板，默认 `"normal"`         |
 | `header`        | `boolean`                               | 是否显示头部，默认 `true`         |
 | `renderHeader`  | `HeaderRenderer`                        | 自定义头部，替换默认的 `‹ 标题 ›` |
 | `adapter`       | `CalendarAdapter<TData>`                | 日历适配器；不传就是纯公历        |
@@ -60,7 +61,7 @@ instance.clearRange();
 - 第一次点击设起点，第二次设终点；
 - 反向选择自动交换；
 - 第三次点击重新开始；
-- `months: 2` 显示相邻两月，移动端自动上下排列；
+- `months: 2` 显示相邻两月，容器宽度不足时自动上下排列；
 - `day.isRangeStart` / `isRangeEnd` / `isInRange` 可用于自定义样式；
 - `setRange` 触发 `onRangeChange`，不触发 `onSelect`。
 
@@ -155,7 +156,31 @@ instance.setTheme("light");
 - `setTheme()` 只改 `data-theme`，不重建 DOM；
 - `auto` 跟随最近的祖先 `data-theme`，没有则跟随系统；
 - 两套主题共用布局，只改变量；
-- 可通过 `--cui-bg`、`--cui-fg`、`--cui-accent`、`--cui-rest` 等变量覆盖；\n- 周末的日期数字固定用 `--cui-rest`（和法定节假日同色），由 `.cui__day.is-weekend` 控制，与节假日数据无关。
+- 可通过 `--cui-bg`、`--cui-fg`、`--cui-accent`、`--cui-rest` 等变量覆盖；
+- 周末的日期数字固定用 `--cui-rest`（和法定节假日同色），由 `.cui__day.is-weekend` 控制，与节假日数据无关。
+
+## 尺寸
+
+三套尺寸模板，通过 `size` 选择，默认 `normal`；所有日期格都是正方形：
+
+```ts
+createCalendarUI(container, { size: "min" }); // 最小
+createCalendarUI(container, { size: "normal" }); // 正常（默认）
+createCalendarUI(container, { size: "fill" }); // 跟随容器宽度
+```
+
+| 模板     | 格子                  | 整块宽度      | 说明                                 |
+| -------- | --------------------- | ------------- | ------------------------------------ |
+| `min`    | 24px（有副标题 36px） | 194px / 278px | 纯数字最小；出现副标题后整块放大一档 |
+| `normal` | 46px                  | 372px         | 纯数字和带副标题一样大               |
+| `fill`   | ≥48px，随容器放大     | 100% 容器     | 随容器宽度变化，格子始终正方形       |
+
+- `min`：一旦出现过副标题就放大到 36px 格，之后不再缩回，避免翻月时整块跳动；
+- `normal`：固定 46px 格，副标题多少都不改变尺寸；
+- `fill`：最小 48px 格，容器更窄时整块会超出容器宽度（保持正方形而不是压扁）；
+- 双月（`months: 2`）装不下时自动上下排列，`normal` 会保持 46px 格并居中；
+- 尺寸全部走 CSS 变量：`--cui-cell-size`、`--cui-pad`、`--cui-column-gap`、`--cui-num-size`、`--cui-sub-size`、`--cui-tag-size` 等，外部可直接覆盖；
+- 运行时切换直接改属性：`instance.el.dataset.size = "fill"`。
 
 ## 适配器
 
