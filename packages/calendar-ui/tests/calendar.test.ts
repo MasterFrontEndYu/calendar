@@ -863,3 +863,118 @@ describe("尺寸模板", () => {
     ).toThrow(TypeError);
   });
 });
+describe("年月选择层", () => {
+  const partOf = function (root: HTMLElement, part: "year" | "month"): HTMLButtonElement {
+    return root.querySelector(`.cui__title-part[data-part="${part}"]`) as HTMLButtonElement;
+  };
+
+  const pickerOf = function (root: HTMLElement): HTMLElement {
+    return root.querySelector(".cui__picker") as HTMLElement;
+  };
+
+  const cellsOf = function (root: HTMLElement): HTMLButtonElement[] {
+    return Array.from(pickerOf(root).querySelectorAll<HTMLButtonElement>(".cui__picker-cell"));
+  };
+
+  const navsOf = function (root: HTMLElement): HTMLButtonElement[] {
+    return Array.from(pickerOf(root).querySelectorAll<HTMLButtonElement>(".cui__nav"));
+  };
+
+  it("点头部年份打开年份层，选完只改年并关闭", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
+    const picker = pickerOf(instance.el);
+
+    expect(picker.hidden).toBe(true);
+
+    partOf(instance.el, "year").click();
+    expect(picker.hidden).toBe(false);
+    expect(picker.classList.contains("is-month")).toBe(false);
+
+    const years = cellsOf(instance.el);
+    expect(years).toHaveLength(12);
+    expect(years[0]?.textContent).toBe("2016");
+    expect(years[10]?.classList.contains("is-selected")).toBe(true);
+
+    years[0]?.click();
+    expect(instance.getMonth()).toEqual({ year: 2016, month: 10 });
+    expect(picker.hidden).toBe(true);
+
+    instance.destroy();
+  });
+
+  it("点头部月份打开月份层，选完只改月并关闭", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
+    const picker = pickerOf(instance.el);
+
+    partOf(instance.el, "month").click();
+    expect(picker.hidden).toBe(false);
+    expect(picker.classList.contains("is-month")).toBe(true);
+    expect(picker.querySelector(".cui__title")?.textContent).toBe("2026 年");
+
+    const months = cellsOf(instance.el);
+    expect(months).toHaveLength(12);
+    expect(months[3]?.textContent).toBe("4 月");
+    expect(months[9]?.classList.contains("is-selected")).toBe(true);
+
+    months[2]?.click();
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 3 });
+    expect(picker.hidden).toBe(true);
+
+    instance.destroy();
+  });
+
+  it("年份层左右箭头按 12 年翻页", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
+    partOf(instance.el, "year").click();
+
+    const picker = pickerOf(instance.el);
+    const navs = navsOf(instance.el);
+
+    navs[1]?.click();
+    expect(picker.querySelector(".cui__title")?.textContent).toBe("2028 – 2039");
+
+    navs[0]?.click();
+    navs[0]?.click();
+    expect(picker.querySelector(".cui__title")?.textContent).toBe("2004 – 2015");
+
+    instance.destroy();
+  });
+
+  it("Esc 关闭选择层", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
+    partOf(instance.el, "month").click();
+    expect(pickerOf(instance.el).hidden).toBe(false);
+
+    instance.el.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+
+    expect(pickerOf(instance.el).hidden).toBe(true);
+    instance.destroy();
+  });
+
+  it("超出 minDate / maxDate 的月份和年份禁用，翻页按钮也禁用", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: new Date(2026, 9, 15),
+      minDate: new Date(2026, 2, 1),
+      maxDate: new Date(2026, 8, 30),
+    });
+
+    partOf(instance.el, "month").click();
+    const months = cellsOf(instance.el);
+    expect(months[0]?.disabled).toBe(true);
+    expect(months[2]?.disabled).toBe(false);
+    expect(months[9]?.disabled).toBe(true);
+
+    instance.el.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+
+    partOf(instance.el, "year").click();
+    const years = cellsOf(instance.el);
+    expect(years[10]?.disabled).toBe(false);
+    expect(years[9]?.disabled).toBe(true);
+
+    const navs = navsOf(instance.el);
+    expect(navs[0]?.disabled).toBe(true);
+    expect(navs[1]?.disabled).toBe(true);
+
+    instance.destroy();
+  });
+});

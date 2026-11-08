@@ -28,6 +28,8 @@ export type {
   HeaderOptions,
   NavHandle,
   NavOptions,
+  PickerHandle,
+  PickerOptions,
 } from "./components";
 export type { CalendarLocale, CalendarLocaleName } from "./locale";
 export type { BuildDaysOptions } from "./utils";

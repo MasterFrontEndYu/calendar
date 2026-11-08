@@ -12,10 +12,24 @@ export interface CalendarLocale {
   weekdaysLong: readonly string[];
   /** 头部年月标题 */
   monthTitle(year: number, month: number): string;
+  /** 头部标题里年份、月份按钮的排列顺序，默认 "year-first" */
+  titleOrder?: "year-first" | "month-first";
+  /** 选择层里的月份名，例如 "10 月" / "Oct"；不传时用 `${month}` */
+  monthName?(month: number): string;
+  /** 选择层里的年份名，例如 "2026 年" / "2026"；不传时用 `${year}` */
+  yearLabel?(year: number): string;
   /** 上个月按钮的无障碍名称 */
   prevMonth: string;
   /** 下个月按钮的无障碍名称 */
   nextMonth: string;
+  /** 年份选择层的上一组按钮名称 */
+  prevYearPage?: string;
+  /** 年份选择层的下一组按钮名称 */
+  nextYearPage?: string;
+  /** 选择层的无障碍名称：选月份 */
+  pickMonth?: string;
+  /** 选择层的无障碍名称：选年份 */
+  pickYear?: string;
   /** 折叠按钮的无障碍名称；不传时使用内置文案 */
   collapse?: string;
   /** 展开按钮的无障碍名称；不传时使用内置文案 */

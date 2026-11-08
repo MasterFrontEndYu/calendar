@@ -182,6 +182,14 @@ createCalendarUI(container, { size: "fill" }); // 跟随容器宽度
 - 尺寸全部走 CSS 变量：`--cui-cell-size`、`--cui-pad`、`--cui-column-gap`、`--cui-num-size`、`--cui-sub-size`、`--cui-tag-size` 等，外部可直接覆盖；
 - 运行时切换直接改属性：`instance.el.dataset.size = "fill"`。
 
+## 年月选择
+
+头部标题拆成年份、月份两个按钮，各自打开对应的选择层（覆盖整块日历，两种面板尺寸一致）：
+
+- 点年份：12 年一页，4 列 × 3 行，左右箭头和翻月按钮在同一位置；选中后只改年份并立即关闭；
+- 点月份：当前年的 12 个月，4 列 × 3 行；选中后只改月份并立即关闭；
+- `Esc` / 点击外部关闭；`minDate` / `maxDate` 之外的月份和年份自动禁用。
+
 ## 适配器
 
 ```ts

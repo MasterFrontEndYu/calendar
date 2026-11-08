@@ -1,5 +1,6 @@
 import { createGrid } from "./components/grid";
 import { createHeader } from "./components/header";
+import { createPicker } from "./components/picker";
 import { createWeekdays } from "./components/weekdays";
 import { resolveLocale } from "./locales";
 import type {
@@ -629,22 +630,104 @@ export function createCalendarUI<TData = null>(
     };
   });
 
+  const monthName = (month: number): string => locale.monthName?.(month) ?? String(month);
+
   const header = createHeader({
     year: state.year,
     month: state.month,
     locale,
-    title:
+    label:
       monthCount === 2
         ? (year, month) => {
             const next = normalizeMonth(year, month + 1);
-            return `${locale.monthTitle(year, month)} – ${locale.monthTitle(next.year, next.month)}`;
+            return {
+              year: locale.yearLabel?.(year) ?? String(year),
+              month: `${monthName(month)} – ${monthName(next.month)}`,
+            };
           }
         : undefined,
+    onYearClick: () => openPicker("year"),
+    onMonthClick: () => openPicker("month"),
     onPrev: () => goTo(state.year, state.month - 1),
     onNext: () => goTo(state.year, state.month + 1),
     renderer: options.renderHeader,
   });
   header.el.hidden = options.header === false;
+  header.setTitleExpanded(false);
+
+  /** 选择层的年份 / 月份都按整个日历范围判断，越界的直接禁用 */
+  const isMonthOutOfRange = function (year: number, month: number): boolean {
+    const index = monthIndexOf(year, month);
+    const min =
+      minDate === null
+        ? Number.NEGATIVE_INFINITY
+        : monthIndexOf(minDate.getFullYear(), minDate.getMonth() + 1);
+    const max =
+      maxDate === null
+        ? Number.POSITIVE_INFINITY
+        : monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1);
+    return index < min || index > max;
+  };
+
+  const isYearOutOfRange = function (year: number): boolean {
+    return (
+      (minDate !== null && year < minDate.getFullYear()) ||
+      (maxDate !== null && year > maxDate.getFullYear())
+    );
+  };
+
+  const picker = createPicker({
+    locale,
+    getYear: () => state.year,
+    getMonth: () => state.month,
+    isMonthDisabled: isMonthOutOfRange,
+    isYearDisabled: isYearOutOfRange,
+    onPickMonth: (month) => {
+      closePicker();
+      goTo(state.year, month);
+    },
+    onPickYear: (year) => {
+      closePicker();
+      goTo(year, state.month);
+    },
+  });
+
+  /** 选择层打开时把底层内容设为 inert，键盘不会 Tab 到后面的日期格 */
+  const setBackgroundInert = function (inert: boolean): void {
+    Array.from(root.children).forEach((child) => {
+      if (child === picker.el) return;
+      (child as HTMLElement).inert = inert;
+    });
+  };
+
+  const onPickerPointerDown = function (event: PointerEvent): void {
+    const target = event.target as Node | null;
+    if (target !== null && root.contains(target)) return;
+    closePicker();
+  };
+
+  const onPickerKeyDown = function (event: KeyboardEvent): void {
+    if (event.key !== "Escape") return;
+    event.stopPropagation();
+    closePicker();
+  };
+
+  function openPicker(mode: "month" | "year" = "month"): void {
+    picker.open(mode);
+    header.setTitleExpanded(true);
+    setBackgroundInert(true);
+    document.addEventListener("pointerdown", onPickerPointerDown, true);
+    root.addEventListener("keydown", onPickerKeyDown);
+  }
+
+  function closePicker(): void {
+    if (!picker.isOpen()) return;
+    picker.close();
+    header.setTitleExpanded(false);
+    setBackgroundInert(false);
+    document.removeEventListener("pointerdown", onPickerPointerDown, true);
+    root.removeEventListener("keydown", onPickerKeyDown);
+  }
 
   if (monthCount === 1) {
     root.append(header.el, panels[0]!.weekdays.el, panels[0]!.viewport);
@@ -666,6 +749,8 @@ export function createCalendarUI<TData = null>(
     collapseButton.addEventListener("click", toggleCollapsed);
     root.append(collapseButton);
   }
+
+  root.append(picker.el);
 
   root.classList.add("cui--no-animation");
   container.appendChild(root);
@@ -796,6 +881,8 @@ export function createCalendarUI<TData = null>(
     },
     destroy: () => {
       stopMonthAnimation();
+      closePicker();
+      picker.destroy();
       collapseButton?.removeEventListener("click", toggleCollapsed);
       header.destroy();
       panels.forEach((panel) => panel.grid.destroy());

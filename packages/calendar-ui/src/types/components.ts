@@ -26,13 +26,17 @@ export interface HeaderOptions {
   month: number;
   /** 界面文案 */
   locale: CalendarLocale;
-  /** 自定义标题文本；不传时使用 locale.monthTitle */
-  title?: (year: number, month: number) => string;
+  /** 标题两段文案；不传时用 locale.yearLabel / locale.monthName */
+  label?: (year: number, month: number) => { year: string; month: string };
+  /** 点击年份按钮（打开年份选择层） */
+  onYearClick?: () => void;
+  /** 点击月份按钮（打开月份选择层） */
+  onMonthClick?: () => void;
   /** 上个月 */
   onPrev: () => void;
   /** 下个月 */
   onNext: () => void;
-  /** 自定义渲染函数，提供时替换默认的 ‹ 标题 › */
+  /** 自定义渲染函数，提供时替换默认的 ‹ 年 月 › */
   renderer?: HeaderRenderer;
 }
 
@@ -43,6 +47,37 @@ export interface HeaderHandle {
   update(year: number, month: number): void;
   /** 更新左右按钮的禁用状态 */
   setNavDisabled(prevDisabled: boolean, nextDisabled: boolean): void;
+  /** 同步标题按钮的展开状态（选择层打开时为 true） */
+  setTitleExpanded(expanded: boolean): void;
+  destroy(): void;
+}
+
+/** 年月选择层的入参 */
+export interface PickerOptions {
+  /** 界面文案 */
+  locale: CalendarLocale;
+  /** 当前展示的年 */
+  getYear(): number;
+  /** 当前展示的月 */
+  getMonth(): number;
+  /** 某年某月是否落在可选范围内 */
+  isMonthDisabled(year: number, month: number): boolean;
+  /** 某年是否落在可选范围内 */
+  isYearDisabled(year: number): boolean;
+  /** 选中月份：只改月，选完立刻关闭 */
+  onPickMonth(month: number): void;
+  /** 选中年份：只改年，选完立刻关闭 */
+  onPickYear(year: number): void;
+}
+
+/** 年月选择层的句柄 */
+export interface PickerHandle {
+  el: HTMLElement;
+  /** 打开选择层：月份 4 列 × 3 行，年份 4 列 × 3 行 */
+  open(mode: "month" | "year"): void;
+  close(): void;
+  isOpen(): boolean;
+  render(): void;
   destroy(): void;
 }
 
