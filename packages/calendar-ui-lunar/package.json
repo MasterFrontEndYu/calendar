@@ -1,6 +1,6 @@
 {
   "name": "@sanguo-dev/calendar-ui-lunar",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "把 @sanguo-dev/calendar 接入 calendar-ui 的官方农历适配器",
   "keywords": [
     "calendar",

@@ -1,5 +1,13 @@
 # @sanguo-dev/calendar-ui-lunar
 
+## 0.0.4
+
+### Patch Changes
+
+- 去除样式，以默认样式
+- Updated dependencies
+  - @sanguo-dev/calendar-ui@0.0.4
+
 ## 0.0.3
 
 ### Patch Changes
