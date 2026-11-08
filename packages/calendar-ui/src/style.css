@@ -25,7 +25,7 @@
   --cui-column-gap: 2px;
   --cui-row-gap: 2px;
   --cui-month-gap: 8px;
-  --cui-header-pad: 4px 0 6px;
+  --cui-header-pad: 4px 6px 6px;
   --cui-header-gap: 4px;
   --cui-title-size: 12px;
   --cui-nav-size: 20px;
@@ -41,7 +41,7 @@
   --cui-sub-line: 1.1;
   --cui-tag-size: 10px;
   --cui-collapse-size: 12px;
-  --cui-picker-size: 14px;
+  --cui-picker-pad: 4px;
 
   /* 单月宽度 = 7 个格子 + 6 条列间距 + 左右内边距 + 左右边框 */
   --cui-max-width: calc(
@@ -83,7 +83,7 @@
   --cui-column-gap: 4px;
   --cui-row-gap: 4px;
   --cui-month-gap: 16px;
-  --cui-header-pad: 6px 2px 12px;
+  --cui-header-pad: 6px 6px 12px;
   --cui-header-gap: 10px;
   --cui-title-size: 16px;
   --cui-nav-size: 32px;
@@ -99,7 +99,7 @@
   --cui-sub-line: 1.15;
   --cui-tag-size: 10px;
   --cui-collapse-size: 14px;
-  --cui-picker-size: 20px;
+  --cui-picker-pad: 8px;
 }
 
 /*
@@ -114,14 +114,14 @@
   --cui-column-gap: 4px;
   --cui-row-gap: 4px;
   --cui-month-gap: 16px;
-  --cui-header-pad: 6px 2px 14px;
+  --cui-header-pad: 24px 6px 32px;
   --cui-header-gap: 12px;
   --cui-title-size: clamp(18px, 3.6cqi, 30px);
   --cui-nav-size: clamp(32px, 6.5cqi, 48px);
   --cui-nav-radius: 8px;
   --cui-nav-font: clamp(16px, 3.8cqi, 26px);
-  --cui-weekday-size: clamp(14px, 3cqi, 26px);
-  --cui-weekday-pad: 8px 0;
+  --cui-weekday-size: clamp(16px, 3.2cqi, 30px);
+  --cui-weekday-pad: 12px 0;
   --cui-cell-pad: 4px;
   --cui-cell-gap: 2px;
   --cui-cell-radius: 8px;
@@ -130,7 +130,7 @@
   --cui-sub-line: 1.2;
   --cui-tag-size: clamp(10px, 2cqi, 16px);
   --cui-collapse-size: 14px;
-  --cui-picker-size: clamp(18px, 4.2cqi, 36px);
+  --cui-picker-pad: 8px;
 
   /* 比 normal 的 46px 大：fill 的格子最小 48px，再窄就横向溢出 */
   min-width: calc(
@@ -258,7 +258,7 @@
   padding: var(--cui-header-pad);
 }
 
-/* 标题拆成年份、月份两个按钮：各自打开对应的选择层 */
+/* 标题拆成年份、月份两个按钮，共用下方同一个选择层 */
 .cui__title {
   display: flex;
   align-items: center;
@@ -287,6 +287,10 @@
 }
 
 .cui__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   width: var(--cui-nav-size);
   height: var(--cui-nav-size);
   border: 1px solid var(--cui-border);
@@ -298,8 +302,37 @@
   cursor: pointer;
 }
 
+/* 同一个向下箭头，靠旋转复用：左右翻月转 ±90° */
+.cui__icon {
+  display: block;
+  width: 1em;
+  height: 1em;
+  transition: transform 160ms ease;
+}
+
+.cui__nav[data-direction="prev"] .cui__icon {
+  transform: rotate(90deg);
+}
+
+.cui__nav[data-direction="next"] .cui__icon {
+  transform: rotate(-90deg);
+}
+
+/* 折叠按钮：展开时箭头朝上（收起），折叠后朝下（展开） */
+.cui__collapse .cui__icon {
+  transform: rotate(180deg);
+}
+
+.cui__collapse.is-collapsed .cui__icon {
+  transform: none;
+}
+
 .cui__nav:hover {
   background: var(--cui-hover);
+}
+
+.cui__nav.is-nav-hidden {
+  visibility: hidden;
 }
 
 .cui__nav:disabled {
@@ -391,6 +424,10 @@
   .cui__week {
     transition: none;
     animation: none;
+  }
+
+  .cui__icon {
+    transition: none;
   }
 }
 
@@ -536,7 +573,7 @@
   width: 100%;
   align-items: center;
   justify-content: center;
-  margin-top: 8px;
+  margin-top: 12px;
   padding: 2px 0;
   border: 0;
   border-radius: 6px;
@@ -558,29 +595,43 @@
   outline-offset: 1px;
 }
 
-/* 年月选择层：盖住整块日历，两种模式尺寸一致（以月份选择的尺寸为准） */
+/* 年月选择层：从头部下方弹出的小面板，高度由 4 列 × 3 行的格子决定 */
 .cui__picker {
   position: absolute;
-  inset: 0;
+  left: var(--cui-pad);
+  right: var(--cui-pad);
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  padding: var(--cui-pad);
+  padding: var(--cui-picker-pad);
+  border: var(--cui-border-width) solid var(--cui-border);
   border-radius: var(--cui-radius);
   background: var(--cui-bg);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 16%);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    visibility 160ms;
+  pointer-events: none;
 }
 
-.cui__picker[hidden] {
-  display: none;
+.cui__picker.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .cui__picker-grid {
   display: grid;
-  flex: 1;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(3, minmax(0, 1fr));
-  gap: var(--cui-column-gap);
-  margin-top: var(--cui-row-gap);
+  /* 列间距沿用日历的列间距，行间距单独给，换模板时一起缩放 */
+  column-gap: var(--cui-column-gap);
+  row-gap: var(--cui-row-gap);
+  aspect-ratio: 9 / 3;
+  /* 上下留白按列间距的 5 倍算：正常档 20px，最小档 10px */
+  padding: calc(var(--cui-column-gap) * 5) 0;
 }
 
 .cui__picker-cell {
@@ -594,7 +645,7 @@
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: var(--cui-picker-size);
+  font-size: var(--cui-title-size);
   cursor: pointer;
 }
 
@@ -621,9 +672,10 @@
   outline-offset: 1px;
 }
 
-/* 选月份时没有翻页动作，箭头只占位，保证标题和选年份时位置一致 */
-.cui__picker.is-month .cui__nav {
-  visibility: hidden;
+@media (prefers-reduced-motion: reduce) {
+  .cui__picker {
+    transition: none;
+  }
 }
 
 /* 隐藏状态：类选择器里的 display 会盖掉 [hidden] 的默认样式，这里显式补上 */

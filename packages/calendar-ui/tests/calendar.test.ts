@@ -330,12 +330,12 @@ describe("折叠", () => {
     const button = instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!;
 
     expect(button).not.toBeNull();
-    expect(button.textContent).toBe("⌃");
+    expect(button.classList.contains("is-collapsed")).toBe(false);
     expect(button.getAttribute("aria-expanded")).toBe("true");
     expect(visibleRows(instance.el)).toHaveLength(6);
 
     button.click();
-    expect(button.textContent).toBe("⌄");
+    expect(button.classList.contains("is-collapsed")).toBe(true);
     expect(button.getAttribute("aria-expanded")).toBe("false");
     const collapsedRows = visibleRows(instance.el);
     expect(collapsedRows).toHaveLength(1);
@@ -345,7 +345,7 @@ describe("折叠", () => {
     expect(visibleRows(instance.el)[0]).toBe(instance.el.querySelectorAll(".cui__week")[4]);
 
     button.click();
-    expect(button.textContent).toBe("⌃");
+    expect(button.classList.contains("is-collapsed")).toBe(false);
     expect(button.getAttribute("aria-expanded")).toBe("true");
     expect(visibleRows(instance.el)).toHaveLength(6);
 
@@ -402,7 +402,7 @@ describe("折叠", () => {
     });
     const button = instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!;
 
-    expect(button.textContent).toBe("⌄");
+    expect(button.classList.contains("is-collapsed")).toBe(true);
     expect(button.getAttribute("aria-expanded")).toBe("false");
     expect(visibleRows(instance.el)).toHaveLength(1);
 
@@ -863,6 +863,7 @@ describe("尺寸模板", () => {
     ).toThrow(TypeError);
   });
 });
+
 describe("年月选择层", () => {
   const partOf = function (root: HTMLElement, part: "year" | "month"): HTMLButtonElement {
     return root.querySelector(`.cui__title-part[data-part="${part}"]`) as HTMLButtonElement;
@@ -872,82 +873,100 @@ describe("年月选择层", () => {
     return root.querySelector(".cui__picker") as HTMLElement;
   };
 
+  const isOpen = function (root: HTMLElement): boolean {
+    return pickerOf(root).classList.contains("is-open");
+  };
+
   const cellsOf = function (root: HTMLElement): HTMLButtonElement[] {
     return Array.from(pickerOf(root).querySelectorAll<HTMLButtonElement>(".cui__picker-cell"));
   };
 
   const navsOf = function (root: HTMLElement): HTMLButtonElement[] {
-    return Array.from(pickerOf(root).querySelectorAll<HTMLButtonElement>(".cui__nav"));
+    return Array.from(root.querySelectorAll<HTMLButtonElement>(".cui__header .cui__nav"));
   };
 
-  it("点头部年份打开年份层，选完只改年并关闭", () => {
+  it("点年份出年份层、点月份出月份层，共用一个面板", () => {
     const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
     const picker = pickerOf(instance.el);
-
-    expect(picker.hidden).toBe(true);
 
     partOf(instance.el, "year").click();
-    expect(picker.hidden).toBe(false);
+    expect(isOpen(instance.el)).toBe(true);
     expect(picker.classList.contains("is-month")).toBe(false);
-
-    const years = cellsOf(instance.el);
-    expect(years).toHaveLength(12);
-    expect(years[0]?.textContent).toBe("2016");
-    expect(years[10]?.classList.contains("is-selected")).toBe(true);
-
-    years[0]?.click();
-    expect(instance.getMonth()).toEqual({ year: 2016, month: 10 });
-    expect(picker.hidden).toBe(true);
-
-    instance.destroy();
-  });
-
-  it("点头部月份打开月份层，选完只改月并关闭", () => {
-    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
-    const picker = pickerOf(instance.el);
+    expect(cellsOf(instance.el)[0]?.textContent).toBe("2016");
 
     partOf(instance.el, "month").click();
-    expect(picker.hidden).toBe(false);
+    expect(isOpen(instance.el)).toBe(true);
     expect(picker.classList.contains("is-month")).toBe(true);
-    expect(picker.querySelector(".cui__title")?.textContent).toBe("2026 年");
+    expect(cellsOf(instance.el)[0]?.textContent).toBe("1 月");
 
-    const months = cellsOf(instance.el);
-    expect(months).toHaveLength(12);
-    expect(months[3]?.textContent).toBe("4 月");
-    expect(months[9]?.classList.contains("is-selected")).toBe(true);
-
-    months[2]?.click();
-    expect(instance.getMonth()).toEqual({ year: 2026, month: 3 });
-    expect(picker.hidden).toBe(true);
+    partOf(instance.el, "month").click();
+    expect(isOpen(instance.el)).toBe(false);
 
     instance.destroy();
   });
 
-  it("年份层左右箭头按 12 年翻页", () => {
+  it("月份层没有翻页按钮，年份层有", () => {
     const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
-    partOf(instance.el, "year").click();
-
-    const picker = pickerOf(instance.el);
     const navs = navsOf(instance.el);
 
+    partOf(instance.el, "month").click();
+    expect(navs[0]?.classList.contains("is-nav-hidden")).toBe(true);
+    expect(navs[1]?.classList.contains("is-nav-hidden")).toBe(true);
+
+    partOf(instance.el, "year").click();
+    expect(navs[0]?.classList.contains("is-nav-hidden")).toBe(false);
+    expect(navs[1]?.classList.contains("is-nav-hidden")).toBe(false);
+
+    instance.destroy();
+  });
+
+  it("选月份只改月并关闭", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
+
+    partOf(instance.el, "month").click();
+    cellsOf(instance.el)[2]?.click();
+
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 3 });
+    expect(isOpen(instance.el)).toBe(false);
+
+    instance.destroy();
+  });
+
+  it("选年份只改年并关闭", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
+
+    partOf(instance.el, "year").click();
+    cellsOf(instance.el)[0]?.click();
+
+    expect(instance.getMonth()).toEqual({ year: 2016, month: 10 });
+    expect(isOpen(instance.el)).toBe(false);
+
+    instance.destroy();
+  });
+
+  it("年份层箭头按 12 年翻页", () => {
+    const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
+    const navs = navsOf(instance.el);
+
+    partOf(instance.el, "year").click();
     navs[1]?.click();
-    expect(picker.querySelector(".cui__title")?.textContent).toBe("2028 – 2039");
+    expect(cellsOf(instance.el)[0]?.textContent).toBe("2028");
 
     navs[0]?.click();
     navs[0]?.click();
-    expect(picker.querySelector(".cui__title")?.textContent).toBe("2004 – 2015");
+    expect(cellsOf(instance.el)[0]?.textContent).toBe("2004");
 
     instance.destroy();
   });
 
   it("Esc 关闭选择层", () => {
     const instance = createCalendarUI(host(), { initialDate: new Date(2026, 9, 15) });
-    partOf(instance.el, "month").click();
-    expect(pickerOf(instance.el).hidden).toBe(false);
+    partOf(instance.el, "year").click();
+    expect(isOpen(instance.el)).toBe(true);
 
     instance.el.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 
-    expect(pickerOf(instance.el).hidden).toBe(true);
+    expect(isOpen(instance.el)).toBe(false);
     instance.destroy();
   });
 
@@ -963,8 +982,6 @@ describe("年月选择层", () => {
     expect(months[0]?.disabled).toBe(true);
     expect(months[2]?.disabled).toBe(false);
     expect(months[9]?.disabled).toBe(true);
-
-    instance.el.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
 
     partOf(instance.el, "year").click();
     const years = cellsOf(instance.el);

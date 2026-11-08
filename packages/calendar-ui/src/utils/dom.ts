@@ -9,3 +9,29 @@ export const node = function <K extends keyof HTMLElementTagNameMap>(
   if (text !== undefined) el.textContent = text;
   return el;
 };
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+/**
+ * 向下箭头
+ *
+ * 同一个图标靠 CSS 旋转复用：左/右翻月转 ±90°，折叠箭头转 180°。
+ */
+export const createArrowIcon = function (): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("class", "cui__icon");
+  svg.setAttribute("viewBox", "0 0 16 16");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  const path = document.createElementNS(SVG_NS, "path");
+  path.setAttribute("d", "M3.5 5.5 8 10l4.5-4.5");
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "currentColor");
+  path.setAttribute("stroke-width", "1.5");
+  path.setAttribute("stroke-linecap", "round");
+  path.setAttribute("stroke-linejoin", "round");
+
+  svg.append(path);
+  return svg;
+};

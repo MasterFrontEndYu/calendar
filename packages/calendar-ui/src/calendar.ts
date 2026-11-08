@@ -23,7 +23,7 @@ import {
   sameDay,
   toDateOnly,
 } from "./utils/date";
-import { node } from "./utils/dom";
+import { createArrowIcon, node } from "./utils/dom";
 import {
   normalizeEasing,
   prefersReducedMotion,
@@ -283,7 +283,7 @@ export function createCalendarUI<TData = null>(
 
   const updateCollapseButton = function (): void {
     if (collapseButton === null) return;
-    collapseButton.textContent = collapsed ? "⌄" : "⌃";
+    collapseButton.classList.toggle("is-collapsed", collapsed);
     collapseButton.setAttribute("aria-expanded", String(!collapsed));
     collapseButton.setAttribute(
       "aria-label",
@@ -630,6 +630,8 @@ export function createCalendarUI<TData = null>(
     };
   });
 
+  let pickerMode: "month" | "year" | null = null;
+
   const monthName = (month: number): string => locale.monthName?.(month) ?? String(month);
 
   const header = createHeader({
@@ -646,10 +648,10 @@ export function createCalendarUI<TData = null>(
             };
           }
         : undefined,
-    onYearClick: () => openPicker("year"),
-    onMonthClick: () => openPicker("month"),
-    onPrev: () => goTo(state.year, state.month - 1),
-    onNext: () => goTo(state.year, state.month + 1),
+    onYearClick: () => togglePicker("year"),
+    onMonthClick: () => togglePicker("month"),
+    onPrev: () => step(-1),
+    onNext: () => step(1),
     renderer: options.renderHeader,
   });
   header.el.hidden = options.header === false;
@@ -682,9 +684,9 @@ export function createCalendarUI<TData = null>(
     getMonth: () => state.month,
     isMonthDisabled: isMonthOutOfRange,
     isYearDisabled: isYearOutOfRange,
-    onPickMonth: (month) => {
+    onPickMonth: (year, month) => {
       closePicker();
-      goTo(state.year, month);
+      goTo(year, month);
     },
     onPickYear: (year) => {
       closePicker();
@@ -692,10 +694,41 @@ export function createCalendarUI<TData = null>(
     },
   });
 
-  /** 选择层打开时把底层内容设为 inert，键盘不会 Tab 到后面的日期格 */
+  /** 头部箭头：年份层翻 12 年；月份层收起箭头不响应；关闭时正常翻月 */
+  function step(direction: -1 | 1): void {
+    if (pickerMode === "year") {
+      picker.movePage(direction);
+      syncPickerNav();
+      return;
+    }
+
+    if (pickerMode === "month") return;
+
+    goTo(state.year, state.month + direction);
+  }
+
+  /** 点年份 / 月份按钮：同一个按钮再点一次关闭，否则切到对应面板 */
+  function togglePicker(mode: "month" | "year"): void {
+    if (pickerMode === mode) {
+      closePicker();
+      return;
+    }
+    openPicker(mode);
+  }
+
+  /** 头部左右按钮在年份层按「年份页边界」禁用，其余情况按「月份边界」 */
+  function syncPickerNav(): void {
+    if (pickerMode === "year") {
+      header.setNavDisabled(!picker.canPage(-1), !picker.canPage(1));
+      return;
+    }
+    updateNav();
+  }
+
+  /** 选择层打开时把底层内容设为 inert（头部保留，箭头还要用） */
   const setBackgroundInert = function (inert: boolean): void {
     Array.from(root.children).forEach((child) => {
-      if (child === picker.el) return;
+      if (child === picker.el || child === header.el) return;
       (child as HTMLElement).inert = inert;
     });
   };
@@ -712,21 +745,35 @@ export function createCalendarUI<TData = null>(
     closePicker();
   };
 
-  function openPicker(mode: "month" | "year" = "month"): void {
+  function openPicker(mode: "month" | "year"): void {
+    const wasOpen = picker.isOpen();
+    picker.el.style.top = `${header.el.offsetTop + header.el.offsetHeight}px`;
     picker.open(mode);
+    pickerMode = mode;
+    header.setNavVisible(mode === "year");
+    syncPickerNav();
     header.setTitleExpanded(true);
     setBackgroundInert(true);
-    document.addEventListener("pointerdown", onPickerPointerDown, true);
-    root.addEventListener("keydown", onPickerKeyDown);
+
+    if (!wasOpen) {
+      document.addEventListener("pointerdown", onPickerPointerDown, true);
+      root.addEventListener("keydown", onPickerKeyDown);
+    }
   }
 
   function closePicker(): void {
     if (!picker.isOpen()) return;
+
+    const hadFocus = picker.el.contains(document.activeElement);
     picker.close();
+    pickerMode = null;
+    header.setNavVisible(true);
+    syncPickerNav();
     header.setTitleExpanded(false);
     setBackgroundInert(false);
     document.removeEventListener("pointerdown", onPickerPointerDown, true);
     root.removeEventListener("keydown", onPickerKeyDown);
+    if (hadFocus) header.focusTitle();
   }
 
   if (monthCount === 1) {
@@ -746,6 +793,7 @@ export function createCalendarUI<TData = null>(
   if (collapsible) {
     collapseButton = node("button", "cui__collapse");
     collapseButton.type = "button";
+    collapseButton.append(createArrowIcon());
     collapseButton.addEventListener("click", toggleCollapsed);
     root.append(collapseButton);
   }

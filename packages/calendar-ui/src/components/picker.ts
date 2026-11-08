@@ -1,6 +1,5 @@
 import type { PickerHandle, PickerOptions } from "../types";
 import { node } from "../utils/dom";
-import { createNav } from "./nav";
 
 /** 一页显示 12 个：月份 4 列 × 3 行，年份同样 4 列 × 3 行 */
 const PAGE_SIZE = 12;
@@ -8,33 +7,13 @@ const PAGE_SIZE = 12;
 /**
  * 年月选择层
  *
- * 年份和月份是两个独立的面板，盖住整块日历、尺寸一致：
- * - 月份：当前视图年的 12 个月，选完只改月，立刻关闭；
- * - 年份：12 年一页，左右箭头和日历头部的翻月按钮在同一个位置，选完只改年，立刻关闭。
+ * 从头部下方弹出的小面板，尺寸由 4 列 × 3 行的格子决定，不铺满整块日历。
+ * - 月份：当前展示年的 12 个月，选完只改月，立刻关闭；
+ * - 年份：12 年一页，左右箭头复用头部的翻月按钮，选完只改年，立刻关闭。
  */
 export const createPicker = function (options: PickerOptions): PickerHandle {
-  const { locale } = options;
-
   const el = node("div", "cui__picker");
-  el.hidden = true;
   el.setAttribute("role", "dialog");
-  el.setAttribute("aria-modal", "true");
-
-  const head = node("div", "cui__header");
-  const title = node("div", "cui__title");
-
-  const prev = createNav({
-    label: "‹",
-    ariaLabel: locale.prevYearPage ?? "上一组年份",
-    onClick: () => movePage(-1),
-  });
-  const next = createNav({
-    label: "›",
-    ariaLabel: locale.nextYearPage ?? "下一组年份",
-    onClick: () => movePage(1),
-  });
-
-  head.append(prev.el, title, next.el);
 
   const grid = node("div", "cui__picker-grid");
   const cells = Array.from({ length: PAGE_SIZE }, () => {
@@ -43,16 +22,16 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
     return cell;
   });
   grid.append(...cells);
-  el.append(head, grid);
+  el.append(grid);
 
   let mode: "month" | "year" | null = null;
-  /** 月份面板展示的年份 */
+  /** 月份层展示的年份 */
   let viewYear = options.getYear();
-  /** 年份面板这一页的起始年 */
+  /** 年份层这一页的起始年 */
   let pageStart = 0;
 
-  const monthName = (month: number): string => locale.monthName?.(month) ?? String(month);
-  const yearName = (year: number): string => locale.yearLabel?.(year) ?? String(year);
+  const monthName = (month: number): string => options.locale.monthName?.(month) ?? String(month);
+  const yearName = (year: number): string => options.locale.yearLabel?.(year) ?? String(year);
 
   const pageHasYear = (start: number): boolean => {
     for (let index = 0; index < PAGE_SIZE; index++) {
@@ -62,6 +41,7 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
   };
 
   function movePage(direction: -1 | 1): void {
+    if (mode !== "year") return;
     const start = pageStart + direction * PAGE_SIZE;
     if (!pageHasYear(start)) return;
     pageStart = start;
@@ -70,9 +50,7 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
 
   function renderMonths(): void {
     el.classList.add("is-month");
-    el.setAttribute("aria-label", locale.pickMonth ?? "选择月份");
-
-    title.textContent = yearName(viewYear);
+    el.setAttribute("aria-label", options.locale.pickMonth ?? "选择月份");
 
     cells.forEach((cell, index) => {
       const month = index + 1;
@@ -80,16 +58,17 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
       cell.dataset.month = String(month);
       delete cell.dataset.year;
       cell.disabled = options.isMonthDisabled(viewYear, month);
-      cell.classList.toggle("is-selected", month === options.getMonth());
+      cell.classList.toggle(
+        "is-selected",
+        viewYear === options.getYear() && month === options.getMonth(),
+      );
       cell.setAttribute("aria-label", `${yearName(viewYear)} ${monthName(month)}`);
     });
   }
 
   function renderYears(): void {
     el.classList.remove("is-month");
-    el.setAttribute("aria-label", locale.pickYear ?? "选择年份");
-
-    title.textContent = `${pageStart} – ${pageStart + PAGE_SIZE - 1}`;
+    el.setAttribute("aria-label", options.locale.pickYear ?? "选择年份");
 
     cells.forEach((cell, index) => {
       const year = pageStart + index;
@@ -100,9 +79,6 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
       cell.classList.toggle("is-selected", year === options.getYear());
       cell.setAttribute("aria-label", yearName(year));
     });
-
-    prev.setDisabled(!pageHasYear(pageStart - PAGE_SIZE));
-    next.setDisabled(!pageHasYear(pageStart + PAGE_SIZE));
   }
 
   function render(): void {
@@ -119,11 +95,16 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
       pageStart = Math.floor(options.getYear() / PAGE_SIZE) * PAGE_SIZE;
     }
 
-    el.hidden = false;
+    el.classList.add("is-open");
     render();
 
     const selected = cells.find((cell) => cell.classList.contains("is-selected") && !cell.disabled);
     (selected ?? cells[0])?.focus({ preventScroll: true });
+  }
+
+  function close(): void {
+    mode = null;
+    el.classList.remove("is-open");
   }
 
   const onGridClick = (event: MouseEvent): void => {
@@ -134,7 +115,7 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
     if (index < 0) return;
 
     if (mode === "month") {
-      options.onPickMonth(index + 1);
+      options.onPickMonth(viewYear, index + 1);
       return;
     }
 
@@ -148,16 +129,17 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
   return {
     el,
     open,
-    close: () => {
-      el.hidden = true;
-      mode = null;
-    },
+    close,
     isOpen: () => mode !== null,
-    render,
+    mode: () => mode,
+    movePage,
+    canPage: (direction: -1 | 1) => pageHasYear(pageStart + direction * PAGE_SIZE),
+    refresh: () => {
+      if (mode === "month") viewYear = options.getYear();
+      render();
+    },
     destroy: () => {
       grid.removeEventListener("click", onGridClick);
-      prev.destroy();
-      next.destroy();
     },
   };
 };

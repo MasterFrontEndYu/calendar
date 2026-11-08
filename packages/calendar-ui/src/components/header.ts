@@ -5,7 +5,7 @@ import { createNav } from "./nav";
 /**
  * 头部：默认是 ‹ 年 月 ›，也可以交给 renderer 完全自定义
  *
- * 年份和月份是两个独立按钮：点年份开年份选择层，点月份开月份选择层。
+ * 年份和月份是两个独立按钮，点哪个就弹出哪个选择层；两者共用下方同一个面板。
  */
 export const createHeader = function (options: HeaderOptions): HeaderHandle {
   const el = node("div", "cui__header");
@@ -24,12 +24,12 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
   }
 
   const prev = createNav({
-    label: "‹",
+    direction: "prev",
     ariaLabel: options.locale.prevMonth,
     onClick: options.onPrev,
   });
   const next = createNav({
-    label: "›",
+    direction: "next",
     ariaLabel: options.locale.nextMonth,
     onClick: options.onNext,
   });
@@ -91,10 +91,17 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
       prev.setDisabled(prevDisabled);
       next.setDisabled(nextDisabled);
     },
+    setNavVisible: (visible: boolean) => {
+      prev.el.classList.toggle("is-nav-hidden", !visible);
+      next.el.classList.toggle("is-nav-hidden", !visible);
+    },
     setTitleExpanded: (expanded: boolean) => {
       const value = String(expanded);
       if (options.onYearClick) yearButton.setAttribute("aria-expanded", value);
       if (options.onMonthClick) monthButton.setAttribute("aria-expanded", value);
+    },
+    focusTitle: () => {
+      yearButton.focus({ preventScroll: true });
     },
     destroy: () => {
       prev.destroy();
