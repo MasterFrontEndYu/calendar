@@ -89,7 +89,7 @@
   --cui-nav-size: 28px;
   --cui-nav-radius: 7px;
   --cui-nav-font: 15px;
-  --cui-weekday-size: 12px;
+  --cui-weekday-size: 13px;
   --cui-weekday-pad: 4px 0;
   --cui-cell-pad: 1px;
   --cui-cell-gap: 2px;
@@ -119,8 +119,8 @@
   --cui-nav-size: clamp(28px, 6cqi, 44px);
   --cui-nav-radius: 8px;
   --cui-nav-font: clamp(14px, 3.4cqi, 24px);
-  --cui-weekday-size: clamp(11px, 2.2cqi, 16px);
-  --cui-weekday-pad: 4px 0;
+  --cui-weekday-size: clamp(12px, 2.6cqi, 22px);
+  --cui-weekday-pad: 6px 0;
   --cui-cell-pad: 3px;
   --cui-cell-gap: 2px;
   --cui-cell-radius: 8px;
@@ -292,11 +292,12 @@
   outline-offset: 1px;
 }
 
-/* 星期表头 */
+/* 星期表头：自己的宽度就是一个月的宽度，fill 的字号按它算 */
 .cui__weekdays {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: var(--cui-column-gap);
+  container-type: inline-size;
 }
 
 /* 6 行日期；折叠时按行收起，节点仍然复用 */
@@ -401,7 +402,6 @@
 .cui__day-num {
   font-size: var(--cui-num-size);
   font-weight: 500;
-  line-height: 1.1;
 }
 
 /* 周末：日期数字固定用节假日红（--cui-rest），不由节假日数据决定 */
