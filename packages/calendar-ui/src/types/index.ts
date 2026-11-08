@@ -33,3 +33,4 @@ export type {
 } from "./components";
 export type { CalendarLocale, CalendarLocaleName } from "./locale";
 export type { BuildDaysOptions } from "./utils";
+export type * from "./core";

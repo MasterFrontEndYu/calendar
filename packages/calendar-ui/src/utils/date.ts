@@ -80,3 +80,22 @@ export const normalizeMonth = function (year: number, month: number): YearMonth 
   const date = new Date(year, month - 1, 1);
   return { year: date.getFullYear(), month: date.getMonth() + 1 };
 };
+
+/** 年月转成连续月序号，方便比较、加减和夹取 */
+export const monthIndexOf = function (year: number, month: number): number {
+  return year * 12 + (month - 1);
+};
+
+/** 连续月序号还原成年月；只做整数运算，不分配 Date */
+export const monthFromIndex = function (index: number): YearMonth {
+  return { year: Math.floor(index / 12), month: (index % 12) + 1 };
+};
+
+/** 读取可空日期入参：null / undefined 直接返回 null */
+export const readDate = function (
+  value: CalendarDateInput | null | undefined,
+  path: string,
+): Date | null {
+  if (value === null || value === undefined) return null;
+  return parseDateInput(value, path);
+};

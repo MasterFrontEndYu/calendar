@@ -60,8 +60,9 @@ export const createGrid = function <TData = null>(options: GridOptions<TData>): 
     if (!cell) return;
 
     // 用索引取格子数据，比解析 data-date 快，也不受补位格影响
-    const picked = days[cells.indexOf(cell as HTMLButtonElement)];
-    if (picked && !picked.isDisabled) options.onSelect(picked);
+    const index = cells.indexOf(cell as HTMLButtonElement);
+    const picked = days[index];
+    if (picked && !picked.isDisabled) options.onSelect(picked, index);
   };
 
   const applyRowState = (row: HTMLElement, visible: boolean): void => {

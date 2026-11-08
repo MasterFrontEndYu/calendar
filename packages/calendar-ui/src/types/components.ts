@@ -94,8 +94,8 @@ export interface PickerHandle {
 
 /** 日期网格的入参 */
 export interface GridOptions<TData = null> {
-  /** 点中某一格时触发 */
-  onSelect: (day: CalendarDay<TData>) => void;
+  /** 点中某一格时触发，index 是该格在 42 格里的下标 */
+  onSelect: (day: CalendarDay<TData>, index: number) => void;
 }
 
 /** 日期网格的句柄 */
