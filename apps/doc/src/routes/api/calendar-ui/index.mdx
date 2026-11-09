@@ -41,17 +41,18 @@ bun add @sanguo-dev/calendar-ui
 
 ## 类型
 
-| 类型                                                                          | 说明                                               |
-| ----------------------------------------------------------------------------- | -------------------------------------------------- |
-| [CalendarOptions](/api/calendar-ui/CalendarOptions)                           | 创建配置                                           |
-| [CalendarDate](/api/calendar-ui/types/calendar-date)                          | 日期格中的公历日期                                 |
-| [CalendarDay](/api/calendar-ui/types/calendar-day)                            | 日期格数据                                         |
-| [CalendarAdapter](/api/calendar-ui/types/calendar-adapter)                    | 日期格装饰适配器                                   |
-| [CalendarLocale](/api/calendar-ui/types/calendar-locale)                      | 语言包                                             |
-| [CalendarAnimationOptions](/api/calendar-ui/types/calendar-animation)         | 动画配置                                           |
-| [CalendarPopupOptions](/api/calendar-ui/CalendarOptions#calendarpopupoptions) | 日期格 popup 配置                                  |
-| [HeaderRenderer](/api/calendar-ui/types/header-renderer)                      | 自定义头部渲染函数与上下文                         |
-| [枚举与别名](/api/calendar-ui/types/aliases)                                  | `CalendarMode`、`CalendarTheme`、`CalendarSize` 等 |
+| 类型                                                                  | 说明                                                                                                |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [CalendarOptions](/api/calendar-ui/CalendarOptions)                   | 创建配置                                                                                            |
+| [CalendarInstance](/api/calendar-ui/instance)                         | 实例接口                                                                                            |
+| [CalendarDate](/api/calendar-ui/types/calendar-date)                  | 日期格中的公历日期；同页还有 `CalendarDateInput`                                                    |
+| [CalendarDay](/api/calendar-ui/types/calendar-day)                    | 日期格数据                                                                                          |
+| [CalendarAdapter](/api/calendar-ui/types/calendar-adapter)            | 日期格装饰适配器；同页还有 `MonthInput`、`DayDecoration`、`CalendarBadge`、`SubtitleRenderer`       |
+| [CalendarLocale](/api/calendar-ui/types/calendar-locale)              | 语言包；同页还有 `CalendarLocaleName`                                                               |
+| [CalendarAnimationOptions](/api/calendar-ui/types/calendar-animation) | 动画配置；同页还有 `SlideAnimationOptions`、`CollapseAnimationOptions`                              |
+| [CalendarPopupOptions](/api/calendar-ui/types/calendar-popup)         | 日期格 popup；同页还有 `DayPopupItem`、`DayPopupStringItem`、`DayPopupTrigger`、`DayPopupPlacement` |
+| [HeaderRenderer](/api/calendar-ui/types/header-renderer)              | 自定义头部；同页还有 `HeaderRenderContext`                                                          |
+| [枚举与别名](/api/calendar-ui/types/aliases)                          | `WeekStartsOn`、`CalendarMode`、`CalendarTheme`、`CalendarSize`、`CalendarRange`、`YearMonth`       |
 
 ## 样式
 
@@ -63,3 +64,5 @@ bun add @sanguo-dev/calendar-ui
 | ------------ | ------------------------------------------------------------------------- |
 | `TypeError`  | 配置字段类型不合法、日期字符串格式错误、动画参数非法                      |
 | `RangeError` | 日期不存在、`minDate` 晚于 `maxDate`、`months` 非 1/2、约束下没有可选日期 |
+
+交互演示见 [calendar-ui 演示](/calendar-ui)。

@@ -20,7 +20,7 @@ const POPUPS: Record<string, readonly PopupEntry[]> = {
   "2026-10-8": [{ title: "寒露", detail: "早晚温差大，记得添衣", time: "节气" }],
   "2026-10-18": [{ title: "重阳节", detail: "登高、敬老", time: "农历九月初九" }],
   "2026-10-23": [{ title: "霜降", detail: "秋季最后一个节气", time: "节气" }],
-  "2026-10-31": [{ title: "万圣夜", detail: "18:00 公司活动", time: "18:00" }],
+  "2026-10-31": [{ title: "万圣夜", detail: "18:00开始公司活动", time: "18:00" }],
 };
 
 /** 日期 -> 数据 key */

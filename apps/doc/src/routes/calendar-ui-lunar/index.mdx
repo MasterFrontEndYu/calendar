@@ -28,7 +28,7 @@ const instance = createCalendarLunar(container, {
 
 - 副标题优先级：节气 > 农历节日 > 公历节日 > 农历日；
 - `xiu` 显示休，`ban` 显示班；
-- `day.data` 是完整 `LunarResult`。
+- `day.data` 是完整 [LunarResult](/api/calendar/types/lunar-result)。
 
 ## 最小（min）
 
@@ -131,4 +131,4 @@ instance.el.classList.add("cui--lunar-demo");
 
 [自定义 holidays](/calendar-ui-lunar/custom)
 
-完整选项和 `day.data` 字段见 [calendar-ui-lunar 指南](/guide/calendar-ui-lunar)。
+完整选项见 [createCalendarLunar](/api/calendar-ui-lunar/createCalendarLunar)，`day.data` 字段见 [LunarResult](/api/calendar/types/lunar-result)。

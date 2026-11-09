@@ -1,0 +1,95 @@
+---
+title: CalendarPopupOptions
+lastUpdated: false
+---
+
+# CalendarPopupOptions
+
+日期格 popup 的配置，以及 `render` 返回项的两种写法。`popup` 不传就不启用。
+
+## 引入
+
+```ts
+import type {
+  CalendarPopupOptions,
+  DayPopupItem,
+  DayPopupPlacement,
+  DayPopupStringItem,
+  DayPopupTrigger,
+} from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+interface CalendarPopupOptions {
+  trigger?: DayPopupTrigger;
+  render(day: CalendarDate): readonly DayPopupItem[];
+  placement?: DayPopupPlacement;
+  role?: "dialog" | "tooltip";
+  ariaLabel?: string;
+}
+
+type DayPopupStringItem = readonly [time?: string, title?: string, detail?: string];
+type DayPopupItem = DayPopupStringItem | Node;
+type DayPopupTrigger = "click" | "hover" | "focus" | "auto";
+type DayPopupPlacement = "auto" | "top" | "bottom" | "center";
+```
+
+## 字段
+
+| 字段        | 类型                                             | 默认                          | 说明                                         |
+| ----------- | ------------------------------------------------ | ----------------------------- | -------------------------------------------- |
+| `trigger`   | `DayPopupTrigger`                                | `"click"`                     | 触发方式；移动端没有 hover                   |
+| `render`    | `(day: CalendarDate) => readonly DayPopupItem[]` | -                             | 必填；返回这一天的内容，空数组表示没有 popup |
+| `placement` | `DayPopupPlacement`                              | `"auto"`                      | 定位方式；`center` 由 CSS 居中               |
+| `role`      | `"dialog" \| "tooltip"`                          | click 为 dialog，其余 tooltip | popup 的 ARIA role                           |
+| `ariaLabel` | `string`                                         | -                             | popup 根节点的 `aria-label`                  |
+
+`CalendarDate` 见 [CalendarDate](/api/calendar-ui/types/calendar-date)。
+
+## 项类型
+
+`DayPopupStringItem` 是 `[time, title, detail]` 三元组，字段都可以省略；三个字段都为空时这一项直接丢掉：
+
+- `time` / `title` 生成 `.cui__popup-title`（内含 `.cui__popup-time` / `.cui__popup-name`）；
+- `detail` 生成 `.cui__popup-detail`；
+- 字段省略或传空字符串时不渲染对应元素。
+
+`DayPopupItem` 也可以是 `Node`：库只包一层 `.cui__popup-item`，内部结构、类名和样式完全由使用方决定。Node 要在 `render` 里新建，不要跨日期复用同一个实例。
+
+数组长度就是弹层头部「日期 · 条数」里的条数。
+
+## 用法
+
+```ts
+createCalendarUI(container, {
+  popup: {
+    trigger: "click",
+    ariaLabel: "日期详情",
+    placement: "auto",
+    render: (day) => {
+      const entries = POPUPS[`${day.year}-${day.month}-${day.day}`] ?? [];
+      return entries.map((entry) => [entry.time, entry.title, entry.detail] as const);
+    },
+  },
+});
+```
+
+## 说明
+
+- `render` 在创建 / 重绘时对每个日期调用一次，结果按日期缓存，打开弹层时不再调用；
+- `render` 必须是同步纯函数：数据要在创建日历前准备好，不能返回 Promise，也不要在里面发请求；
+- `render(day).length > 0` 时格子右上角显示绿点，颜色是 `--cui-popup-dot`；
+- 弹层追加到 `body`，不打断日历布局；点击其他日期、点击空白处、按 `Esc`、换月、滚动或缩放页面都会关闭，没有关闭按钮；
+- `trigger: "auto"` 在支持 hover 的设备上等同 `hover`，触摸设备上等同 `click`；`hover` 关闭前有约 120ms 的缓冲，方便鼠标移进弹层；
+- `placement: "auto"` 优先放在格子下方，空间不足时翻到上方，并夹在视口内；`center` 由 CSS 居中。
+
+## 错误
+
+| 异常        | 场景                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| `TypeError` | `popup` 不是对象、`render` 不是函数、`trigger` / `placement` / `role` 取值非法、`ariaLabel` 不是字符串 |
+| `TypeError` | `render(day)` 返回的不是数组，或某一项既不是 `[time, title, detail]` 也不是 `Node`                     |
+
+完整示例和样式写法见 [日期格 popup](/calendar-ui/popup)。

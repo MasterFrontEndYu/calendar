@@ -181,6 +181,7 @@ export default defineConfig(({ command }) => {
                       { title: "CalendarAdapter", link: "/calendar-adapter" },
                       { title: "CalendarLocale", link: "/calendar-locale" },
                       { title: "CalendarAnimationOptions", link: "/calendar-animation" },
+                      { title: "CalendarPopupOptions", link: "/calendar-popup" },
                       { title: "HeaderRenderer", link: "/header-renderer" },
                       { title: "枚举与别名", link: "/aliases" },
                     ],

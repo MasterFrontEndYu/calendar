@@ -55,6 +55,8 @@ company.solarToLunar(2027, 1, 4).ban; // true
 | `lunarToSolar(y, m, d, isLeapMonth?)` | 农历转公历                                    |
 | `getHolidays()`                       | 当前配置的深拷贝，可再传给 `createCalendar()` |
 
+完整接口见 [Calendar](/api/calendar/types/calendar)。
+
 `solarToLunar` 参数：
 
 | 参数 | 类型     | 必填 | 说明              |
@@ -98,6 +100,8 @@ company.solarToLunar(2027, 1, 4).ban; // true
 | `term`                      | `string \| null`    | 节气名                       |
 | `astro`                     | `string`            | 星座                         |
 
+完整字段说明见 [LunarResult](/api/calendar/types/lunar-result)。
+
 ## 节日与调休
 
 ```ts
@@ -131,6 +135,8 @@ const calendar = createCalendar({
 - 年份 1900-2100，MMDD 必须四位；
 - `xiu` / `ban` 只由配置决定，和周末无关；
 - 判断周末用 `day.dayOfWeek` / `day.nWeek`。
+
+完整字段见 [HolidayConfig](/api/calendar/types/holiday-config)。
 
 内置数据来自国务院办公厅通知：[2026 年](https://www.gov.cn/zhengce/content/202511/content_7047090.htm)、[2027 年](https://www.gov.cn/zhengce/content/202611/content_7085101.htm)。
 

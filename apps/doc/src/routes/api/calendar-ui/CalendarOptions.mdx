@@ -63,6 +63,8 @@ interface CalendarOptions<TData = null> {
 | `onMonthChange` | `(year: number, month: number) => void` | -          | 翻月时触发：`setMonth`、`prevMonth`、`nextMonth`、头部翻页   |
 | `adapter`       | `CalendarAdapter<TData>`                | -          | 日期格装饰适配器；不传时只渲染公历                           |
 
+`popup` 的字段与 `render` 的返回项见 [CalendarPopupOptions](/api/calendar-ui/types/calendar-popup)。
+
 ## 约束
 
 - `minDate` 不能晚于 `maxDate`；
@@ -70,25 +72,11 @@ interface CalendarOptions<TData = null> {
 - `disabledDates` 里的日期即使满足 `minDate` / `maxDate` 也不可选；
 - `initialDate` 会先夹到 `minDate` / `maxDate`，再找最近的可选日期。
 
-## CalendarPopupOptions
-
-`popup` 的配置。`render` 必填，其余可选。
-
-| 字段        | 类型                                             | 默认                          | 说明                                          |
-| ----------- | ------------------------------------------------ | ----------------------------- | --------------------------------------------- |
-| `trigger`   | `"click" \| "hover" \| "focus" \| "auto"`        | `"click"`                     | 触发方式；移动端没有 hover                    |
-| `render`    | `(day: CalendarDate) => readonly DayPopupItem[]` | -                             | 返回这一天的内容；空数组表示没有 popup / 绿点 |
-| `placement` | `"auto" \| "top" \| "bottom" \| "center"`        | `"auto"`                      | 定位方式；`center` 由 CSS 居中                |
-| `role`      | `"dialog" \| "tooltip"`                          | click 为 dialog，其余 tooltip | popup 的 ARIA role                            |
-| `ariaLabel` | `string`                                         | -                             | popup 根节点的 `aria-label`                   |
-
-`DayPopupItem = readonly [time?: string, title?: string, detail?: string] | Node`：三元组生成默认 title / detail 结构，字段省略就不渲染；Node 直接 append。`render(day)` 在创建 / 重绘时调用，返回结果会缓存；数组长度就是弹层头部显示的条数，`render` 必须是同步纯函数。
-
-完整示例和样式写法见 [日期格 popup](/calendar-ui/popup)。
-
 ## 错误
 
 | 异常         | 场景                                                                           |
 | ------------ | ------------------------------------------------------------------------------ |
 | `TypeError`  | 字段类型不合法，日期字符串格式错误，`disabledDates` 不是数组，动画参数非法     |
 | `RangeError` | 日期不存在，`minDate` 晚于 `maxDate`，`months` 不是 1 或 2，约束下没有可选日期 |
+
+各选项的交互示例见 [calendar-ui 演示](/calendar-ui)。

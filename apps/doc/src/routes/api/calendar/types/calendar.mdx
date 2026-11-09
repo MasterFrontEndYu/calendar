@@ -39,3 +39,5 @@ interface Calendar {
 - 方法都是同步的，不读写模块级状态；
 - `solarToLunar` / `lunarToSolar` 返回新对象，`gljr` / `nljr` 可能是共享的只读空数组；
 - 实例之间互不影响，配置在 `createCalendar()` 时已经冻结。
+
+用法与示例见 [calendar 指南](/guide/calendar)。

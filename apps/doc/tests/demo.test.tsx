@@ -138,6 +138,39 @@ describe("demo components", () => {
     expect(popup?.querySelector("button")).toBeNull();
   });
 
+  it("custom popup node mixes data and static html", () => {
+    const { container } = render(() => <CalendarUIPopup />);
+    flush();
+
+    const cell = container.querySelector<HTMLButtonElement>(
+      '.demo-popup-panel--custom .cui__day[data-date="2026-10-1"]',
+    );
+    cell?.dispatchEvent(new Event("pointerover", { bubbles: true }));
+    flush();
+
+    const custom = Array.from(document.querySelectorAll<HTMLElement>(".cui__popup")).find((el) =>
+      el.querySelector(".demo-popup-event"),
+    );
+    expect(custom).toBeDefined();
+    // 每条 detail 都带静态署名
+    expect(custom?.querySelector(".demo-popup-event-sign")?.textContent).toBe("· XX 公司");
+    // 只有 2026-10-1 的时间后面有表情
+    expect(custom?.querySelector(".demo-popup-event-emoji")?.textContent).toBe("🎉");
+    // 只有「国庆节」这条标题带旗子，同一天的「升旗仪式」不带
+    expect(custom?.querySelectorAll(".demo-popup-event-flag")).toHaveLength(1);
+    expect(custom?.querySelector(".demo-popup-event-flag")?.textContent).toBe("🚩");
+
+    const other = container.querySelector<HTMLButtonElement>(
+      '.demo-popup-panel--custom .cui__day[data-date="2026-10-8"]',
+    );
+    other?.dispatchEvent(new Event("pointerover", { bubbles: true }));
+    flush();
+
+    expect(custom?.querySelector(".demo-popup-event-emoji")).toBeNull();
+    expect(custom?.querySelector(".demo-popup-event-flag")).toBeNull();
+    expect(custom?.querySelector(".demo-popup-event-sign")?.textContent).toBe("· XX 公司");
+  });
+
   it("custom renders a third-party adapter", () => {
     const { container } = render(() => <CalendarUICustom />);
     flush();
