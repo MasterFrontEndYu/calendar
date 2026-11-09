@@ -19,15 +19,7 @@ import { createDayBuilder, createRenderer, updateNav } from "./core/render";
 import { createState } from "./core/state";
 import type { ActionContext, CalendarDay, CalendarInstance, CalendarOptions } from "./types";
 
-/**
- * 在容器里创建一个日历
- *
- * 只依赖 DOM，不依赖任何框架；重复调用 createCalendarUI 会各自独立。
- * 不传 adapter 时就是纯公历，适配器负责提供副标题、标记和透传数据。
- *
- * 这里只做装配：校验 / 状态 / 边界 / 动画 / 折叠 / 选择层 / 渲染 / 实例 API
- * 分别放在 core 下的独立模块里。
- */
+/** 在容器中创建并返回一个日历实例。 */
 export function createCalendarUI<TData = null>(
   container: HTMLElement,
   options: CalendarOptions<TData> = {},
@@ -128,11 +120,12 @@ export function createCalendarUI<TData = null>(
     onGoTo: (year, month) => goToMonth(year, month),
   });
 
-  /** 主函数只保留两个动作入口：翻月和点选 */
+  /** 翻到指定年月。 */
   function goToMonth(year: number, month: number): void {
     goTo(actionContext, year, month);
   }
 
+  /** 处理日期格选中。 */
   function handleSelect(day: CalendarDay<TData>, index: number): void {
     selectDay(actionContext, day, index);
   }

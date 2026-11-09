@@ -8,13 +8,7 @@ export interface RangeFields {
   isSelected: boolean;
 }
 
-/**
- * 计算日期在范围里的状态
- *
- * buildDays 生成 42 个格子、withRangeFields 生成回调对象都走这里，
- * 避免两套同样的 sameDay / compareDay 判断。
- * 传入 out 时复用同一个对象，避免 42 个格子各分配一次。
- */
+/** 计算日期在范围里的状态。 */
 export const rangeFields = function (
   date: Date,
   start: Date | null,

@@ -89,7 +89,7 @@ export interface CalendarBounds {
   /** maxDate 的连续月序号；未设置时是 +Infinity */
   maxMonth: number;
   disabled: ReadonlySet<number>;
-  /** 已经退化过的展示月数 */
+  /** 实际展示的月数 */
   monthCount: 1 | 2;
 }
 

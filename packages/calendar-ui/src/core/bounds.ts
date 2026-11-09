@@ -1,7 +1,7 @@
 import type { CalendarBounds, CalendarMode, YearMonth } from "../types";
 import { compareDay, dateKey, monthFromIndex, monthIndexOf } from "../utils/date";
 
-/** 整体替换边界；把 Date key 和月序号一次算好，避免渲染时反复读 Date */
+/** 设置日期边界。 */
 export const setBounds = function (
   bounds: CalendarBounds,
   minDate: Date | null,
@@ -21,6 +21,7 @@ export const setBounds = function (
       : monthIndexOf(maxDate.getFullYear(), maxDate.getMonth() + 1);
 };
 
+/** 创建日期边界。 */
 export const createBounds = function (
   minDate: Date | null,
   maxDate: Date | null,
@@ -41,20 +42,20 @@ export const createBounds = function (
   return bounds;
 };
 
-/** 边界顺序校验；创建和 setMinDate / setMaxDate 共用同一句文案 */
+/** 校验日期边界的先后顺序。 */
 export const assertBounds = function (minDate: Date | null, maxDate: Date | null): void {
   if (minDate !== null && maxDate !== null && compareDay(minDate, maxDate) > 0) {
     throw new RangeError("[calendar-ui] minDate 不能晚于 maxDate");
   }
 };
 
-/** 一次 dateKey + 三次数字比较；渲染 42 个格子时走这里 */
+/** 判断日期是否不可选。 */
 export const isDisabled = function (bounds: CalendarBounds, date: Date): boolean {
   const key = dateKey(date);
   return key < bounds.minKey || key > bounds.maxKey || bounds.disabled.has(key);
 };
 
-/** 双视图在边界不足两个月时退化成单视图 */
+/** 计算需要展示的月数。 */
 export const resolveMonthCount = function (
   mode: CalendarMode,
   requested: 1 | 2,
@@ -69,12 +70,7 @@ export const resolveMonthCount = function (
   return max - min < 1 ? 1 : 2;
 };
 
-/**
- * 把「双视图的起始月」夹到可选范围内
- *
- * 单视图时 monthCount 为 1，只做 min/max 兜底；
- * 双视图时右边界要留出后一个月的位置。
- */
+/** 把起始月夹到可选范围内。 */
 export const clampStartMonth = function (
   bounds: CalendarBounds,
   year: number,
@@ -87,7 +83,7 @@ export const clampStartMonth = function (
   return monthFromIndex(next);
 };
 
-/** 头部左右箭头的禁用状态：起点和终点都按整块展示范围判断 */
+/** 计算头部左右箭头的禁用状态。 */
 export const navDisabled = function (
   bounds: CalendarBounds,
   year: number,
@@ -100,7 +96,7 @@ export const navDisabled = function (
   };
 };
 
-/** 选择层：某年某月是否整体越界 */
+/** 判断年月是否超出可选范围。 */
 export const isMonthOutOfRange = function (
   bounds: CalendarBounds,
   year: number,
@@ -110,7 +106,7 @@ export const isMonthOutOfRange = function (
   return index < bounds.minMonth || index > bounds.maxMonth;
 };
 
-/** 选择层：某年是否整体越界 */
+/** 判断年份是否超出可选范围。 */
 export const isYearOutOfRange = function (bounds: CalendarBounds, year: number): boolean {
   return (
     (bounds.minDate !== null && year < bounds.minDate.getFullYear()) ||

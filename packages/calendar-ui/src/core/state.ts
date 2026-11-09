@@ -12,7 +12,7 @@ export const createState = function (initial: Date): CalendarState {
   };
 };
 
-/** 对外返回范围时复制 Date，避免外部改到内部状态 */
+/** 复制当前范围。 */
 export const copyRange = function (state: CalendarState): CalendarRange {
   return {
     start: state.rangeStart === null ? null : new Date(state.rangeStart),
@@ -20,7 +20,7 @@ export const copyRange = function (state: CalendarState): CalendarRange {
   };
 };
 
-/** 第一次点选起点；已有完整范围时重新开始；反向选择自动交换 */
+/** 处理范围点选。 */
 export const clickRange = function (state: CalendarState, target: Date): void {
   const date = toDateOnly(target);
 
@@ -35,7 +35,7 @@ export const clickRange = function (state: CalendarState, target: Date): void {
   }
 };
 
-/** setRange 的赋值规则：起点为空时清空，终点为空时只选起点，反向自动交换 */
+/** 设置范围。 */
 export const assignRange = function (
   state: CalendarState,
   start: Date | null,
@@ -62,12 +62,13 @@ export const assignRange = function (
   }
 };
 
+/** 清空范围。 */
 export const clearRange = function (state: CalendarState): void {
   state.rangeStart = null;
   state.rangeEnd = null;
 };
 
-/** 用范围状态覆盖单个格子的选中字段，供 onSelect 回调使用 */
+/** 用范围状态覆盖格子的选中字段。 */
 export const withRangeFields = function <TData = null>(
   day: CalendarDay<TData>,
   state: CalendarState,

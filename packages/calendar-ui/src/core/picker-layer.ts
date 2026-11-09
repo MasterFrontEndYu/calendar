@@ -1,14 +1,10 @@
 import type { PickerLayerHandle, PickerLayerOptions } from "../types";
 
-/**
- * 年月选择层控制器
- *
- * 负责打开/关闭、背景 inert、Esc 与外部点击，以及头部箭头在不同层里的语义。
- */
+/** 创建年月选择层控制器。 */
 export const createPickerLayer = function (options: PickerLayerOptions): PickerLayerHandle {
   const { root, header, picker } = options;
 
-  /** 选择层打开时把底层内容设为 inert（头部保留，箭头还要用） */
+  /** 设置选择层背景的 inert 状态。 */
   const setBackgroundInert = function (inert: boolean): void {
     Array.from(root.children).forEach((child) => {
       if (child === picker.el || child === header.el) return;
@@ -42,7 +38,7 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
     close();
   };
 
-  /** 头部左右按钮在年份层按「年份页边界」禁用，其余情况按「月份边界」 */
+  /** 同步头部翻页按钮的禁用状态。 */
   const syncNav = function (): void {
     if (picker.mode() === "year") {
       header.setNavDisabled(!picker.canPage(-1), !picker.canPage(1));
@@ -66,7 +62,7 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
     }
   };
 
-  /** 点年份 / 月份按钮：同一个按钮再点一次关闭，否则切到对应面板 */
+  /** 切换选择层。 */
   const toggle = function (mode: "month" | "year"): void {
     if (picker.mode() === mode) {
       close();
@@ -75,7 +71,7 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
     open(mode);
   };
 
-  /** 头部箭头：年份层翻 12 年；月份层收起箭头不响应；关闭时正常翻月 */
+  /** 处理头部箭头的翻页动作。 */
   const step = function (direction: -1 | 1): void {
     const mode = picker.mode();
     if (mode === "year") {

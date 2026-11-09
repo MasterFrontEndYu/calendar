@@ -117,6 +117,24 @@ describe("createCalendarUI 纯公历", () => {
   });
 });
 
+describe("图标", () => {
+  it("使用 span + CSS 背景图，不生成 svg 节点", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+      animation: { collapse: {} },
+    });
+
+    const icons = instance.el.querySelectorAll(".cui__icon");
+    expect(icons).toHaveLength(3);
+    icons.forEach((icon) => {
+      expect(icon.tagName).toBe("SPAN");
+    });
+    expect(instance.el.querySelector("svg")).toBeNull();
+
+    instance.destroy();
+  });
+});
+
 describe("自定义 subtitle", () => {
   it("用户 subtitle 优先于 adapter，null/undefined 回退，空字符串保留", () => {
     const adapter: CalendarAdapter<null> = {

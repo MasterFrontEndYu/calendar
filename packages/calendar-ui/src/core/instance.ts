@@ -3,7 +3,7 @@ import { readDate } from "../utils/date";
 import { applyBounds, clearRangeValue, selectDate, setRangeValue } from "./actions";
 import { copyRange } from "./state";
 
-/** 把运行时能力组装成对外公开的实例 API */
+/** 创建对外的日历实例 API。 */
 export const createInstance = function <TData = null>(
   runtime: CalendarRuntime<TData>,
 ): CalendarInstance {

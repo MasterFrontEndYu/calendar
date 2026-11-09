@@ -20,11 +20,7 @@ const readEasing = function (value: string | undefined, path: string): string {
   return easing;
 };
 
-/**
- * 校验并补全创建配置
- *
- * 所有默认值和类型错误都在这里一次性处理，主函数只拿规范化后的结果。
- */
+/** 校验并补全创建配置。 */
 export const resolveOptions = function <TData = null>(
   options: CalendarOptions<TData>,
 ): ResolvedCalendarOptions<TData> {

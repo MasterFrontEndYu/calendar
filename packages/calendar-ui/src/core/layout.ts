@@ -3,7 +3,7 @@ import { createGrid } from "../components/grid";
 import { createWeekdays } from "../components/weekdays";
 import { node } from "../utils/dom";
 
-/** 日历根节点：主题、尺寸和动画变量都挂在上面 */
+/** 创建日历根节点。 */
 export const createRoot = function <TData = null>(
   config: CalendarConfig<TData>,
   monthCount: 1 | 2,
@@ -19,7 +19,7 @@ export const createRoot = function <TData = null>(
   return root;
 };
 
-/** 建 1-2 列月份：星期表头、viewport、42 格网格只建一次 */
+/** 创建月份列。 */
 export const createPanels = function <TData = null>(
   config: CalendarConfig<TData>,
   monthCount: 1 | 2,
@@ -51,12 +51,7 @@ export interface MountCalendarOptions {
   monthCount: 1 | 2;
 }
 
-/**
- * 组装根节点
- *
- * 单视图把表头和唯一一列直接挂到根节点；双视图多包一层 cui__months。
- * 返回每个月份外层的 group 元素，供 aria-label 使用。
- */
+/** 把各部分挂载到根节点。 */
 export const mountCalendar = function (options: MountCalendarOptions): HTMLElement[] {
   const { root, headerEl, pickerEl, collapseButton, panels, monthCount } = options;
   const panelEls: HTMLElement[] = [];

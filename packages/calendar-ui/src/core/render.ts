@@ -11,11 +11,7 @@ import { buildDays } from "../utils/days";
 import { normalizeMonth } from "../utils/date";
 import { isDisabled, navDisabled } from "./bounds";
 
-/**
- * 按当前 state 生成某一列的 42 个格子
- *
- * 返回的函数在每次重绘时调用；闭包里只保存引用，不额外分配状态。
- */
+/** 创建日期格数据的构建函数。 */
 export const createDayBuilder = function <TData = null>(
   config: CalendarConfig<TData>,
   bounds: CalendarBounds,
@@ -41,7 +37,7 @@ export const createDayBuilder = function <TData = null>(
   };
 };
 
-/** 头部左右按钮的禁用状态，渲染和选择层恢复时共用 */
+/** 更新头部翻页按钮状态。 */
 export const updateNav = function (
   header: HeaderHandle,
   bounds: CalendarBounds,
@@ -51,7 +47,7 @@ export const updateNav = function (
   header.setNavDisabled(prev, next);
 };
 
-/** 双视图时每个月份外层 group 的 aria-label */
+/** 更新月份列的 aria-label。 */
 const updatePanelLabels = function (
   panelEls: readonly HTMLElement[],
   state: CalendarState,
@@ -63,17 +59,12 @@ const updatePanelLabels = function (
   });
 };
 
-/** 一次重绘：标题、格子内容、无障碍标签、翻月状态、折叠行一起同步 */
+/** 创建重绘函数。 */
 export const createRenderer = function <TData = null>(
   deps: RendererDeps<TData>,
 ): (animateRows?: boolean) => CalendarDay<TData>[][] {
   const { root, config, state, bounds, header, panels, panelEls, collapse } = deps;
-  /**
-   * 是否出现过副标题
-   *
-   * 只增不减：min 档一旦出现副标题就整块放大，之后再遇到没副标题的月份也不缩回去，
-   * 否则每次翻月整块尺寸都会跳一下。
-   */
+  /** 是否已经出现过副标题。 */
   let hasSubtitle = false;
 
   return function render(animateRows = true): CalendarDay<TData>[][] {

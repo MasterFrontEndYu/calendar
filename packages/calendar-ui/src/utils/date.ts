@@ -3,12 +3,7 @@ import type { CalendarDateInput, YearMonth } from "../types";
 /** 日期字符串：YYYY-M-D，分隔符必须一致 */
 const DATE_INPUT_PATTERN = /^(\d{4})([-/])(\d{1,2})\2(\d{1,2})$/;
 
-/**
- * 用本地年月日建 Date
- *
- * Date 构造器会把 0-99 年解释成 1900+year；只有这段时间走 setFullYear，
- * 其余年份仍用构造器，避免给 42 个格子增加额外开销。
- */
+/** 用本地年月日创建日期。 */
 export const createDate = function (year: number, month: number, day: number): Date {
   if (year >= 0 && year < 100) {
     const date = new Date(0);
@@ -24,12 +19,7 @@ export const toDateOnly = function (date: Date): Date {
   return createDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
 };
 
-/**
- * 解析用户传入的日期
- *
- * 支持 Date，以及 `2026-10-01`、`2026-10-1`、`2026/10/01`、`2026/10/1`。
- * 不交给 `new Date(string)`，避免时区/格式歧义。
- */
+/** 解析日期输入。 */
 export const parseDateInput = function (value: CalendarDateInput, path = "date"): Date {
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) {
@@ -110,12 +100,7 @@ export const monthFromIndex = function (index: number): YearMonth {
   return { year, month: index - year * 12 + 1 };
 };
 
-/**
- * 把年月规范成合法值，月份越界时自动进位/退位
- *
- * 用整数运算而不是 Date，避免 0-99 年被当成 1900+year；
- * 小数先按 Date 构造器的行为截断。
- */
+/** 把年月规范成合法值。 */
 export const normalizeMonth = function (year: number, month: number): YearMonth {
   return monthFromIndex(monthIndexOf(Math.trunc(year), Math.trunc(month)));
 };

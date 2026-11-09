@@ -15,17 +15,12 @@ const MONTH_CLASSES = [
   "is-month-out-prev",
 ] as const;
 
-/**
- * 用 Web Animations 驱动翻月
- *
- * 不靠切换类名重启动画，也就不需要在点击处理里强制同步一次布局；
- * 快速连点时上一段会被 stop 直接停到终点，不会叠加克隆层。
- */
+/** 创建翻月动画控制器。 */
 export const createMonthSlide = function (panels: readonly MonthSlidePanel[]): MonthSlideHandle {
   let token = 0;
   let active: MonthAnimation | null = null;
 
-  /** 结束翻月动画：各层留在终点，并移除旧月份的克隆层 */
+  /** 停止翻月动画。 */
   const stop = function (): void {
     const current = active;
     if (current === null) return;
@@ -43,7 +38,7 @@ export const createMonthSlide = function (panels: readonly MonthSlidePanel[]): M
     panels.forEach((panel) => panel.grid.el.classList.remove(...MONTH_CLASSES));
   };
 
-  /** 克隆旧月份作为离场层；折叠行在换月后由 sync 对齐 */
+  /** 克隆当前月份的离场层。 */
   const capture = function (): HTMLElement[] {
     return panels.map((panel) => {
       const clone = panel.grid.el.cloneNode(true) as HTMLElement;
@@ -58,7 +53,7 @@ export const createMonthSlide = function (panels: readonly MonthSlidePanel[]): M
     });
   };
 
-  /** 离场层和新月份用同一套折叠行，两层高度一致，滑动时不会露出空隙 */
+  /** 同步离场层的折叠行。 */
   const sync = function (layers: readonly HTMLElement[]): void {
     layers.forEach((layer, index) => {
       const sourceRows = panels[index]?.grid.el.querySelectorAll<HTMLElement>(".cui__week");

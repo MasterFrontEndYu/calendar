@@ -1,7 +1,7 @@
 import type { CalendarLocale, HeaderOptions } from "../types";
 import { normalizeMonth } from "../utils/date";
 
-/** 双视图头部把「年」「月」两段拼成跨月标题，单视图沿用默认标题 */
+/** 创建双视图头部标题。 */
 export const createHeaderLabel = function (
   locale: CalendarLocale,
   monthCount: 1 | 2,

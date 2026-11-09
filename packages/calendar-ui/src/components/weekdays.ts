@@ -1,7 +1,7 @@
 import type { CalendarLocale, WeekStartsOn } from "../types";
 import { node } from "../utils/dom";
 
-/** 星期表头，按一周起始日轮转 */
+/** 创建星期表头。 */
 export const createWeekdays = function (
   weekStartsOn: WeekStartsOn,
   locale: CalendarLocale,

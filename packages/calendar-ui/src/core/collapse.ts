@@ -2,11 +2,7 @@ import type { CalendarDay, CollapseHandle, CollapseOptions } from "../types";
 import { sameDay } from "../utils/date";
 import { createArrowIcon, node } from "../utils/dom";
 
-/**
- * 折叠控制器
- *
- * 只负责折叠状态、底部箭头和可见行计算；重绘由外部传入的 onApply 触发。
- */
+/** 创建折叠控制器。 */
 export const createCollapse = function <TData = null>(
   options: CollapseOptions<TData>,
 ): CollapseHandle<TData> {
@@ -36,8 +32,6 @@ export const createCollapse = function <TData = null>(
       config.mode === "range"
         ? [state.rangeStart, state.rangeEnd].filter((date): date is Date => date !== null)
         : [state.selected];
-    // 范围模式还没选端点时不拿 state.selected 兜底：该字段在范围模式没有意义，
-    // 让下面的 rows.size === 0 分支展开到当前月第一行。
 
     panels.forEach((panel, index) => {
       const rows = new Set<number>();

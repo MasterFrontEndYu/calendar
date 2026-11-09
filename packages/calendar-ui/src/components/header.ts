@@ -2,11 +2,7 @@ import type { HeaderHandle, HeaderOptions } from "../types";
 import { node } from "../utils/dom";
 import { createNav } from "./nav";
 
-/**
- * 头部：默认是 ‹ 年 月 ›，也可以交给 renderer 完全自定义
- *
- * 年份和月份是两个独立按钮，点哪个就弹出哪个选择层；两者共用下方同一个面板。
- */
+/** 创建头部。 */
 export const createHeader = function (options: HeaderOptions): HeaderHandle {
   const el = node("div", "cui__header");
   const title = node("div", "cui__title");

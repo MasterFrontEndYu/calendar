@@ -7,12 +7,7 @@ const SEARCH_MAX = new Date(2100, 11, 31);
 const SEARCH_MIN_KEY = dateKey(SEARCH_MIN);
 const SEARCH_MAX_KEY = dateKey(SEARCH_MAX);
 
-/**
- * 在 [min, max] 内找离 desired 最近的可选日期
- *
- * 用两个游标同步向两侧走，每轮只 setDate 一天：
- * 比每轮都 addDays 少两次 Date 分配，长距离跳过禁用日期时差别明显。
- */
+/** 查找离目标日期最近的可选日期。 */
 export const findSelectable = function (
   desired: Date,
   minDate: Date | null,

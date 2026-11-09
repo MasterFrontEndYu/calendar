@@ -20,14 +20,15 @@ import { assignRange, clearRange, clickRange, copyRange, withRangeFields } from 
 type DayResolver<TData> = () => CalendarDay<TData> | undefined;
 
 interface CommitSingleOptions<TData> {
-  /** true 时无论是否折叠都重绘整块日历（select(date) 要同步标题和月份） */
+  /** 是否强制重绘。 */
   forceRender: boolean;
-  /** 已经有格子对象时直接按 index 取更新后的版本，省一次 find */
+  /** 已有点击的格子对象。 */
   day?: CalendarDay<TData>;
+  /** 格子下标。 */
   index?: number;
 }
 
-/** 范围模式点选后提交：更新状态、重绘、通知范围变化，再回调本次格子的最新对象 */
+/** 提交范围模式的点选结果。 */
 const commitRange = function <TData = null>(
   ctx: ActionContext<TData>,
   target: Date,
@@ -37,12 +38,12 @@ const commitRange = function <TData = null>(
   ctx.render(true);
   ctx.config.onRangeChange?.(copyRange(ctx.state));
 
-  // 在回调之后再取格子，和原来「先通知范围、再构造回调对象」的时序一致
+  // 回调后再取格子，保证对象反映最新状态
   const day = resolveDay();
   if (day) ctx.config.onSelect?.(withRangeFields(day, ctx.state));
 };
 
-/** 单选模式点选后提交；updateState 只刷新状态类，forceRender 才重建格子 */
+/** 提交单选模式的点选结果。 */
 const commitSingle = function <TData = null>(
   ctx: ActionContext<TData>,
   target: Date,
@@ -65,12 +66,7 @@ const commitSingle = function <TData = null>(
   if (day) ctx.config.onSelect?.(day);
 };
 
-/**
- * 翻到某年某月
- *
- * 会先把目标夹进可选范围，再按方向决定滑动方向；
- * 动画时长和缓动优先读根节点上的 CSS 变量，没有声明时用 JS 选项。
- */
+/** 翻到指定年月。 */
 export const goTo = function <TData = null>(
   ctx: ActionContext<TData>,
   year: number,
@@ -86,7 +82,7 @@ export const goTo = function <TData = null>(
   const direction = nextIndex > currentIndex ? 1 : -1;
   const { monthTransition, monthDuration, monthEasing } = ctx.config.animation;
 
-  // 默认不配置 slide 时跳过 getComputedStyle，省掉一次强制样式读取
+  // 只有配置了 slide 才需要读取 CSS 动画参数
   let duration = 0;
   let easing = monthEasing;
   if (monthTransition === "slide") {
@@ -112,7 +108,7 @@ export const goTo = function <TData = null>(
   ctx.config.onMonthChange?.(ctx.state.year, ctx.state.month);
 };
 
-/** 处理格子点选：补位格只改选中，不切换展示月份 */
+/** 处理日期格点选。 */
 export const selectDay = function <TData = null>(
   ctx: ActionContext<TData>,
   day: CalendarDay<TData>,
@@ -128,7 +124,7 @@ export const selectDay = function <TData = null>(
   commitSingle(ctx, day.date, { forceRender: false, day, index });
 };
 
-/** 目标日期不在当前展示范围内时，把视图移到目标月份 */
+/** 把视图移到目标日期所在月份。 */
 const seekMonth = function <TData = null>(ctx: ActionContext<TData>, target: Date): void {
   const first = monthIndexOf(ctx.state.year, ctx.state.month);
   const targetIndex = monthIndexOf(target.getFullYear(), target.getMonth() + 1);
@@ -139,7 +135,7 @@ const seekMonth = function <TData = null>(ctx: ActionContext<TData>, target: Dat
   ctx.state.month = next.month;
 };
 
-/** 外部 select(date)：单选直接切换；范围模式走和点击相同的赋值规则 */
+/** 选中指定日期。 */
 export const selectDate = function <TData = null>(
   ctx: ActionContext<TData>,
   input: CalendarDateInput,
@@ -162,7 +158,7 @@ export const selectDate = function <TData = null>(
   commitSingle(ctx, target, { forceRender: true });
 };
 
-/** 外部 setRange(start, end)：禁用日期直接忽略，反向输入自动交换 */
+/** 设置选中范围。 */
 export const setRangeValue = function <TData = null>(
   ctx: ActionContext<TData>,
   start: CalendarDateInput | null,
@@ -183,18 +179,14 @@ export const setRangeValue = function <TData = null>(
   ctx.config.onRangeChange?.(copyRange(ctx.state));
 };
 
+/** 清空选中范围。 */
 export const clearRangeValue = function <TData = null>(ctx: ActionContext<TData>): void {
   clearRange(ctx.state);
   ctx.render(true);
   ctx.config.onRangeChange?.(copyRange(ctx.state));
 };
 
-/**
- * setMinDate / setMaxDate：校验、找最近的可用日期、整体替换后再重绘
- *
- * 范围模式以 rangeStart 为锚点：起点夹回新范围；终点只有仍然可选且不早于
- * 新起点时才保留，否则清空让用户重新选择，避免出现反向或越界范围。
- */
+/** 设置可选日期范围。 */
 export const applyBounds = function <TData = null>(
   ctx: ActionContext<TData>,
   nextMin: Date | null,

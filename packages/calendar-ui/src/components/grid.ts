@@ -13,7 +13,7 @@ interface RowMetrics {
   marginBottom: number;
 }
 
-/** 读一行当前的视觉尺寸（动画进行中时读到的是动画值） */
+/** 读取一行的视觉尺寸。 */
 const readRowMetrics = function (row: HTMLElement): RowMetrics {
   const rect = row.getBoundingClientRect();
   const style = getComputedStyle(row);
@@ -25,19 +25,7 @@ const readRowMetrics = function (row: HTMLElement): RowMetrics {
   };
 };
 
-/**
- * 日期网格：42 个格子只建一次，之后按索引复用
- *
- * - render：换月时更新日期/副标题 + 状态
- * - updateState：只切选中/今天等状态类，不动文本
- * - setVisibleRows：折叠时按行动画高度，其余行收起
- *
- * 行高动画必须按真实像素走：CSS 的 max-height 过渡从 200px 收到 0，
- * 真正可见的变化只落在缓动的最后 20%，看起来就是「先不动、再突然合上」。
- *
- * 没有做“按日期复用 + DOM 重排”：42 个节点的移动比 42 次文本写入更贵，
- * 实测换月反而从 0.60ms 退化到 0.93ms。
- */
+/** 创建日期网格。 */
 export const createGrid = function <TData = null>(options: GridOptions<TData>): GridHandle<TData> {
   const el = node("div", "cui__grid");
   const rowEls = Array.from({ length: ROW_COUNT }, () => node("div", "cui__week"));

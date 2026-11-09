@@ -2,17 +2,13 @@ import type { CalendarDay } from "../types";
 import { dateStringKey, weekdayOf } from "../utils/date";
 import { node } from "../utils/dom";
 
-/** 周末判断：只看公历星期，与节日 / 调休数据无关 */
+/** 判断日期是否为周末。 */
 const isWeekend = function (year: number, month: number, day: number): boolean {
   const weekday = weekdayOf(year, month, day);
   return weekday === 0 || weekday === 6;
 };
 
-/**
- * 建一个空的日期格
- *
- * 节点只建一次，之后靠 setDay / setDayState 更新，换月不再分配新节点。
- */
+/** 创建日期格元素。 */
 export const createDayCell = function (): HTMLButtonElement {
   const cell = node("button", "cui__day");
   cell.type = "button";
@@ -25,7 +21,7 @@ export const createDayCell = function (): HTMLButtonElement {
   return cell;
 };
 
-/** 更新格子的日期内容；同一日期不重复写文本，只刷新状态 */
+/** 更新日期格的内容和状态。 */
 export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknown>): void {
   const key = dateStringKey(day.year, day.month, day.day);
 
@@ -59,7 +55,7 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknow
   setDayState(cell, day);
 };
 
-/** 只更新状态类，不动文本；选中、hover 预览这类高频操作走这里 */
+/** 更新日期格的状态。 */
 export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay<unknown>): void {
   cell.classList.toggle("is-outside", !day.inCurrentMonth);
   cell.classList.toggle("is-today", day.isToday);

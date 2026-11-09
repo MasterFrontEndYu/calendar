@@ -4,13 +4,7 @@ import { node } from "../utils/dom";
 /** 一页显示 12 个：月份 4 列 × 3 行，年份同样 4 列 × 3 行 */
 const PAGE_SIZE = 12;
 
-/**
- * 年月选择层
- *
- * 从头部下方弹出的小面板，尺寸由 4 列 × 3 行的格子决定，不铺满整块日历。
- * - 月份：当前展示年的 12 个月，选完只改月，立刻关闭；
- * - 年份：12 年一页，左右箭头复用头部的翻月按钮，选完只改年，立刻关闭。
- */
+/** 创建年月选择层。 */
 export const createPicker = function (options: PickerOptions): PickerHandle {
   const el = node("div", "cui__picker");
   el.setAttribute("role", "dialog");

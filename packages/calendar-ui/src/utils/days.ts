@@ -9,7 +9,7 @@ export const firstWeekdayOf = function (year: number, month: number): number {
   return weekdayOf(year, month, 1);
 };
 
-/** 生成 6 行 × 7 列共 42 个公历日期，包含上下月补位格 */
+/** 生成 42 个公历日期。 */
 const buildMonthDates = function (
   year: number,
   month: number,
@@ -31,7 +31,7 @@ const buildMonthDates = function (
   return days;
 };
 
-/** 生成 42 个格子的数据；今天/选中每次现算，适配器只负责装饰 */
+/** 生成 42 个格子的数据。 */
 export const buildDays = function <TData = null>(
   options: BuildDaysOptions<TData>,
 ): CalendarDay<TData>[] {
@@ -49,7 +49,6 @@ export const buildDays = function <TData = null>(
   const disabledLabel = options.locale.disabledLabel ?? "不可选";
   const rangeStart = options.rangeStart ?? null;
   const rangeEnd = options.rangeEnd ?? null;
-  // 42 个格子复用同一个范围状态对象，只把最终布尔值拷进 CalendarDay
   const range: RangeFields = {
     isRangeStart: false,
     isRangeEnd: false,
