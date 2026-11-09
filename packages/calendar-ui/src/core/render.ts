@@ -63,7 +63,7 @@ const updatePanelLabels = function (
 export const createRenderer = function <TData = null>(
   deps: RendererDeps<TData>,
 ): (animateRows?: boolean) => CalendarDay<TData>[][] {
-  const { root, config, state, bounds, header, panels, panelEls, collapse } = deps;
+  const { root, config, state, bounds, header, panels, panelEls, collapse, popup } = deps;
   /** 是否已经出现过副标题。 */
   let hasSubtitle = false;
 
@@ -82,6 +82,7 @@ export const createRenderer = function <TData = null>(
     updateNav(header, bounds, state);
     collapse.updateRows(dayLists, animateRows);
     collapse.updateButton();
+    popup?.sync();
 
     return dayLists;
   };

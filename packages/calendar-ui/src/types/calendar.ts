@@ -161,6 +161,42 @@ export interface CalendarDay<TData = null> extends CalendarDate {
   ariaLabel: string;
 }
 
+/** popup 里的单项内容：字符串按文本，Node 直接挂载 */
+export type DayPopupItem = string | Node;
+
+/** popup 的触发方式 */
+export type DayPopupTrigger = "click" | "hover" | "focus" | "auto";
+
+/** popup 的定位方式 */
+export type DayPopupPlacement = "auto" | "top" | "bottom" | "center";
+
+/** 日期格 popup 配置 */
+export interface CalendarPopupOptions {
+  /**
+   * 触发方式，默认 "click"
+   *
+   * - `click`：桌面和移动端都可用；
+   * - `hover`：仅适合只读内容，移动端没有 hover；
+   * - `focus`：键盘聚焦时打开；
+   * - `auto`：支持 hover 的设备用 hover，否则用 click。
+   */
+  trigger?: DayPopupTrigger;
+  /**
+   * 返回这一天的 popup 内容；空数组表示这一天没有 popup，也不显示绿点
+   *
+   * 数组里每一项是一层内容：字符串按纯文本挂载，Node 直接挂载。
+   * 库在创建 / 重绘时调用 `render(day)` 计算绿点，并把结果缓存到打开时使用；
+   * 所以数据要在创建日历前准备好，`render` 必须是同步纯函数。
+   */
+  render(day: CalendarDate): readonly DayPopupItem[];
+  /** 定位方式，默认 "auto" */
+  placement?: DayPopupPlacement;
+  /** 语义，默认 click 为 dialog，其余为 tooltip */
+  role?: "dialog" | "tooltip";
+  /** popup 根节点的 aria-label */
+  ariaLabel?: string;
+}
+
 /** 自定义头部能拿到的上下文 */
 export interface HeaderRenderContext {
   /** 当前展示的年 */
@@ -225,6 +261,8 @@ export interface CalendarOptions<TData = null> {
   header?: boolean;
   /** 自定义头部，替换默认的 ‹ 标题 › */
   renderHeader?: HeaderRenderer;
+  /** 日期格 popup；不传则不启用 */
+  popup?: CalendarPopupOptions;
   /** 选中某一天时触发 */
   onSelect?: (day: CalendarDay<TData>) => void;
   /** 切换月份时触发 */

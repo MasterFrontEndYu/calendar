@@ -1,10 +1,14 @@
 import type {
   CalendarAdapter,
+  CalendarDate,
   CalendarDay,
   CalendarMode,
   CalendarRange,
   CalendarSize,
   CalendarTheme,
+  DayPopupItem,
+  DayPopupPlacement,
+  DayPopupTrigger,
   HeaderRenderer,
   SubtitleRenderer,
   WeekStartsOn,
@@ -27,6 +31,27 @@ export interface ResolvedAnimation {
   defaultCollapsed: boolean;
 }
 
+/** 校验并补全默认值之后的 popup 配置 */
+export interface ResolvedCalendarPopupOptions {
+  trigger: DayPopupTrigger;
+  render: (day: CalendarDate) => readonly DayPopupItem[];
+  placement: DayPopupPlacement;
+  role: "dialog" | "tooltip";
+  ariaLabel?: string;
+}
+
+/** popup 控制器的句柄 */
+export interface DayPopupHandle {
+  /** 关闭当前 popup；restoreFocus 为 false 时不动焦点 */
+  close(restoreFocus?: boolean): void;
+  destroy(): void;
+  /** 每次重绘后调用：关闭失效的 popup、刷新绿点 */
+  sync(): void;
+  isOpen(): boolean;
+  /** 主题变化后同步 popup 上复制的 CSS 变量 */
+  refreshTheme(): void;
+}
+
 /** 校验并补全默认值之后的创建配置 */
 export interface CalendarConfig<TData = null> {
   weekStartsOn: WeekStartsOn;
@@ -43,6 +68,8 @@ export interface CalendarConfig<TData = null> {
   /** 是否显示头部 */
   showHeader: boolean;
   renderHeader?: HeaderRenderer;
+  /** 日期格 popup */
+  popup?: ResolvedCalendarPopupOptions;
   onSelect?: (day: CalendarDay<TData>) => void;
   onMonthChange?: (year: number, month: number) => void;
   onRangeChange?: (range: CalendarRange) => void;
@@ -168,6 +195,8 @@ export interface RendererDeps<TData = null> {
   /** 双视图时是每个月份外层的 group 元素，用于写 aria-label */
   panelEls: readonly HTMLElement[];
   collapse: CollapseHandle<TData>;
+  /** 日期格 popup；未启用时为 null */
+  popup: DayPopupHandle | null;
   currentDays(offset?: number): CalendarDay<TData>[];
 }
 
@@ -190,5 +219,6 @@ export interface CalendarRuntime<TData = null> extends ActionContext<TData> {
   header: HeaderHandle;
   picker: PickerHandle;
   pickerLayer: PickerLayerHandle;
+  popup: DayPopupHandle | null;
   goTo(year: number, month: number): void;
 }

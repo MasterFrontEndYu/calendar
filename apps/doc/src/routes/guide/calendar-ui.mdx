@@ -40,6 +40,7 @@ interface CalendarOptions<TData = null> {
   size?: CalendarSize;
   header?: boolean;
   renderHeader?: HeaderRenderer;
+  popup?: CalendarPopupOptions;
   adapter?: CalendarAdapter<TData>;
   subtitle?: SubtitleRenderer;
   onSelect?: (day: CalendarDay<TData>) => void;
@@ -68,6 +69,7 @@ interface CalendarAnimationOptions {
 | `size`          | `"min" \| "normal" \| "fill"`          | `"normal"` | 尺寸模板：最小 / 正常 / 跟随容器 |
 | `header`        | `boolean`                              | `true`     | 是否显示头部                     |
 | `renderHeader`  | `HeaderRenderer`                       | -          | 自定义头部                       |
+| `popup`         | `CalendarPopupOptions`                 | -          | 日期格 popup；不传则不启用       |
 | `adapter`       | `CalendarAdapter<TData>`               | -          | 装饰适配器                       |
 | `subtitle`      | `SubtitleRenderer`                     | -          | 自定义副标题，优先于 adapter     |
 | `onSelect`      | `(day) => void`                        | -          | 选中日期                         |
@@ -219,6 +221,31 @@ createCalendarUI(container, {
 ```
 
 优先级：用户 subtitle 字符串 > adapter subtitle > 空字符串。返回 `null` / `undefined` 回退 adapter，返回 `""` 明确隐藏。
+
+## 日期格 popup
+
+```ts
+const POPUPS: Record<string, readonly PopupEntry[]> = {
+  "2026-10-1": [{ title: "国庆节", detail: "10 月 1 日 - 7 日放假", time: "全天" }],
+};
+
+createCalendarUI(container, {
+  popup: {
+    trigger: "click",
+    render: (day) => {
+      const entries = POPUPS[`${day.year}-${day.month}-${day.day}`] ?? [];
+      return entries.map((entry) => `${entry.time} · ${entry.title}：${entry.detail}`);
+    },
+  },
+});
+```
+
+- `render(day)` 返回 `Array<string | Node>`；空数组表示这一天没有 popup，也没有绿点；
+- 绿点由库内部按 `render(day).length > 0` 计算；
+- 弹层打开时自动显示「日期 · 条数」头部，条数就是数组长度；
+- `render` 在创建 / 重绘时调用并缓存，必须是同步纯函数；数据要在创建日历前准备好；
+- 背景、圆角和内容排版都可以直接用 CSS 覆盖 `.cui__popup`、`.cui__popup-head`、`.cui__popup-item`；
+- 完整示例见 [日期格 popup](/calendar-ui/popup)。
 
 ## CalendarDay
 

@@ -31,6 +31,7 @@ interface CalendarLocale {
   pickMonth?: string;
   pickYear?: string;
   disabledLabel?: string;
+  popupTitle?(day: CalendarDate, count: number): string;
   collapse?: string;
   expand?: string;
 }
@@ -56,6 +57,7 @@ type CalendarLocaleName = "zh-CN" | "en-US";
 | `pickMonth`     | 否   | 月份选择层的无障碍名称                             |
 | `pickYear`      | 否   | 年份选择层的无障碍名称                             |
 | `disabledLabel` | 否   | 不可选日期的说明文字；默认 `"不可选"`              |
+| `popupTitle`    | 否   | popup 头部「日期 · 条数」文案；默认 `M/D · N`      |
 | `collapse`      | 否   | 折叠按钮文案；默认 `"收起日历"`                    |
 | `expand`        | 否   | 展开按钮文案；默认 `"展开日历"`                    |
 

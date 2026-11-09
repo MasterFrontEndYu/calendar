@@ -37,6 +37,7 @@ instance.destroy();
 | `size`          | `"min" \| "normal" \| "fill"`           | 尺寸模板，默认 `"normal"`         |
 | `header`        | `boolean`                               | 是否显示头部，默认 `true`         |
 | `renderHeader`  | `HeaderRenderer`                        | 自定义头部，替换默认的 `‹ 标题 ›` |
+| `popup`         | `CalendarPopupOptions`                  | 日期格 popup；不传则不启用        |
 | `adapter`       | `CalendarAdapter<TData>`                | 日历适配器；不传就是纯公历        |
 | `onSelect`      | `(day: CalendarDay<TData>) => void`     | 选中某一天时触发                  |
 | `onRangeChange` | `(range: CalendarRange) => void`        | 范围变化时触发                    |
@@ -112,6 +113,34 @@ const instance = createCalendarUI(container, {
 - 返回 `null` / `undefined` 时回退 adapter；
 - 返回 `""` 时明确隐藏；
 - `onSelect` 的 `day.subtitle` 是最终值。
+
+## 日期格 popup
+
+```ts
+const POPUPS: Record<string, readonly PopupEntry[]> = {
+  "2026-10-1": [{ title: "国庆节", detail: "10 月 1 日 - 7 日放假", time: "全天" }],
+};
+
+const instance = createCalendarUI(container, {
+  popup: {
+    trigger: "click",
+    render: (day) => {
+      const entries = POPUPS[`${day.year}-${day.month}-${day.day}`] ?? [];
+      return entries.map((entry) => `${entry.time} · ${entry.title}：${entry.detail}`);
+    },
+  },
+});
+```
+
+- 数据在创建前准备好，`render(day)` 返回 `Array<string | Node>`；空数组表示没有 popup；
+- 绿点由库内部按 `render(day).length > 0` 计算；
+- 打开时自动显示「日期 · 条数」头部，条数就是数组长度；
+- `render` 在创建 / 重绘时调用并缓存，必须是同步纯函数；
+- 字符串按纯文本挂载，Node 直接 append；
+- 默认皮肤是 `.cui__popup` 卡片 + `.cui__popup-head` 头部 + `.cui__popup-item` 内容层，可以直接用 CSS 覆盖；
+- `trigger` 支持 `"click"`（默认）/ `"hover"` / `"focus"` / `"auto"`；移动端没有 hover；
+- 默认 click 用 `role="dialog"`，其余用 `role="tooltip"`，可通过 `role` 覆盖；
+- 绿点颜色是 `--cui-popup-dot`。
 
 ## 日期输入
 

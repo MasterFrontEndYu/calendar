@@ -94,6 +94,7 @@ src/
       collapse.mdx         折叠
       header.mdx           自定义头部
       headless.mdx         无头日历
+      popup.mdx            日期格 popup
       custom.mdx           第三方适配器
     calendar-ui-lunar/
       index.mdx            内置农历演示
@@ -131,6 +132,8 @@ src/
       calendar-ui-collapse.tsx     折叠实例
       calendar-ui-header.tsx       自定义头部实例
       calendar-ui-headless.tsx     无头日历实例
+      calendar-ui-popup.tsx        日期格 popup 实例
+      calendar-ui-popup.css        popup 演示皮肤
       calendar-ui-custom.tsx       第三方适配器实例（数据 / 方法内联）
       calendar-ui-lunar-index.tsx  官方农历实例
       calendar-ui-lunar-custom.tsx 农历自定义 holidays 实例

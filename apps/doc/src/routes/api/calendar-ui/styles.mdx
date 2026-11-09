@@ -35,17 +35,18 @@ import "@sanguo-dev/calendar-ui/style.css";
 
 颜色：
 
-| 变量              | 默认值    | 说明                     |
-| ----------------- | --------- | ------------------------ |
-| `--cui-bg`        | `#ffffff` | 背景                     |
-| `--cui-fg`        | `#1f2328` | 文字                     |
-| `--cui-muted`     | `#8b949e` | 次要文字（星期、副标题） |
-| `--cui-border`    | `#e6e8eb` | 边框                     |
-| `--cui-accent`    | `#2563eb` | 选中态主色               |
-| `--cui-accent-fg` | `#ffffff` | 选中态文字               |
-| `--cui-rest`      | `#e5484d` | 「休」标记颜色           |
-| `--cui-hover`     | `#f3f4f6` | 悬停背景                 |
-| `--cui-radius`    | `8px`     | 根节点圆角               |
+| 变量              | 默认值    | 说明                              |
+| ----------------- | --------- | --------------------------------- |
+| `--cui-bg`        | `#ffffff` | 背景                              |
+| `--cui-fg`        | `#1f2328` | 文字                              |
+| `--cui-muted`     | `#8b949e` | 次要文字（星期、副标题）          |
+| `--cui-border`    | `#e6e8eb` | 边框                              |
+| `--cui-accent`    | `#2563eb` | 选中态主色                        |
+| `--cui-accent-fg` | `#ffffff` | 选中态文字                        |
+| `--cui-rest`      | `#e5484d` | 「休」标记颜色                    |
+| `--cui-popup-dot` | `#22c55e` | 有 popup 的绿点（暗色 `#3fb950`） |
+| `--cui-hover`     | `#f3f4f6` | 悬停背景                          |
+| `--cui-radius`    | `8px`     | 根节点圆角                        |
 
 尺寸：
 
@@ -99,29 +100,36 @@ import "@sanguo-dev/calendar-ui/style.css";
 
 ## 类名
 
-| 选择器              | 对应节点        |
-| ------------------- | --------------- |
-| `.cui`              | 根节点          |
-| `.cui__header`      | 头部            |
-| `.cui__title`       | 标题容器        |
-| `.cui__title-part`  | 年份 / 月份按钮 |
-| `.cui__nav`         | 翻月按钮        |
-| `.cui__months`      | 月份容器        |
-| `.cui__month`       | 单个月份        |
-| `.cui__weekdays`    | 星期表头        |
-| `.cui__weekday`     | 单个星期        |
-| `.cui__grid`        | 日期网格        |
-| `.cui__week`        | 一周            |
-| `.cui__day`         | 日期格          |
-| `.cui__day-num`     | 日期数字        |
-| `.cui__day-sub`     | 副标题          |
-| `.cui__day-tag`     | 「休 / 班」标记 |
-| `.cui__collapse`    | 底部折叠按钮    |
-| `.cui__picker`      | 年月选择层      |
-| `.cui__picker-grid` | 选择层网格      |
-| `.cui__picker-cell` | 选择层单格      |
+| 选择器              | 对应节点                |
+| ------------------- | ----------------------- |
+| `.cui`              | 根节点                  |
+| `.cui__header`      | 头部                    |
+| `.cui__title`       | 标题容器                |
+| `.cui__title-part`  | 年份 / 月份按钮         |
+| `.cui__nav`         | 翻月按钮                |
+| `.cui__months`      | 月份容器                |
+| `.cui__month`       | 单个月份                |
+| `.cui__weekdays`    | 星期表头                |
+| `.cui__weekday`     | 单个星期                |
+| `.cui__grid`        | 日期网格                |
+| `.cui__week`        | 一周                    |
+| `.cui__day`         | 日期格                  |
+| `.cui__day-num`     | 日期数字                |
+| `.cui__day-sub`     | 副标题                  |
+| `.cui__day-tag`     | 「休 / 班」标记         |
+| `.cui__day-dot`     | 有 popup 的绿点         |
+| `.cui__popup`       | 日期格 popup 根         |
+| `.cui__popup-head`  | popup 的日期 / 条数头部 |
+| `.cui__popup-body`  | popup 的内容容器        |
+| `.cui__popup-item`  | popup 的每一层          |
+| `.cui__collapse`    | 底部折叠按钮            |
+| `.cui__picker`      | 年月选择层              |
+| `.cui__picker-grid` | 选择层网格              |
+| `.cui__picker-cell` | 选择层单格              |
 
 日期格上的 `data-tone` 来自 `CalendarBadge.tone`，默认皮肤支持 `rest`（休）与 `work`（班），对应 `--cui-rest` 与 `--cui-accent`。
+
+`.cui__popup` 默认提供定位、`max-width` / `max-height`、滚动和一层轻量卡片（背景、边框、圆角、阴影、内边距）；`.cui__popup-head` 是「日期 · 条数」头部，`.cui__popup-body` 是内容容器，`.cui__popup-item` 包裹 `popup.render` 返回的每一项。想换外观直接用 CSS 覆盖这些类。popup 离开 `.cui` 后会把主题变量复制到根节点，并带 `data-theme` 和 `data-placement`。
 
 ## 动画偏好
 

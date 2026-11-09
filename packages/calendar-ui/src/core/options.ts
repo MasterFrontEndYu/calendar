@@ -1,8 +1,57 @@
-import type { CalendarConfig, CalendarOptions, ResolvedCalendarOptions } from "../types";
+import type {
+  CalendarConfig,
+  CalendarOptions,
+  CalendarPopupOptions,
+  ResolvedCalendarOptions,
+  ResolvedCalendarPopupOptions,
+} from "../types";
 import { resolveLocale } from "../locales";
 import { dateKey, parseDateInput, readDate } from "../utils/date";
 import { findSelectable } from "../utils/selectable";
 import { assertBounds } from "./bounds";
+
+const POPUP_TRIGGERS = ["click", "hover", "focus", "auto"] as const;
+const POPUP_PLACEMENTS = ["auto", "top", "bottom", "center"] as const;
+const POPUP_ROLES = ["dialog", "tooltip"] as const;
+
+const resolvePopup = function (
+  popup: CalendarPopupOptions | undefined,
+): ResolvedCalendarPopupOptions | undefined {
+  if (popup === undefined) return undefined;
+  if (popup === null || typeof popup !== "object") {
+    throw new TypeError("[calendar-ui] popup 必须是对象");
+  }
+  if (typeof popup.render !== "function") {
+    throw new TypeError("[calendar-ui] popup.render 必须是函数");
+  }
+
+  const trigger = popup.trigger ?? "click";
+  if (!POPUP_TRIGGERS.includes(trigger)) {
+    throw new TypeError("[calendar-ui] popup.trigger 必须是 click、hover、focus 或 auto");
+  }
+
+  const placement = popup.placement ?? "auto";
+  if (!POPUP_PLACEMENTS.includes(placement)) {
+    throw new TypeError("[calendar-ui] popup.placement 必须是 auto、top、bottom 或 center");
+  }
+
+  const role = popup.role ?? (trigger === "click" ? "dialog" : "tooltip");
+  if (!POPUP_ROLES.includes(role)) {
+    throw new TypeError("[calendar-ui] popup.role 必须是 dialog 或 tooltip");
+  }
+
+  if (popup.ariaLabel !== undefined && typeof popup.ariaLabel !== "string") {
+    throw new TypeError("[calendar-ui] popup.ariaLabel 必须是字符串");
+  }
+
+  return {
+    trigger,
+    render: (day) => popup.render(day),
+    placement,
+    role,
+    ariaLabel: popup.ariaLabel,
+  };
+};
 
 const readDuration = function (value: number | undefined, fallback: number, path: string): number {
   const duration = value ?? fallback;
@@ -74,6 +123,7 @@ export const resolveOptions = function <TData = null>(
     maxDate,
     disabled,
   );
+  const popup = resolvePopup(options.popup);
 
   const config: CalendarConfig<TData> = {
     weekStartsOn: options.weekStartsOn ?? 1,
@@ -87,6 +137,7 @@ export const resolveOptions = function <TData = null>(
     subtitle: options.subtitle,
     showHeader: options.header !== false,
     renderHeader: options.renderHeader,
+    popup,
     onSelect: options.onSelect,
     onMonthChange: options.onMonthChange,
     onRangeChange: options.onRangeChange,

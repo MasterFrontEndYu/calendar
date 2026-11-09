@@ -3,6 +3,8 @@
  *
  * 只负责日历自身的界面文字；农历、节气、节日等业务文案由适配器提供。
  */
+import type { CalendarDate } from "./calendar";
+
 export interface CalendarLocale {
   /** 语言标签，例如 "zh-CN"，仅用于调试与覆盖 */
   name: string;
@@ -32,6 +34,8 @@ export interface CalendarLocale {
   pickYear?: string;
   /** 不可选日期的无障碍文案；不传时使用内置「不可选」 */
   disabledLabel?: string;
+  /** popup 头部的「日期 + 条数」文案 */
+  popupTitle?(day: CalendarDate, count: number): string;
   /** 折叠按钮的无障碍名称；不传时使用内置文案 */
   collapse?: string;
   /** 展开按钮的无障碍名称；不传时使用内置文案 */

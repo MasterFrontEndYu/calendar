@@ -31,6 +31,8 @@ export const enUS: CalendarLocale = {
   pickMonth: "Choose a month",
   pickYear: "Choose a year",
   disabledLabel: "unavailable",
+  popupTitle: (day, count) =>
+    `${MONTHS[day.month - 1] ?? day.month} ${day.day} · ${count} ${count === 1 ? "item" : "items"}`,
   collapse: "Collapse calendar",
   expand: "Expand calendar",
 };

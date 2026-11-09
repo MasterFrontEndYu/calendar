@@ -10,6 +10,7 @@ import {
   resolveMonthCount,
 } from "./core/bounds";
 import { createCollapse } from "./core/collapse";
+import { createDayPopup } from "./core/day-popup";
 import { createInstance } from "./core/instance";
 import { createHeaderLabel } from "./core/labels";
 import { createPanels, createRoot, mountCalendar } from "./core/layout";
@@ -94,6 +95,10 @@ export function createCalendarUI<TData = null>(
     monthCount,
   });
 
+  const popup = config.popup
+    ? createDayPopup({ root, popup: config.popup, locale: config.locale })
+    : null;
+
   const render = createRenderer({
     root,
     config,
@@ -103,6 +108,7 @@ export function createCalendarUI<TData = null>(
     panels,
     panelEls,
     collapse,
+    popup,
     currentDays,
   });
 
@@ -149,6 +155,7 @@ export function createCalendarUI<TData = null>(
     header,
     picker,
     pickerLayer,
+    popup,
     goTo: goToMonth,
   });
 }

@@ -106,6 +106,7 @@ export default defineConfig(({ command }) => {
                   { title: "折叠", link: "/collapse" },
                   { title: "自定义头部", link: "/header" },
                   { title: "无头日历", link: "/headless" },
+                  { title: "日期格 popup", link: "/popup" },
                   { title: "第三方适配器", link: "/custom" },
                 ],
               },

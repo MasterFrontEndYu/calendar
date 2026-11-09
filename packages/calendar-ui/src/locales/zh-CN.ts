@@ -16,6 +16,7 @@ export const zhCN: CalendarLocale = {
   pickMonth: "选择月份",
   pickYear: "选择年份",
   disabledLabel: "不可选",
+  popupTitle: (day, count) => `${day.month} 月 ${day.day} 日 · ${count} 条`,
   collapse: "收起日历",
   expand: "展开日历",
 };

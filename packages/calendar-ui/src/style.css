@@ -15,6 +15,7 @@
   --cui-accent: #2563eb;
   --cui-accent-fg: #ffffff;
   --cui-rest: #e5484d;
+  --cui-popup-dot: #22c55e;
   --cui-hover: #f3f4f6;
   --cui-radius: 8px;
 
@@ -227,6 +228,7 @@
   --cui-accent: #1f6feb;
   --cui-accent-fg: #ffffff;
   --cui-rest: #ff7b72;
+  --cui-popup-dot: #3fb950;
   --cui-hover: #21262d;
   --cui-icon: var(--cui-icon-dark);
 
@@ -242,6 +244,7 @@
   --cui-accent: #1f6feb;
   --cui-accent-fg: #ffffff;
   --cui-rest: #ff7b72;
+  --cui-popup-dot: #3fb950;
   --cui-hover: #21262d;
   --cui-icon: var(--cui-icon-dark);
 
@@ -574,6 +577,36 @@
   opacity: 0.9;
 }
 
+/* 右上角绿点：这一天有 popup */
+.cui__day-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cui-popup-dot);
+  pointer-events: none;
+}
+
+.cui__day-dot[hidden] {
+  display: none;
+}
+
+.cui[data-size="min"] .cui__day-dot {
+  top: 2px;
+  right: 2px;
+  width: 4px;
+  height: 4px;
+}
+
+.cui[data-size="fill"] .cui__day-dot {
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+}
+
 /* 状态 */
 .cui__day.is-outside {
   opacity: 0.35;
@@ -725,6 +758,62 @@
   .cui__picker {
     transition: none;
   }
+}
+
+/*
+ * 日期格 popup
+ *
+ * 默认皮肤只做一层轻量卡片：背景 / 边框 / 圆角 / 头部 / 内容层间距。
+ * 颜色全部走 --cui-*，打开时会从 .cui 复制过来，light / dark 自动跟随。
+ * 想换外观直接用 CSS 覆盖 .cui__popup、.cui__popup-head、.cui__popup-item。
+ */
+.cui__popup {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  min-width: 180px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: 70vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 10px 12px;
+  border: 1px solid var(--cui-border, #e6e8eb);
+  border-radius: 10px;
+  background: var(--cui-bg, #fff);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 16%);
+  color: var(--cui-fg, inherit);
+  font-family: var(--cui-popup-font, inherit);
+  font-size: 14px;
+  line-height: 1.4;
+  color-scheme: var(--cui-popup-color-scheme, normal);
+}
+
+.cui__popup[hidden] {
+  display: none;
+}
+
+/* center 定位由 CSS 负责，方便使用方在窄屏改成底部 sheet */
+.cui__popup[data-placement="center"] {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.cui__popup-head {
+  margin-bottom: 8px;
+  color: var(--cui-muted, #8b949e);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.cui__popup-item {
+  display: block;
+}
+
+.cui__popup-item + .cui__popup-item {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cui-border, #e6e8eb);
 }
 
 /* 隐藏状态：类选择器里的 display 会盖掉 [hidden] 的默认样式，这里显式补上 */

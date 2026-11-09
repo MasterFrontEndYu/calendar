@@ -17,7 +17,11 @@ export const createDayCell = function (): HTMLButtonElement {
   tag.hidden = true;
   tag.setAttribute("aria-hidden", "true");
 
-  cell.append(tag, node("span", "cui__day-num"), node("span", "cui__day-sub"));
+  const dot = node("span", "cui__day-dot");
+  dot.hidden = true;
+  dot.setAttribute("aria-hidden", "true");
+
+  cell.append(tag, node("span", "cui__day-num"), node("span", "cui__day-sub"), dot);
   return cell;
 };
 

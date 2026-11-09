@@ -3,6 +3,7 @@ import { flush } from "solid-js";
 import { describe, expect, it } from "vite-plus/test";
 import CalendarUICustom from "../src/components/demo/calendar-ui-custom";
 import CalendarUIHeadless from "../src/components/demo/calendar-ui-headless";
+import CalendarUIPopup from "../src/components/demo/calendar-ui-popup";
 import CalendarUIHeader from "../src/components/demo/calendar-ui-header";
 import CalendarUICollapse from "../src/components/demo/calendar-ui-collapse";
 import CalendarUILunarIndex from "../src/components/demo/calendar-ui-lunar-index";
@@ -108,6 +109,32 @@ describe("demo components", () => {
     expect(container.querySelectorAll(".cui")).toHaveLength(1);
     expect(container.querySelector<HTMLElement>(".cui__header")?.hidden).toBe(true);
     expect(container.querySelectorAll(".cui__day")).toHaveLength(42);
+  });
+
+  it("popup demo shows dots and opens content", () => {
+    const { container } = render(() => <CalendarUIPopup />);
+    flush();
+
+    expect(container.querySelectorAll(".cui")).toHaveLength(2);
+    expect(container.querySelectorAll(".cui.demo-calendar--custom")).toHaveLength(1);
+
+    const cell = container.querySelector<HTMLButtonElement>('.cui__day[data-date="2026-10-1"]');
+    expect(cell?.querySelector(".cui__day-dot")?.hasAttribute("hidden")).toBe(false);
+    // 只有有 popup 的日期才有绿点
+    expect(
+      container
+        .querySelector('.cui__day[data-date="2026-10-2"] .cui__day-dot')
+        ?.hasAttribute("hidden"),
+    ).toBe(true);
+
+    cell?.click();
+    flush();
+
+    const popup = document.querySelector(".cui__popup");
+    expect(popup?.querySelector(".cui__popup-head")?.textContent).toBe("10 月 1 日 · 2 条");
+    expect(popup?.textContent).toContain("国庆节");
+    // 点击外部 / Esc 已经能关闭，示例里不再放关闭按钮
+    expect(popup?.querySelector("button")).toBeNull();
   });
 
   it("custom renders a third-party adapter", () => {

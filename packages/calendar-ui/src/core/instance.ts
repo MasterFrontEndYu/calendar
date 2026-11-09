@@ -7,8 +7,19 @@ import { copyRange } from "./state";
 export const createInstance = function <TData = null>(
   runtime: CalendarRuntime<TData>,
 ): CalendarInstance {
-  const { config, state, bounds, root, header, picker, pickerLayer, collapse, slide, panels } =
-    runtime;
+  const {
+    config,
+    state,
+    bounds,
+    root,
+    header,
+    picker,
+    pickerLayer,
+    collapse,
+    slide,
+    panels,
+    popup,
+  } = runtime;
 
   return {
     el: root,
@@ -31,9 +42,11 @@ export const createInstance = function <TData = null>(
     },
     hide: () => {
       root.hidden = true;
+      popup?.close(false);
     },
     toggle: () => {
       root.hidden = !root.hidden;
+      if (root.hidden) popup?.close(false);
     },
     isVisible: () => !root.hidden,
     showHeader: () => {
@@ -58,8 +71,10 @@ export const createInstance = function <TData = null>(
     setTheme: (next) => {
       config.theme = next;
       root.dataset.theme = next;
+      popup?.refreshTheme();
     },
     destroy: () => {
+      popup?.destroy();
       slide.stop();
       pickerLayer.destroy();
       picker.destroy();

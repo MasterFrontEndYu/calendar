@@ -32,6 +32,7 @@ interface CalendarOptions<TData = null> {
   subtitle?: SubtitleRenderer;
   header?: boolean;
   renderHeader?: HeaderRenderer;
+  popup?: CalendarPopupOptions;
   onSelect?: (day: CalendarDay<TData>) => void;
   onMonthChange?: (year: number, month: number) => void;
   adapter?: CalendarAdapter<TData>;
@@ -57,6 +58,7 @@ interface CalendarOptions<TData = null> {
 | `subtitle`      | `SubtitleRenderer`                      | -          | 自定义副标题，优先于适配器；返回 `null` / `undefined` 时回退 |
 | `header`        | `boolean`                               | `true`     | 是否显示头部                                                 |
 | `renderHeader`  | `HeaderRenderer`                        | -          | 自定义头部，替换默认的「‹ 标题 ›」                           |
+| `popup`         | `CalendarPopupOptions`                  | -          | 日期格 popup；不传则不启用                                   |
 | `onSelect`      | `(day: CalendarDay<TData>) => void`     | -          | 选中某一天或范围变化后触发                                   |
 | `onMonthChange` | `(year: number, month: number) => void` | -          | 翻月时触发：`setMonth`、`prevMonth`、`nextMonth`、头部翻页   |
 | `adapter`       | `CalendarAdapter<TData>`                | -          | 日期格装饰适配器；不传时只渲染公历                           |
@@ -67,6 +69,22 @@ interface CalendarOptions<TData = null> {
 - `months: 2` 只在 `mode: "range"` 且可选范围覆盖至少两个月时生效；
 - `disabledDates` 里的日期即使满足 `minDate` / `maxDate` 也不可选；
 - `initialDate` 会先夹到 `minDate` / `maxDate`，再找最近的可选日期。
+
+## CalendarPopupOptions
+
+`popup` 的配置。`render` 必填，其余可选。
+
+| 字段        | 类型                                             | 默认                          | 说明                                          |
+| ----------- | ------------------------------------------------ | ----------------------------- | --------------------------------------------- |
+| `trigger`   | `"click" \| "hover" \| "focus" \| "auto"`        | `"click"`                     | 触发方式；移动端没有 hover                    |
+| `render`    | `(day: CalendarDate) => readonly DayPopupItem[]` | -                             | 返回这一天的内容；空数组表示没有 popup / 绿点 |
+| `placement` | `"auto" \| "top" \| "bottom" \| "center"`        | `"auto"`                      | 定位方式；`center` 由 CSS 居中                |
+| `role`      | `"dialog" \| "tooltip"`                          | click 为 dialog，其余 tooltip | popup 的 ARIA role                            |
+| `ariaLabel` | `string`                                         | -                             | popup 根节点的 `aria-label`                   |
+
+`DayPopupItem = string | Node`：字符串按纯文本挂载，Node 直接 append。`render(day)` 在创建 / 重绘时调用，返回结果会缓存；数组长度就是弹层头部显示的条数，`render` 必须是同步纯函数。
+
+完整示例和样式写法见 [日期格 popup](/calendar-ui/popup)。
 
 ## 错误
 

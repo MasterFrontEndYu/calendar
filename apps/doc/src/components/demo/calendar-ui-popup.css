@@ -1,0 +1,190 @@
+/*
+ * 日期格 popup 示例样式
+ *
+ * 左侧「系统 UI」不写任何 popup 皮肤，直接用库默认样式；
+ * 右侧「自定义 UI」只给 render 返回的 Node 写类名，再按类名覆盖样式。
+ */
+
+/* ---------- 示例布局 ---------- */
+.demo-popup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.75rem;
+}
+
+.demo-popup-panel {
+  min-width: 0;
+  padding: 0.75rem 0.6rem 0.35rem;
+  border: 1px solid rgb(127 127 127 / 18%);
+  border-radius: 16px;
+  background: rgb(127 127 127 / 4%);
+}
+
+.demo-popup-panel--custom {
+  border-color: rgb(124 58 237 / 28%);
+  background: linear-gradient(140deg, rgb(124 58 237 / 8%), transparent 46%), rgb(127 127 127 / 3%);
+}
+
+.demo-popup-panel > div {
+  display: flex;
+  justify-content: center;
+}
+
+.demo-popup-panel-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.demo-popup-panel-head p {
+  margin: 0.2rem 0 0.7rem;
+  color: var(--sb-text-2, #6b7280);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.demo-popup-panel-head code {
+  padding: 0.05em 0.35em;
+  border-radius: 4px;
+  background: rgb(127 127 127 / 12%);
+  font-size: 0.92em;
+}
+
+.demo-popup-panel .demo-result {
+  margin: 0.65rem 0 0.25rem;
+  font-size: 0.82rem;
+}
+
+/* ---------- 自定义 UI：日历换肤（可选） ---------- */
+.cui.demo-calendar--custom {
+  --cui-bg: #fbf8ff;
+  --cui-fg: #2f2547;
+  --cui-muted: #8b7fa6;
+  --cui-border: #e8dfff;
+  --cui-accent: #7c3aed;
+  --cui-accent-fg: #ffffff;
+  --cui-rest: #d9467a;
+  --cui-hover: #f2ebff;
+  --cui-radius: 16px;
+  --cui-popup-dot: #7c3aed;
+}
+
+.cui.demo-calendar--custom[data-theme="dark"],
+[data-theme="dark"] .cui.demo-calendar--custom[data-theme="auto"] {
+  --cui-bg: #1c1630;
+  --cui-fg: #efeaff;
+  --cui-muted: #a79ac4;
+  --cui-border: #382d57;
+  --cui-accent: #a78bfa;
+  --cui-accent-fg: #1c1630;
+  --cui-rest: #f28bb3;
+  --cui-hover: #2a2145;
+  --cui-popup-dot: #a78bfa;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cui.demo-calendar--custom[data-theme="auto"] {
+    --cui-bg: #1c1630;
+    --cui-fg: #efeaff;
+    --cui-muted: #a79ac4;
+    --cui-border: #382d57;
+    --cui-accent: #a78bfa;
+    --cui-accent-fg: #1c1630;
+    --cui-rest: #f28bb3;
+    --cui-hover: #2a2145;
+    --cui-popup-dot: #a78bfa;
+
+    color-scheme: dark;
+  }
+
+  [data-theme="light"] .cui.demo-calendar--custom[data-theme="auto"] {
+    --cui-bg: #fbf8ff;
+    --cui-fg: #2f2547;
+    --cui-muted: #8b7fa6;
+    --cui-border: #e8dfff;
+    --cui-accent: #7c3aed;
+    --cui-accent-fg: #ffffff;
+    --cui-rest: #d9467a;
+    --cui-hover: #f2ebff;
+    --cui-popup-dot: #7c3aed;
+
+    color-scheme: light;
+  }
+}
+
+/* ---------- 自定义 UI：弹层内容 ---------- */
+
+/* 有自定义内容时，去掉默认卡片的外观，改成头部 + 内容两块 */
+.cui__popup:has(.demo-popup-row) {
+  min-width: 240px;
+  max-width: min(340px, calc(100vw - 16px));
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.cui__popup:has(.demo-popup-row) .cui__popup-head {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.cui__popup:has(.demo-popup-row) .cui__popup-body {
+  padding: 10px 14px 12px;
+  border: 1px solid rgb(124 58 237 / 32%);
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+  background: var(--cui-bg);
+  box-shadow: 0 18px 44px rgb(76 29 149 / 22%);
+}
+
+.cui__popup:has(.demo-popup-row) .cui__popup-item + .cui__popup-item {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid rgb(124 58 237 / 16%);
+}
+
+.demo-popup-row {
+  display: grid;
+  grid-template-areas:
+    "time title"
+    "time detail";
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  align-items: center;
+}
+
+.demo-popup-time {
+  grid-area: time;
+  align-self: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgb(124 58 237 / 12%);
+  color: var(--cui-accent);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.demo-popup-title {
+  grid-area: title;
+  color: var(--cui-fg);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.demo-popup-detail {
+  grid-area: detail;
+  color: var(--cui-muted);
+  font-size: 12px;
+}

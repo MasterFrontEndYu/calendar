@@ -1,0 +1,404 @@
+---
+title: 日期格 popup
+---
+
+import CalendarUIPopup from "../../components/demo/calendar-ui-popup";
+
+# 日期格 popup
+
+数据在 `createCalendarUI` 之前准备好，直接传给 `popup.render(day)`。库在创建 / 重绘时调用它：
+
+- 返回非空数组 → 这一天有 popup，日期格右上角自动出现绿点；
+- 返回空数组 → 这一天没有 popup，也没有绿点；
+- 打开弹层时复用创建时渲染好的内容，自动补一行「日期 · 条数」头部。
+
+下面两个实例共用同一份数据，但分开演示：
+
+- **系统 UI**：`render` 返回字符串数组，直接使用库的默认弹层样式；
+- **自定义 UI**：`render` 返回 Node 数组，每个 Node 带自己的类名，样式全部由使用方 CSS 决定。
+
+<CalendarUIPopup />
+
+## 交互约定
+
+- **绿点由库内部算**：`render(day).length > 0` 才显示；
+- **没有关闭按钮**：点击其他日期、点击空白处、按 `Esc`、换月、滚动或缩放页面都会关闭；
+- **数据必须在创建前准备好**：`render` 是同步纯函数，库不负责请求数据；
+- **点击触发**用 `role="dialog"`，点击日期时仍然会选中日期；
+- **悬停触发**用 `role="tooltip"`，只适合只读内容；移动端没有 hover，交互示例请用 `click` 或 `auto`；
+- 头部「日期 · 条数」里的条数就是 `render` 返回数组的长度，所以一条数据对应数组里的一项。
+
+## 数据格式
+
+业务数据可以任意嵌套，库不认识它，只在 `render` 里自己对接：
+
+```ts
+interface PopupEntry {
+  title: string;
+  detail: string;
+  time: string;
+}
+
+const POPUPS: Record<string, readonly PopupEntry[]> = {
+  "2026-10-1": [
+    { title: "国庆节", detail: "10 月 1 日 - 7 日放假", time: "全天" },
+    { title: "升旗仪式", detail: "广场集合，提前 10 分钟到场", time: "10:00" },
+  ],
+  "2026-10-8": [{ title: "寒露", detail: "早晚温差大，记得添衣", time: "节气" }],
+  "2026-10-18": [{ title: "重阳节", detail: "登高、敬老", time: "农历九月初九" }],
+  "2026-10-23": [{ title: "霜降", detail: "秋季最后一个节气", time: "节气" }],
+  "2026-10-31": [{ title: "万圣夜", detail: "18:00 公司活动", time: "18:00" }],
+};
+
+const keyOf = (day: CalendarDate) => `${day.year}-${day.month}-${day.day}`;
+const entriesOf = (day: CalendarDate) => POPUPS[keyOf(day)] ?? [];
+```
+
+## 组件代码
+
+数据、方法、两个实例都在这里，没有省略：
+
+```tsx
+import { createSignal, onSettled } from "solid-js";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import type { CalendarDate, CalendarInstance, DayPopupItem } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
+import "./calendar-ui-popup.css";
+import "./demo.css";
+
+interface PopupEntry {
+  title: string;
+  detail: string;
+  time: string;
+}
+
+/** 业务数据：日期 -> 这一天的条目；库不关心你的数据格式 */
+const POPUPS: Record<string, readonly PopupEntry[]> = {
+  "2026-10-1": [
+    { title: "国庆节", detail: "10 月 1 日 - 7 日放假", time: "全天" },
+    { title: "升旗仪式", detail: "广场集合，提前 10 分钟到场", time: "10:00" },
+  ],
+  "2026-10-8": [{ title: "寒露", detail: "早晚温差大，记得添衣", time: "节气" }],
+  "2026-10-18": [{ title: "重阳节", detail: "登高、敬老", time: "农历九月初九" }],
+  "2026-10-23": [{ title: "霜降", detail: "秋季最后一个节气", time: "节气" }],
+  "2026-10-31": [{ title: "万圣夜", detail: "18:00 公司活动", time: "18:00" }],
+};
+
+/** 把 CalendarDate 对到业务数据的 key */
+const keyOf = function (day: CalendarDate): string {
+  return `${day.year}-${day.month}-${day.day}`;
+};
+
+/** 取这一天的数据；没有就是空数组 */
+const entriesOf = function (day: CalendarDate): readonly PopupEntry[] {
+  return POPUPS[keyOf(day)] ?? [];
+};
+
+/** 系统 UI：每一条数据返回一个字符串，交给库的默认 popup 样式 */
+const renderStrings = function (day: CalendarDate): string[] {
+  return entriesOf(day).map((entry) => `${entry.time} · ${entry.title}：${entry.detail}`);
+};
+
+/** 自定义 UI：每一条数据返回一个带自己类名的 Node */
+const createRow = function (entry: PopupEntry): HTMLElement {
+  const row = document.createElement("article");
+  row.className = "demo-popup-row";
+
+  const time = document.createElement("span");
+  time.className = "demo-popup-time";
+  time.textContent = entry.time;
+
+  const title = document.createElement("strong");
+  title.className = "demo-popup-title";
+  title.textContent = entry.title;
+
+  const detail = document.createElement("span");
+  detail.className = "demo-popup-detail";
+  detail.textContent = entry.detail;
+
+  row.append(time, title, detail);
+  return row;
+};
+
+const renderNodes = function (day: CalendarDate): HTMLElement[] {
+  return entriesOf(day).map((entry) => createRow(entry));
+};
+
+/** 两个实例共用同一份数据，只换触发方式和 render */
+const mountCalendar = function (
+  host: HTMLElement,
+  trigger: "click" | "hover",
+  render: (day: CalendarDate) => readonly DayPopupItem[],
+  onPick: (day: CalendarDate) => void,
+): CalendarInstance {
+  return createCalendarUI(host, {
+    initialDate: "2026-10-01",
+    onSelect: onPick,
+    popup: {
+      trigger,
+      ariaLabel: "日期详情",
+      render,
+    },
+  });
+};
+
+export default function CalendarUIPopup() {
+  let systemHost: HTMLDivElement | undefined;
+  let customHost: HTMLDivElement | undefined;
+
+  const [pickedSystem, setPickedSystem] = createSignal("未选择");
+  const [pickedCustom, setPickedCustom] = createSignal("未选择");
+
+  onSettled(() => {
+    if (!systemHost || !customHost) return;
+
+    const systemCalendar = mountCalendar(systemHost, "click", renderStrings, (day) =>
+      setPickedSystem(keyOf(day)),
+    );
+
+    const customCalendar = mountCalendar(customHost, "hover", renderNodes, (day) =>
+      setPickedCustom(keyOf(day)),
+    );
+
+    // 自定义示例：只在这里给日历根节点加类，CSS 由使用方自己写
+    customCalendar.el.classList.add("demo-calendar--custom");
+
+    return () => {
+      systemCalendar.destroy();
+      customCalendar.destroy();
+    };
+  });
+
+  return (
+    <div class="demo-popup-grid">
+      <section class="demo-popup-panel">
+        <header class="demo-popup-panel-head">
+          <h3>系统 UI · 点击触发</h3>
+          <p>
+            <code>render</code> 返回字符串数组，直接用库的默认弹层样式；绿点和「日期 ·
+            条数」由库内部算。
+          </p>
+        </header>
+        <div ref={(el) => (systemHost = el)} />
+        <p class="demo-result">已选中：{pickedSystem()}</p>
+      </section>
+
+      <section class="demo-popup-panel demo-popup-panel--custom">
+        <header class="demo-popup-panel-head">
+          <h3>自定义 UI · 悬停触发</h3>
+          <p>
+            <code>render</code> 返回 Node 数组，每个 Node 带自己的类名，样式完全由使用方 CSS 决定。
+          </p>
+        </header>
+        <div ref={(el) => (customHost = el)} />
+        <p class="demo-result">已选中：{pickedCustom()}</p>
+      </section>
+    </div>
+  );
+}
+```
+
+## 系统 UI
+
+系统 UI 示例只 import `@sanguo-dev/calendar-ui/style.css`，不写任何 popup 皮肤。`render` 返回字符串数组，库负责：
+
+- `.cui__popup` 默认卡片：背景、边框、圆角、阴影、内边距；
+- `.cui__popup-head`：自动显示「10 月 1 日 · 2 条」；
+- `.cui__popup-body` / `.cui__popup-item`：每一层内容，以及层与层之间的分隔线；
+- 字符串按 `textContent` 挂载，不解析 HTML。
+
+```ts
+render: (day) => entriesOf(day).map((entry) => `${entry.time} · ${entry.title}：${entry.detail}`);
+```
+
+## 自定义 UI
+
+自定义示例返回 Node 数组，每个 Node 带自己的类名：
+
+```ts
+render: (day) =>
+  entriesOf(day).map((entry) => {
+    const row = document.createElement("article");
+    row.className = "demo-popup-row";
+    // ...组出 time / title / detail
+    return row;
+  });
+```
+
+库仍然会自动加「日期 · 条数」头部，但容器外观已经由下面的 CSS 改掉。示例用 `:has(.demo-popup-row)` 只在自定义内容出现时覆盖默认卡片，所以两个实例互不影响：
+
+```css
+/* 有自定义内容时，去掉默认卡片的外观，改成头部 + 内容两块 */
+.cui__popup:has(.demo-popup-row) {
+  min-width: 240px;
+  max-width: min(340px, calc(100vw - 16px));
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.cui__popup:has(.demo-popup-row) .cui__popup-head {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.cui__popup:has(.demo-popup-row) .cui__popup-body {
+  padding: 10px 14px 12px;
+  border: 1px solid rgb(124 58 237 / 32%);
+  border-top: 0;
+  border-radius: 0 0 14px 14px;
+  background: var(--cui-bg);
+  box-shadow: 0 18px 44px rgb(76 29 149 / 22%);
+}
+
+.cui__popup:has(.demo-popup-row) .cui__popup-item + .cui__popup-item {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid rgb(124 58 237 / 16%);
+}
+
+.demo-popup-row {
+  display: grid;
+  grid-template-areas:
+    "time title"
+    "time detail";
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  align-items: center;
+}
+
+.demo-popup-time {
+  grid-area: time;
+  align-self: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgb(124 58 237 / 12%);
+  color: var(--cui-accent);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.demo-popup-title {
+  grid-area: title;
+  color: var(--cui-fg);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.demo-popup-detail {
+  grid-area: detail;
+  color: var(--cui-muted);
+  font-size: 12px;
+}
+```
+
+自定义日历皮肤也是普通 CSS：给 `instance.el` 加类，只覆盖变量，不改 DOM：
+
+```css
+.cui.demo-calendar--custom {
+  --cui-bg: #fbf8ff;
+  --cui-fg: #2f2547;
+  --cui-muted: #8b7fa6;
+  --cui-border: #e8dfff;
+  --cui-accent: #7c3aed;
+  --cui-accent-fg: #ffffff;
+  --cui-rest: #d9467a;
+  --cui-hover: #f2ebff;
+  --cui-radius: 16px;
+  --cui-popup-dot: #7c3aed;
+}
+
+/* 深色主题：同一套变量换一组值 */
+.cui.demo-calendar--custom[data-theme="dark"],
+[data-theme="dark"] .cui.demo-calendar--custom[data-theme="auto"] {
+  --cui-bg: #1c1630;
+  --cui-fg: #efeaff;
+  --cui-muted: #a79ac4;
+  --cui-border: #382d57;
+  --cui-accent: #a78bfa;
+  --cui-accent-fg: #1c1630;
+  --cui-rest: #f28bb3;
+  --cui-hover: #2a2145;
+  --cui-popup-dot: #a78bfa;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  .cui.demo-calendar--custom[data-theme="auto"] {
+    --cui-bg: #1c1630;
+    --cui-fg: #efeaff;
+    --cui-muted: #a79ac4;
+    --cui-border: #382d57;
+    --cui-accent: #a78bfa;
+    --cui-accent-fg: #1c1630;
+    --cui-rest: #f28bb3;
+    --cui-hover: #2a2145;
+    --cui-popup-dot: #a78bfa;
+
+    color-scheme: dark;
+  }
+
+  /* 外层明确 light 时，系统深色不覆盖 */
+  [data-theme="light"] .cui.demo-calendar--custom[data-theme="auto"] {
+    --cui-bg: #fbf8ff;
+    --cui-fg: #2f2547;
+    --cui-muted: #8b7fa6;
+    --cui-border: #e8dfff;
+    --cui-accent: #7c3aed;
+    --cui-accent-fg: #ffffff;
+    --cui-rest: #d9467a;
+    --cui-hover: #f2ebff;
+    --cui-popup-dot: #7c3aed;
+
+    color-scheme: light;
+  }
+}
+```
+
+面板布局这类“示例外壳”CSS 不在 API 范围内，完整文件见 [示例样式源码](https://github.com/sanguo-dev/calendar/blob/master/apps/doc/src/components/demo/calendar-ui-popup.css)。
+
+## 渲染规则
+
+```ts
+render(day: CalendarDate): readonly DayPopupItem[];
+type DayPopupItem = string | Node;
+```
+
+- `render` 在创建 / 重绘时调用，返回结果会缓存，打开 popup 时不再调用；
+- 数组长度就是头部显示的「几条」，一条数据对应一项；
+- 字符串用 `textContent` 挂载，**不会解析 HTML**；
+- Node 直接 append，所以 Node 要在 `render` 里新建，不要跨日期复用同一个实例；
+- 返回空数组 → 没有绿点，点击也不会打开；
+- `render` 必须是同步纯函数，不能返回 Promise，也不要在里面发请求；数据请在 `createCalendarUI` 之前准备好。
+
+## 触发方式
+
+```ts
+trigger: "click" | "hover" | "focus" | "auto";
+```
+
+- 默认 `"click"`，点击日期时同时选中日期；
+- `"hover"` 只适合桌面端只读内容，移动端没有 hover；
+- `"auto"` 在支持 hover 的设备用 hover，触摸设备用 click；
+- `"focus"` 用于键盘聚焦；
+- 默认 click 用 `role="dialog"`，其余用 `role="tooltip"`，可用 `role` 覆盖。
+
+## 移动端
+
+- 用 `click` 或 `auto`，不要用 `hover`；
+- 窄屏可以用 `placement: "center"` 做居中弹层，或用自己的 CSS 改成底部 sheet；
+- 库已经给了 `max-height: 70vh; overflow: auto`，内容多时可以直接滚动；
+- 关闭由点击外部 / `Esc` 负责，不需要额外放关闭按钮。
+
+完整字段见 [CalendarOptions](/api/calendar-ui/CalendarOptions#calendarpopupoptions)。
