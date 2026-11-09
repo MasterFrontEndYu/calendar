@@ -2,6 +2,7 @@ import { render } from "@solidjs/testing-library";
 import { flush } from "solid-js";
 import { describe, expect, it } from "vite-plus/test";
 import CustomCalendar from "../src/components/demo/CustomCalendar";
+import CustomHeaderCalendar from "../src/components/demo/CustomHeaderCalendar";
 import CollapseCalendar from "../src/components/demo/CollapseCalendar";
 import LunarCalendar from "../src/components/demo/LunarCalendar";
 import MonthTransitionCalendar from "../src/components/demo/MonthTransitionCalendar";
@@ -45,6 +46,36 @@ describe("demo components", () => {
 
     expect(container.querySelectorAll(".cui")).toHaveLength(2);
     expect(container.querySelectorAll('.cui__day-tag[data-tone="rest"]')).not.toHaveLength(0);
+  });
+
+  it("lunar custom style is opt-in", () => {
+    const { container } = render(() => (
+      <div>
+        <LunarCalendar variant="builtin" />
+        <LunarCalendar variant="builtin" styled />
+      </div>
+    ));
+    flush();
+
+    expect(container.querySelectorAll(".cui")).toHaveLength(2);
+    expect(container.querySelectorAll(".cui--lunar-demo")).toHaveLength(1);
+  });
+
+  it("custom header replaces the default header controls", () => {
+    const { container } = render(() => <CustomHeaderCalendar />);
+    flush();
+
+    expect(container.querySelector(".demo-header")).not.toBeNull();
+    expect(container.querySelector(".cui__title")).toBeNull();
+    expect(container.textContent).toContain("2026 年 10 月");
+
+    const next = container.querySelector<HTMLButtonElement>(
+      '.demo-header-button[aria-label="下个月"]',
+    );
+    next?.click();
+    flush();
+
+    expect(container.textContent).toContain("2026 年 11 月");
   });
 
   it("custom renders a third-party adapter", () => {

@@ -1,0 +1,51 @@
+/* 自定义头部：标题居中，左右翻月，右侧一个「回到今天」 */
+.demo-header {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  padding: 0.4rem;
+  border: 1px solid rgb(127 127 127 / 20%);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgb(99 102 241 / 10%), rgb(236 72 153 / 8%));
+}
+
+.demo-header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.demo-header-button {
+  min-width: 2rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.demo-header-button:hover {
+  background: rgb(127 127 127 / 12%);
+}
+
+.demo-header-button:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 1px;
+}
+
+.demo-header-button--today {
+  padding-inline: 0.75rem;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.demo-header-button--today:hover {
+  background: #4f46e5;
+}

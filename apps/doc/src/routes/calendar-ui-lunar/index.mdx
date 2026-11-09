@@ -42,17 +42,78 @@ createCalendarLunar(container, { size: "min" });
 
 ## 自定义样式
 
-演示里的农历配色不是包自带的，而是示例给实例加了类、再覆写 CSS 变量（示例源码 `apps/doc/src/components/demo/lunar-theme.css`）：
+下面只保留这一个实例使用自定义样式，其他演示都使用默认皮肤。做法是给实例根节点加类，再覆写 CSS 变量（示例源码 `apps/doc/src/components/demo/lunar-theme.css`）：
+
+<LunarCalendar variant="builtin" styled />
 
 ```ts
 instance.el.classList.add("cui--lunar-demo");
 ```
 
 ```css
+/*
+ * 演示用：只在某个农历实例上覆盖一套「农历喜庆红」配色。
+ *
+ * 核心包只提供默认皮肤，这里演示实例级自定义样式的做法：
+ *   instance.el.classList.add("cui--lunar-demo");
+ *
+ * 颜色全部是 CSS 变量，覆写后 light / dark / auto 仍然生效。
+ */
 .cui.cui--lunar-demo {
   --cui-bg: #fffbf9;
+  --cui-fg: #43302e;
+  --cui-muted: #a68c87;
+  --cui-border: #f2ded9;
   --cui-accent: #c86055;
+  --cui-accent-fg: #fffdfc;
   --cui-rest: #c94f45;
+  --cui-hover: #fbefec;
+  --cui-radius: 12px;
+}
+
+/* 显式深色，或外层 data-theme="dark" 时跟随 */
+.cui.cui--lunar-demo[data-theme="dark"],
+[data-theme="dark"] .cui.cui--lunar-demo[data-theme="auto"] {
+  --cui-bg: #1b1413;
+  --cui-fg: #f3e6e3;
+  --cui-muted: #a98f8a;
+  --cui-border: #3a2b29;
+  --cui-accent: #e28277;
+  --cui-accent-fg: #2a1210;
+  --cui-rest: #ef8d83;
+  --cui-hover: #2a1e1d;
+
+  color-scheme: dark;
+}
+
+/* auto 跟随系统 */
+@media (prefers-color-scheme: dark) {
+  .cui.cui--lunar-demo[data-theme="auto"] {
+    --cui-bg: #1b1413;
+    --cui-fg: #f3e6e3;
+    --cui-muted: #a98f8a;
+    --cui-border: #3a2b29;
+    --cui-accent: #e28277;
+    --cui-accent-fg: #2a1210;
+    --cui-rest: #ef8d83;
+    --cui-hover: #2a1e1d;
+
+    color-scheme: dark;
+  }
+
+  /* 外层明确 light 时，系统深色不覆盖 */
+  [data-theme="light"] .cui.cui--lunar-demo[data-theme="auto"] {
+    --cui-bg: #fffbf9;
+    --cui-fg: #43302e;
+    --cui-muted: #a68c87;
+    --cui-border: #f2ded9;
+    --cui-accent: #c86055;
+    --cui-accent-fg: #fffdfc;
+    --cui-rest: #c94f45;
+    --cui-hover: #fbefec;
+
+    color-scheme: light;
+  }
 }
 ```
 

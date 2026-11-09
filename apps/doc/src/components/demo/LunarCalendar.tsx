@@ -8,6 +8,8 @@ import "./demo.css";
 export interface LunarCalendarProps {
   variant?: "builtin" | "custom";
   size?: CalendarSize;
+  /** 是否应用示例里的农历自定义样式 */
+  styled?: boolean;
 }
 
 const CUSTOM_HOLIDAYS = {
@@ -35,8 +37,8 @@ export default function LunarCalendar(props: LunarCalendarProps) {
       },
     });
 
-    // 演示实例级自定义样式：给根节点加自己的类，配色写在 lunar-theme.css
-    instance.el.classList.add("cui--lunar-demo");
+    // 只有示例用的自定义样式实例才加这个类；其他实例保持默认皮肤
+    if (props.styled) instance.el.classList.add("cui--lunar-demo");
 
     return () => instance.destroy();
   });

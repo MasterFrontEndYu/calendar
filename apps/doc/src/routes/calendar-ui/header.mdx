@@ -1,0 +1,138 @@
+---
+title: 自定义头部
+---
+
+import CustomHeaderCalendar from "../../components/demo/CustomHeaderCalendar";
+
+# 自定义头部
+
+`renderHeader` 会替换默认的「‹ 年 月 ›」头部。下面这个实例改成了单行胶囊布局：左右翻月、居中标题、右侧「回到今天」。
+
+因为自定义头部不再包含年份 / 月份按钮，所以它的实例不会出现年月选择层。
+
+<CustomHeaderCalendar />
+
+## 组件代码
+
+```tsx
+import { createSignal, onSettled } from "solid-js";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import type { CalendarInstance, HeaderRenderer } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
+import "./custom-header.css";
+import "./demo.css";
+
+const createHeaderButton = function (
+  text: string,
+  label: string,
+  onClick: () => void,
+): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "demo-header-button";
+  button.textContent = text;
+  button.setAttribute("aria-label", label);
+  button.addEventListener("click", onClick);
+  return button;
+};
+
+export default function CustomHeaderCalendar() {
+  let host: HTMLDivElement | undefined;
+  let instance: CalendarInstance | undefined;
+  const [picked, setPicked] = createSignal("点一个日期看看");
+
+  const renderHeader: HeaderRenderer = (context) => {
+    const { year, month, locale } = context;
+    const header = document.createElement("div");
+    header.className = "demo-header";
+
+    const prev = createHeaderButton("‹", locale.prevMonth, () => context.prevMonth());
+    const next = createHeaderButton("›", locale.nextMonth, () => context.nextMonth());
+    const today = createHeaderButton("回到今天", "回到今天", () => {
+      instance?.select(new Date());
+    });
+    today.classList.add("demo-header-button--today");
+
+    const title = document.createElement("div");
+    title.className = "demo-header-title";
+    title.textContent = locale.monthTitle(year, month);
+
+    header.append(prev, title, today, next);
+    return header;
+  };
+
+  onSettled(() => {
+    if (!host) return;
+
+    instance = createCalendarUI(host, {
+      initialDate: "2026-10-15",
+      renderHeader,
+      onSelect: (day) => setPicked(`${day.year}-${day.month}-${day.day}`),
+    });
+
+    return () => instance?.destroy();
+  });
+
+  return (
+    <div class="demo-calendar">
+      <div ref={(el) => (host = el)} />
+      <p class="demo-result">选中：{picked()}</p>
+    </div>
+  );
+}
+```
+
+## 样式代码
+
+```css
+.demo-header {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  padding: 0.4rem;
+  border: 1px solid rgb(127 127 127 / 20%);
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgb(99 102 241 / 10%), rgb(236 72 153 / 8%));
+}
+
+.demo-header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.demo-header-button {
+  min-width: 2rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.demo-header-button:hover {
+  background: rgb(127 127 127 / 12%);
+}
+
+.demo-header-button:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 1px;
+}
+
+.demo-header-button--today {
+  padding-inline: 0.75rem;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.demo-header-button--today:hover {
+  background: #4f46e5;
+}
+```
