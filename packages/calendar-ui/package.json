@@ -1,6 +1,6 @@
 {
   "name": "@sanguo-dev/calendar-ui",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "纯 DOM、零依赖的公历日历核心，支持范围选择、折叠、主题和适配器",
   "keywords": [
     "calendar",

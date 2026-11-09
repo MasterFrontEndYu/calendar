@@ -1,5 +1,14 @@
 # @sanguo-dev/calendar-ui-lunar
 
+## 0.0.5
+
+### Patch Changes
+
+- 修改模板，保持与calendar-ui 同步
+- 添加文档api
+- Updated dependencies
+  - @sanguo-dev/calendar-ui@0.0.5
+
 ## 0.0.4
 
 ### Patch Changes
