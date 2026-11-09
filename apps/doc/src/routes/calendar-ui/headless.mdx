@@ -1,0 +1,39 @@
+---
+title: 无头日历
+---
+
+import CalendarUIHeadless from "../../components/demo/calendar-ui-headless";
+
+# 无头日历
+
+`header: false` 会去掉「‹ 年 月 ›」头部，只留下星期和日期网格；标题、翻月按钮和月份选择层全部交给外部 UI。
+
+<CalendarUIHeadless />
+
+```ts
+const calendar = createCalendarUI(container, {
+  initialDate: "2026-10-01",
+  header: false,
+  onSelect: (day) => console.log(day.year, day.month, day.day),
+});
+
+// 头部已隐藏，用实例方法控制月份
+calendar.prevMonth();
+calendar.nextMonth();
+calendar.setMonth(2026, 12);
+```
+
+- 头部节点仍然存在，只是被 `hidden`，`showHeader()` 可以临时显示；
+- 选择层和翻月按钮随头部一起隐藏，选中、范围、折叠等能力不变；
+- 需要同步外部标题时用 `onMonthChange` 或 `getMonth()`。
+
+```ts
+const title = document.querySelector<HTMLElement>(".my-title")!;
+
+const calendar = createCalendarUI(container, {
+  header: false,
+  onMonthChange: (year, month) => {
+    title.textContent = `${year} 年 ${month} 月`;
+  },
+});
+```

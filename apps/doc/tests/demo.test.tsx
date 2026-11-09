@@ -2,6 +2,7 @@ import { render } from "@solidjs/testing-library";
 import { flush } from "solid-js";
 import { describe, expect, it } from "vite-plus/test";
 import CalendarUICustom from "../src/components/demo/calendar-ui-custom";
+import CalendarUIHeadless from "../src/components/demo/calendar-ui-headless";
 import CalendarUIHeader from "../src/components/demo/calendar-ui-header";
 import CalendarUICollapse from "../src/components/demo/calendar-ui-collapse";
 import CalendarUILunarIndex from "../src/components/demo/calendar-ui-lunar-index";
@@ -98,6 +99,15 @@ describe("demo components", () => {
     container.querySelectorAll<HTMLButtonElement>(".cui__picker-cell")[2]?.click();
     flush();
     expect(container.textContent).toContain("3 月");
+  });
+
+  it("headless renders without a visible header", () => {
+    const { container } = render(() => <CalendarUIHeadless />);
+    flush();
+
+    expect(container.querySelectorAll(".cui")).toHaveLength(1);
+    expect(container.querySelector<HTMLElement>(".cui__header")?.hidden).toBe(true);
+    expect(container.querySelectorAll(".cui__day")).toHaveLength(42);
   });
 
   it("custom renders a third-party adapter", () => {

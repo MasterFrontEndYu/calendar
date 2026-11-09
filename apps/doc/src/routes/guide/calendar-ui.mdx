@@ -184,7 +184,8 @@ createCalendarUI(container, { size: "fill" }); // 跟随容器宽度
 - 点年份：12 年一页，头部两侧出现翻页按钮，按 12 年翻页；选完只改年份并立即关闭；
 - 同一个按钮再点一次、点击外部或按 `Esc` 关闭；
 - `minDate` / `maxDate` 之外的月份和年份自动禁用，整页越界时翻页按钮也禁用；
-- 自定义头部可通过 `toggleYearPicker` / `toggleMonthPicker` 打开同一个选择层，并用 `prevDisabled` / `nextDisabled` / `pickerMode` 同步头部状态，示例见 [自定义头部](/calendar-ui/header)。
+- 自定义头部可通过 `toggleYearPicker` / `toggleMonthPicker` 打开同一个选择层，并用 `prevDisabled` / `nextDisabled` / `pickerMode` 同步头部状态，示例见 [自定义头部](/calendar-ui/header)；
+- 完全不需要头部时传 `header: false`，用实例方法或外部按钮控制月份，示例见 [无头日历](/calendar-ui/headless)。
 
 ## 动画
 

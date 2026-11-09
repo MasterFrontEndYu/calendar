@@ -105,6 +105,7 @@ export default defineConfig(({ command }) => {
                   { title: "范围选择", link: "/range" },
                   { title: "折叠", link: "/collapse" },
                   { title: "自定义头部", link: "/header" },
+                  { title: "无头日历", link: "/headless" },
                   { title: "第三方适配器", link: "/custom" },
                 ],
               },
