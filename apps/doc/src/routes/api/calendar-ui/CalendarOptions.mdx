@@ -82,7 +82,7 @@ interface CalendarOptions<TData = null> {
 | `role`      | `"dialog" \| "tooltip"`                          | click 为 dialog，其余 tooltip | popup 的 ARIA role                            |
 | `ariaLabel` | `string`                                         | -                             | popup 根节点的 `aria-label`                   |
 
-`DayPopupItem = string | Node`：字符串按纯文本挂载，Node 直接 append。`render(day)` 在创建 / 重绘时调用，返回结果会缓存；数组长度就是弹层头部显示的条数，`render` 必须是同步纯函数。
+`DayPopupItem = readonly [time?: string, title?: string, detail?: string] | Node`：三元组生成默认 title / detail 结构，字段省略就不渲染；Node 直接 append。`render(day)` 在创建 / 重绘时调用，返回结果会缓存；数组长度就是弹层头部显示的条数，`render` 必须是同步纯函数。
 
 完整示例和样式写法见 [日期格 popup](/calendar-ui/popup)。
 

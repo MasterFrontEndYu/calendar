@@ -25,11 +25,12 @@ import CalendarUIPopup from "../../components/demo/calendar-ui-popup";
 
 ## 示例一：系统 UI（点击触发）
 
-这个示例只 import `@sanguo-dev/calendar-ui/style.css`，不写任何 popup 皮肤。`render` 返回字符串数组：
+这个示例只 import `@sanguo-dev/calendar-ui/style.css`，不写任何 popup 皮肤。`render` 每项返回 `[time, title, detail]` 三个字符串，库生成默认结构：
 
 - `.cui__popup` 默认卡片：背景、边框、圆角、阴影、内边距；
 - `.cui__popup-head`：自动显示「10 月 1 日 · 2 条」；
-- `.cui__popup-item` 里的 `.cui__popup-title`：每个字符串的默认 12px 排版；
+- `.cui__popup-title`：包含 `.cui__popup-time` 和 `.cui__popup-name`；
+- `.cui__popup-detail`：detail 独占一行，12px；
 - `.cui__popup-body` / `.cui__popup-item`：内容容器和每一层之间的分隔线。
 
 ```tsx
@@ -68,9 +69,9 @@ const entriesOf = function (day: CalendarDate): readonly PopupEntry[] {
   return POPUPS[keyOf(day)] ?? [];
 };
 
-/** 系统 UI：一条数据返回一个字符串，交给库的默认弹层样式 */
-const render = function (day: CalendarDate): string[] {
-  return entriesOf(day).map((entry) => `${entry.time} · ${entry.title}：${entry.detail}`);
+/** 系统 UI：每项返回 [time, title, detail] 三个字符串，由库生成默认结构 */
+const render = function (day: CalendarDate) {
+  return entriesOf(day).map((entry) => [entry.time, entry.title, entry.detail] as const);
 };
 
 export default function CalendarUIPopupDefault() {
@@ -98,8 +99,8 @@ export default function CalendarUIPopupDefault() {
       <header class="demo-popup-panel-head">
         <h3>系统 UI · 点击触发</h3>
         <p>
-          <code>render</code> 返回字符串数组，直接用库的默认弹层样式；绿点和「日期 ·
-          条数」由库内部算。
+          <code>render</code> 每项返回 <code>[time, title, detail]</code> 三个字符串，库生成默认的
+          title / detail 结构。
         </p>
       </header>
       <div ref={(el) => (host = el)} />
@@ -111,7 +112,7 @@ export default function CalendarUIPopupDefault() {
 
 ## 示例二：自定义 UI（悬停触发）
 
-这个示例用另一份数据、另一个 `render`：返回 Node 数组，外层用自己的类名，内部复用库的 title / time / detail 结构。库仍然自动加「日期 · 条数」头部，但容器外观由下面的 CSS 改掉。
+这个示例用另一份数据、另一个 `render`：返回 Node 数组，自己画一条时间轴，结构、类名、样式都和默认 UI 不同。库仍然自动加「日期 · 条数」头部，但头部和容器外观也由下面的 CSS 改掉。
 
 ```tsx
 import { createSignal, onSettled } from "solid-js";
@@ -150,28 +151,24 @@ const entriesOf = function (day: CalendarDate): readonly PopupEntry[] {
   return POPUPS[keyOf(day)] ?? [];
 };
 
-/** 自定义 UI：一条数据返回一个带自己类名的 Node */
+/** 自定义 UI：一条数据返回一个完全自定义的 timeline 节点 */
 const createRow = function (entry: PopupEntry): HTMLElement {
   const row = document.createElement("article");
-  row.className = "demo-popup-row";
+  row.className = "demo-popup-event";
 
-  const title = document.createElement("div");
-  title.className = "demo-popup-title";
-
-  const time = document.createElement("span");
-  time.className = "demo-popup-time";
+  const time = document.createElement("time");
+  time.className = "demo-popup-event-time";
   time.textContent = entry.time;
 
-  const name = document.createElement("strong");
-  name.textContent = entry.title;
+  const title = document.createElement("strong");
+  title.className = "demo-popup-event-title";
+  title.textContent = entry.title;
 
-  title.append(time, name);
-
-  const detail = document.createElement("span");
-  detail.className = "demo-popup-detail";
+  const detail = document.createElement("p");
+  detail.className = "demo-popup-event-detail";
   detail.textContent = entry.detail;
 
-  row.append(title, detail);
+  row.append(time, title, detail);
   return row;
 };
 
@@ -219,75 +216,93 @@ export default function CalendarUIPopupCustom() {
 
 ## 自定义 CSS
 
-示例用 `:has(.demo-popup-row)` 只在自定义内容出现时覆盖默认卡片，所以两个实例互不影响：
+示例用 `:has(.demo-popup-event)` 只在自定义内容出现时覆盖默认卡片，所以两个实例互不影响：
 
 ```css
-/* 有自定义内容时，去掉默认卡片的外观，改成头部 + 内容两块 */
-.cui__popup:has(.demo-popup-row) {
-  min-width: 240px;
-  max-width: min(340px, calc(100vw - 16px));
+.cui__popup:has(.demo-popup-event) {
+  min-width: 280px;
+  max-width: min(360px, calc(100vw - 16px));
   padding: 0;
-  border: 0;
-  border-radius: 16px;
-  background: transparent;
-  box-shadow: none;
-  overflow: visible;
+  border: 1px solid rgb(124 58 237 / 40%);
+  border-radius: 18px;
+  background:
+    radial-gradient(140% 120% at 0% 0%, rgb(124 58 237 / 18%), transparent 55%), var(--cui-bg);
+  box-shadow: 0 24px 60px rgb(30 10 60 / 35%);
+  overflow: hidden;
 }
 
-.cui__popup:has(.demo-popup-row) .cui__popup-head {
+.cui__popup:has(.demo-popup-event) .cui__popup-head {
   margin: 0;
-  padding: 10px 14px;
-  border-radius: 14px 14px 0 0;
-  background: linear-gradient(135deg, #7c3aed, #a855f7);
-  color: #fff;
-  font-size: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(124 58 237 / 20%);
+  background: rgb(124 58 237 / 10%);
+  color: var(--cui-accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.cui__popup:has(.demo-popup-event) .cui__popup-body {
+  padding: 14px 16px 16px;
+}
+
+.cui__popup:has(.demo-popup-event) .cui__popup-item + .cui__popup-item {
+  margin-top: 12px;
+}
+
+.demo-popup-event {
+  position: relative;
+  padding-left: 18px;
+}
+
+/* 时间轴竖线和圆点 */
+.demo-popup-event::before {
+  position: absolute;
+  top: 5px;
+  bottom: -12px;
+  left: 3px;
+  width: 1px;
+  background: rgb(124 58 237 / 26%);
+  content: "";
+}
+
+.demo-popup-event::after {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cui-accent);
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 16%);
+  content: "";
+}
+
+.cui__popup-item:last-child .demo-popup-event::before {
+  display: none;
+}
+
+.demo-popup-event-time {
+  display: block;
+  color: var(--cui-accent);
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
 }
 
-.cui__popup:has(.demo-popup-row) .cui__popup-body {
-  padding: 10px 14px 12px;
-  border: 1px solid rgb(124 58 237 / 32%);
-  border-top: 0;
-  border-radius: 0 0 14px 14px;
-  background: var(--cui-bg);
-  box-shadow: 0 18px 44px rgb(76 29 149 / 22%);
-}
-
-.cui__popup:has(.demo-popup-row) .cui__popup-item + .cui__popup-item {
-  margin-top: 9px;
-  padding-top: 9px;
-  border-top: 1px solid rgb(124 58 237 / 16%);
-}
-
-.demo-popup-row {
+.demo-popup-event-title {
   display: block;
-}
-
-.demo-popup-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  margin-top: 2px;
+  color: var(--cui-fg);
+  font-size: 14px;
   font-weight: 600;
 }
 
-.demo-popup-time {
-  flex: none;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: rgb(124 58 237 / 12%);
-  color: var(--cui-accent);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.7;
-}
-
-.demo-popup-detail {
-  display: block;
-  margin-top: 3px;
+.demo-popup-event-detail {
+  margin: 3px 0 0;
   color: var(--cui-muted);
   font-size: 12px;
+  line-height: 1.5;
 }
 ```
 
@@ -328,14 +343,15 @@ export default function CalendarUIPopupCustom() {
 
 ```ts
 render(day: CalendarDate): readonly DayPopupItem[];
-type DayPopupItem = string | Node;
+type DayPopupStringItem = readonly [time?: string, title?: string, detail?: string];
+type DayPopupItem = DayPopupStringItem | Node;
 ```
 
 - `render` 在创建 / 重绘时调用，返回结果会缓存，打开 popup 时不再调用；
 - 数组长度就是头部显示的「几条」，一条数据对应一项；
-- `string[]`、`Node[]` 或两者混合都支持；字符串会被放进 `.cui__popup-item > .cui__popup-title`，用 `textContent` 挂载，**不会解析 HTML**；
-- Node 由库包进 `.cui__popup-item`，内部结构和类名完全由使用方决定；
-- Node 直接 append，所以 Node 要在 `render` 里新建，不要跨日期复用同一个实例；
+- 默认项是 `[time, title, detail]`，库生成 `.cui__popup-title`（`.cui__popup-time` + `.cui__popup-name`）和 `.cui__popup-detail`；
+- 字段可以省略或传空字符串，对应 UI 不渲染；三个字段都为空时这一项直接忽略；
+- `Node`：库只包一层 `.cui__popup-item`，内部结构和类名完全由使用方决定；Node 要在 `render` 里新建，不要跨日期复用同一个实例；
 - 返回空数组 → 没有绿点，点击也不会打开；
 - `render` 必须是同步纯函数，不能返回 Promise，也不要在里面发请求；数据请在 `createCalendarUI` 之前准备好。
 

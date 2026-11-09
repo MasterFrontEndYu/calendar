@@ -34,28 +34,24 @@ const entriesOf = function (day: CalendarDate): readonly PopupEntry[] {
   return POPUPS[keyOf(day)] ?? [];
 };
 
-/** 自定义 UI：一条数据返回一个带自己类名的 Node */
+/** 自定义 UI：一条数据返回一个完全自定义的 timeline 节点 */
 const createRow = function (entry: PopupEntry): HTMLElement {
   const row = document.createElement("article");
-  row.className = "demo-popup-row";
+  row.className = "demo-popup-event";
 
-  const title = document.createElement("div");
-  title.className = "demo-popup-title";
-
-  const time = document.createElement("span");
-  time.className = "demo-popup-time";
+  const time = document.createElement("time");
+  time.className = "demo-popup-event-time";
   time.textContent = entry.time;
 
-  const name = document.createElement("strong");
-  name.textContent = entry.title;
+  const title = document.createElement("strong");
+  title.className = "demo-popup-event-title";
+  title.textContent = entry.title;
 
-  title.append(time, name);
-
-  const detail = document.createElement("span");
-  detail.className = "demo-popup-detail";
+  const detail = document.createElement("p");
+  detail.className = "demo-popup-event-detail";
   detail.textContent = entry.detail;
 
-  row.append(title, detail);
+  row.append(time, title, detail);
   return row;
 };
 

@@ -806,9 +806,29 @@
   letter-spacing: 0.02em;
 }
 
-/* 字符串内容统一放进 title 层，保持 12px 的默认排版 */
+/* 字符串项和 [time, title, detail] 项共用的默认排版 */
 .cui__popup-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.cui__popup-time {
+  flex: none;
+  color: var(--cui-muted, #8b949e);
+  font-size: 12px;
+}
+
+.cui__popup-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.cui__popup-detail {
   display: block;
+  margin-top: 2px;
+  color: var(--cui-muted, #8b949e);
   font-size: 12px;
 }
 

@@ -20,6 +20,7 @@ export type {
   DayDecoration,
   DayPopupItem,
   DayPopupPlacement,
+  DayPopupStringItem,
   DayPopupTrigger,
   HeaderRenderContext,
   HeaderRenderer,

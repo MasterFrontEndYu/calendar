@@ -161,8 +161,11 @@ export interface CalendarDay<TData = null> extends CalendarDate {
   ariaLabel: string;
 }
 
-/** popup 里的单项内容：字符串按文本，Node 直接挂载 */
-export type DayPopupItem = string | Node;
+/** popup 的默认项：[time, title, detail]，字段可以省略，省略就不渲染对应 UI */
+export type DayPopupStringItem = readonly [time?: string, title?: string, detail?: string];
+
+/** popup 里的单项内容：默认字符串项或自定义 Node */
+export type DayPopupItem = DayPopupStringItem | Node;
 
 /** popup 的触发方式 */
 export type DayPopupTrigger = "click" | "hover" | "focus" | "auto";
@@ -184,7 +187,10 @@ export interface CalendarPopupOptions {
   /**
    * 返回这一天的 popup 内容；空数组表示这一天没有 popup，也不显示绿点
    *
-   * 数组里每一项是一层内容：字符串按纯文本挂载，Node 直接挂载。
+   * 数组里每一项是：
+   * - `[time, title, detail]`：用库的默认 title / detail 结构，字段可省略；
+   * - `Node`：完全由使用方决定结构。
+   *
    * 库在创建 / 重绘时调用 `render(day)` 计算绿点，并把结果缓存到打开时使用；
    * 所以数据要在创建日历前准备好，`render` 必须是同步纯函数。
    */

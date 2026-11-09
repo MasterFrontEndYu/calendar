@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import type { CalendarDate, CalendarInstance, CalendarPopupOptions } from "../src/index.ts";
+import type {
+  CalendarDate,
+  CalendarInstance,
+  CalendarPopupOptions,
+  DayPopupItem,
+} from "../src/index.ts";
 import { createCalendarUI } from "../src/index.ts";
 
 const cleanups: Array<() => void> = [];
@@ -50,8 +55,10 @@ const itemsOf = function (): string[] {
 };
 
 /** 只有 10 月 1 日、5 日有数据 */
-const sharedRender = function (day: CalendarDate): string[] {
-  return day.month === 10 && (day.day === 1 || day.day === 5) ? [`${day.day} 号的内容`] : [];
+const sharedRender = function (day: CalendarDate): readonly DayPopupItem[] {
+  return day.month === 10 && (day.day === 1 || day.day === 5)
+    ? [["全天", `${day.day} 号`, "内容"]]
+    : [];
 };
 
 describe("日期格 popup", () => {
@@ -71,48 +78,106 @@ describe("日期格 popup", () => {
 
   it("点击打开，头部显示日期和条数，内容按数组顺序渲染", () => {
     const instance = create({
-      render: (day) => (day.month === 10 && day.day === 1 ? ["第一层", "第二层", "第三层"] : []),
+      render: (day) =>
+        day.month === 10 && day.day === 1
+          ? [
+              ["全天", "国庆节", "10 月 1 日 - 7 日放假"],
+              ["10:00", "升旗仪式", "广场集合，提前 10 分钟到场"],
+            ]
+          : [],
     });
 
     cellOf(instance.el, "2026-10-1").click();
 
     const popup = popupOf();
     expect(popup.hidden).toBe(false);
-    expect(popup.querySelector(".cui__popup-head")?.textContent).toBe("10 月 1 日 · 3 条");
-    expect(itemsOf()).toEqual(["第一层", "第二层", "第三层"]);
+    expect(popup.querySelector(".cui__popup-head")?.textContent).toBe("10 月 1 日 · 2 条");
+    expect(itemsOf()).toEqual([
+      "全天国庆节10 月 1 日 - 7 日放假",
+      "10:00升旗仪式广场集合，提前 10 分钟到场",
+    ]);
     expect(popup.getAttribute("role")).toBe("dialog");
     expect(cellOf(instance.el, "2026-10-1").getAttribute("aria-expanded")).toBe("true");
   });
 
-  it("字符串数组和 Node 数组都在内部处理，混合也可以", () => {
+  it("[time, title, detail] 生成默认 title / detail 结构", () => {
+    const instance = create({
+      render: (day) =>
+        day.month === 10 && day.day === 1 ? [["全天", "国庆节", "10 月 1 日 - 7 日放假"]] : [],
+    });
+
+    cellOf(instance.el, "2026-10-1").click();
+
+    expect(popupOf().querySelector(".cui__popup-head")?.textContent).toBe("10 月 1 日 · 1 条");
+    expect(popupOf().querySelector(".cui__popup-time")?.textContent).toBe("全天");
+    expect(popupOf().querySelector(".cui__popup-name")?.textContent).toBe("国庆节");
+    expect(popupOf().querySelector(".cui__popup-detail")?.textContent).toBe(
+      "10 月 1 日 - 7 日放假",
+    );
+  });
+
+  it("省略字段时不渲染对应 UI", () => {
+    const instance = create({
+      render: (day) =>
+        day.month === 10 && day.day === 1
+          ? [
+              ["全天", "国庆节"],
+              [undefined, "只有标题", "只有详情"],
+            ]
+          : [],
+    });
+
+    cellOf(instance.el, "2026-10-1").click();
+
+    const items = popupOf().querySelectorAll(".cui__popup-item");
+    expect(items).toHaveLength(2);
+    expect(items[0]?.querySelector(".cui__popup-detail")).toBeNull();
+    expect(items[1]?.querySelector(".cui__popup-time")).toBeNull();
+    expect(items[1]?.querySelector(".cui__popup-detail")?.textContent).toBe("只有详情");
+  });
+
+  it("空三元组不显示绿点，点击也不弹", () => {
+    const instance = create({ render: () => [["", "", ""]] });
+
+    expect(dotOf(instance.el, "2026-10-1").hidden).toBe(true);
+
+    cellOf(instance.el, "2026-10-1").click();
+    expect(popupOf().hidden).toBe(true);
+  });
+
+  it("三元组和 Node 可以混合，Node 原样挂载", () => {
     const node = document.createElement("div");
     node.textContent = "节点内容";
     const instance = create({
-      render: (day) => (day.month === 10 && day.day === 1 ? ["字符串", node] : []),
+      render: (day) =>
+        day.month === 10 && day.day === 1 ? [["全天", "国庆节", "放假"], node] : [],
     });
 
     cellOf(instance.el, "2026-10-1").click();
 
     expect(popupOf().querySelector(".cui__popup-head")?.textContent).toBe("10 月 1 日 · 2 条");
-    expect(itemsOf()).toEqual(["字符串", "节点内容"]);
+    expect(itemsOf()).toEqual(["全天国庆节放假", "节点内容"]);
     expect(popupOf().contains(node)).toBe(true);
   });
 
-  it("字符串按纯文本挂载，不解析 HTML", () => {
+  it("字段按纯文本挂载，不解析 HTML", () => {
     const instance = create({
-      render: (day) => (day.month === 10 && day.day === 1 ? ["<b>不是标签</b>"] : []),
+      render: (day) =>
+        day.month === 10 && day.day === 1
+          ? [["<b>全天</b>", "<b>不是标签</b>", "<b>详情</b>"]]
+          : [],
     });
 
     cellOf(instance.el, "2026-10-1").click();
 
-    expect(popupOf().querySelector(".cui__popup-title")?.textContent).toBe("<b>不是标签</b>");
-    expect(popupOf().querySelector(".cui__popup-item")?.textContent).toBe("<b>不是标签</b>");
+    expect(popupOf().querySelector(".cui__popup-time")?.textContent).toBe("<b>全天</b>");
+    expect(popupOf().querySelector(".cui__popup-name")?.textContent).toBe("<b>不是标签</b>");
     expect(popupOf().querySelector(".cui__popup-item b")).toBeNull();
   });
 
   it("render 只在创建 / 重绘时调用，打开 popup 复用缓存", () => {
-    const render = vi.fn((day: CalendarDate) =>
-      day.month === 10 && day.day === 1 ? ["缓存内容"] : [],
+    const render = vi.fn((day: CalendarDate): readonly DayPopupItem[] =>
+      day.month === 10 && day.day === 1 ? [["全天", "缓存内容", "详情"]] : [],
     );
     const instance = create({ render });
     const callsBeforeOpen = render.mock.calls.filter(
@@ -125,7 +190,7 @@ describe("日期格 popup", () => {
 
     expect(callsBeforeOpen).toBe(1);
     expect(render.mock.calls.filter(([day]) => day.month === 10 && day.day === 1)).toHaveLength(1);
-    expect(itemsOf()).toEqual(["缓存内容"]);
+    expect(itemsOf()).toEqual(["全天缓存内容详情"]);
   });
 
   it("返回空数组的日期没有绿点，点击也不弹", () => {
@@ -140,7 +205,7 @@ describe("日期格 popup", () => {
   it("hover 触发用 tooltip 语义", () => {
     const instance = create({
       trigger: "hover",
-      render: (day) => (day.month === 10 && day.day === 1 ? ["悬浮"] : []),
+      render: (day) => (day.month === 10 && day.day === 1 ? [["全天", "悬浮", "详情"]] : []),
     });
 
     cellOf(instance.el, "2026-10-1").dispatchEvent(
@@ -182,7 +247,14 @@ describe("日期格 popup", () => {
     cleanups.pop()?.();
     document.body.innerHTML = "";
 
-    expect(() => create({ render: () => [42 as unknown as string] })).toThrow(TypeError);
+    expect(() => create({ render: () => ["字符串"] as unknown as [] })).toThrow(TypeError);
+
+    cleanups.pop()?.();
+    document.body.innerHTML = "";
+
+    expect(() => create({ render: () => [["a", "b", "c", "d"]] as unknown as [] })).toThrow(
+      TypeError,
+    );
   });
 
   it("销毁实例时移除 popup", () => {

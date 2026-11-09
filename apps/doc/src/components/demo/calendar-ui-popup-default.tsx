@@ -33,9 +33,9 @@ const entriesOf = function (day: CalendarDate): readonly PopupEntry[] {
   return POPUPS[keyOf(day)] ?? [];
 };
 
-/** 系统 UI：一条数据返回一个字符串，交给库的默认弹层样式 */
-const render = function (day: CalendarDate): string[] {
-  return entriesOf(day).map((entry) => `${entry.time} · ${entry.title}：${entry.detail}`);
+/** 系统 UI：每项返回 [time, title, detail] 三个字符串，由库生成默认结构 */
+const render = function (day: CalendarDate) {
+  return entriesOf(day).map((entry) => [entry.time, entry.title, entry.detail] as const);
 };
 
 export default function CalendarUIPopupDefault() {
@@ -63,8 +63,8 @@ export default function CalendarUIPopupDefault() {
       <header class="demo-popup-panel-head">
         <h3>系统 UI · 点击触发</h3>
         <p>
-          <code>render</code> 返回字符串数组，直接用库的默认弹层样式；绿点和「日期 ·
-          条数」由库内部算。
+          <code>render</code> 每项返回 <code>[time, title, detail]</code> 三个字符串，库生成默认的
+          title / detail 结构。
         </p>
       </header>
       <div ref={(el) => (host = el)} />

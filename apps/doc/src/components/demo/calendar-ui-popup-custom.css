@@ -1,7 +1,7 @@
 /*
  * 自定义 UI 示例的全部样式：
  * - 日历换肤：.demo-calendar--custom
- * - 弹层内容：.demo-popup-row 等
+ * - 弹层内容：.demo-popup-event 时间轴
  * - 用 :has() 只在自定义内容出现时覆盖默认 .cui__popup 卡片
  */
 
@@ -64,72 +64,90 @@
   }
 }
 
-/* ---------- 弹层内容 ---------- */
+/* ---------- 弹层内容：时间轴，不是默认的 title + detail 行 ---------- */
 
-/* 有自定义内容时，去掉默认卡片的外观，改成头部 + 内容两块 */
-.cui__popup:has(.demo-popup-row) {
-  min-width: 240px;
-  max-width: min(340px, calc(100vw - 16px));
+.cui__popup:has(.demo-popup-event) {
+  min-width: 280px;
+  max-width: min(360px, calc(100vw - 16px));
   padding: 0;
-  border: 0;
-  border-radius: 16px;
-  background: transparent;
-  box-shadow: none;
-  overflow: visible;
+  border: 1px solid rgb(124 58 237 / 40%);
+  border-radius: 18px;
+  background:
+    radial-gradient(140% 120% at 0% 0%, rgb(124 58 237 / 18%), transparent 55%), var(--cui-bg);
+  box-shadow: 0 24px 60px rgb(30 10 60 / 35%);
+  overflow: hidden;
 }
 
-.cui__popup:has(.demo-popup-row) .cui__popup-head {
+.cui__popup:has(.demo-popup-event) .cui__popup-head {
   margin: 0;
-  padding: 10px 14px;
-  border-radius: 14px 14px 0 0;
-  background: linear-gradient(135deg, #7c3aed, #a855f7);
-  color: #fff;
-  font-size: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(124 58 237 / 20%);
+  background: rgb(124 58 237 / 10%);
+  color: var(--cui-accent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.cui__popup:has(.demo-popup-event) .cui__popup-body {
+  padding: 14px 16px 16px;
+}
+
+.cui__popup:has(.demo-popup-event) .cui__popup-item + .cui__popup-item {
+  margin-top: 12px;
+}
+
+.demo-popup-event {
+  position: relative;
+  padding-left: 18px;
+}
+
+/* 时间轴竖线和圆点 */
+.demo-popup-event::before {
+  position: absolute;
+  top: 5px;
+  bottom: -12px;
+  left: 3px;
+  width: 1px;
+  background: rgb(124 58 237 / 26%);
+  content: "";
+}
+
+.demo-popup-event::after {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cui-accent);
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 16%);
+  content: "";
+}
+
+.cui__popup-item:last-child .demo-popup-event::before {
+  display: none;
+}
+
+.demo-popup-event-time {
+  display: block;
+  color: var(--cui-accent);
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
 }
 
-.cui__popup:has(.demo-popup-row) .cui__popup-body {
-  padding: 10px 14px 12px;
-  border: 1px solid rgb(124 58 237 / 32%);
-  border-top: 0;
-  border-radius: 0 0 14px 14px;
-  background: var(--cui-bg);
-  box-shadow: 0 18px 44px rgb(76 29 149 / 22%);
-}
-
-.cui__popup:has(.demo-popup-row) .cui__popup-item + .cui__popup-item {
-  margin-top: 9px;
-  padding-top: 9px;
-  border-top: 1px solid rgb(124 58 237 / 16%);
-}
-
-.demo-popup-row {
+.demo-popup-event-title {
   display: block;
-}
-
-.demo-popup-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  margin-top: 2px;
+  color: var(--cui-fg);
+  font-size: 14px;
   font-weight: 600;
 }
 
-.demo-popup-time {
-  flex: none;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: rgb(124 58 237 / 12%);
-  color: var(--cui-accent);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.7;
-}
-
-.demo-popup-detail {
-  display: block;
-  margin-top: 3px;
+.demo-popup-event-detail {
+  margin: 3px 0 0;
   color: var(--cui-muted);
   font-size: 12px;
+  line-height: 1.5;
 }

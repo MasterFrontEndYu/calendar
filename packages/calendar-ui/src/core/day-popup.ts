@@ -3,6 +3,7 @@ import type {
   CalendarLocale,
   DayPopupHandle,
   DayPopupItem,
+  DayPopupStringItem,
   ResolvedCalendarPopupOptions,
 } from "../types";
 import { createDate, dateKey } from "../utils/date";
@@ -61,6 +62,20 @@ const canHover = function (doc: Document): boolean {
 /** 运行时判断 Node，避免依赖全局构造器 */
 const isNode = function (value: unknown): value is Node {
   return typeof value === "object" && value !== null && "nodeType" in value;
+};
+
+/** 默认项：最多三个字符串字段的元组 */
+const isStringItem = function (value: unknown): value is DayPopupStringItem {
+  return (
+    Array.isArray(value) &&
+    value.length <= 3 &&
+    value.every((part) => part === undefined || typeof part === "string")
+  );
+};
+
+/** 三个字段全空时视为没有内容 */
+const hasStringContent = function (item: DayPopupStringItem): boolean {
+  return Boolean(item[0] || item[1] || item[2]);
 };
 
 const defaultPopupTitle = function (day: CalendarDate, count: number): string {
@@ -193,13 +208,17 @@ export const createDayPopup = function (options: CreateDayPopupOptions): DayPopu
       throw new TypeError("[calendar-ui] popup.render(day) 必须返回数组");
     }
     for (const item of items) {
-      if (typeof item !== "string" && !isNode(item)) {
-        throw new TypeError("[calendar-ui] popup.render(day) 的每一项必须是字符串或 Node");
+      if (!isNode(item) && !isStringItem(item)) {
+        throw new TypeError(
+          "[calendar-ui] popup.render(day) 的每一项必须是 [time, title, detail] 或 Node",
+        );
       }
     }
 
-    rendered.set(key, items);
-    return items;
+    // 字段全空的默认项没有可渲染的内容，直接丢掉
+    const visible = items.filter((item) => isNode(item) || hasStringContent(item));
+    rendered.set(key, visible);
+    return visible;
   };
 
   const renderItems = function (day: CalendarDate, items: readonly DayPopupItem[]): void {
@@ -216,8 +235,18 @@ export const createDayPopup = function (options: CreateDayPopupOptions): DayPopu
     const content = node("div", "cui__popup-body", undefined, doc);
     for (const item of items) {
       const itemEl = node("div", "cui__popup-item", undefined, doc);
-      if (typeof item === "string") {
-        itemEl.append(node("div", "cui__popup-title", item, doc));
+      if (isStringItem(item)) {
+        const time = item[0];
+        const name = item[1];
+        const detail = item[2];
+
+        if (time || name) {
+          const title = node("div", "cui__popup-title", undefined, doc);
+          if (time) title.append(node("span", "cui__popup-time", time, doc));
+          if (name) title.append(node("span", "cui__popup-name", name, doc));
+          itemEl.append(title);
+        }
+        if (detail) itemEl.append(node("div", "cui__popup-detail", detail, doc));
       } else {
         itemEl.append(item);
       }

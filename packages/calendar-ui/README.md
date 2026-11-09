@@ -126,17 +126,18 @@ const instance = createCalendarUI(container, {
     trigger: "click",
     render: (day) => {
       const entries = POPUPS[`${day.year}-${day.month}-${day.day}`] ?? [];
-      return entries.map((entry) => `${entry.time} · ${entry.title}：${entry.detail}`);
+      return entries.map((entry) => [entry.time, entry.title, entry.detail] as const);
     },
   },
 });
 ```
 
-- 数据在创建前准备好，`render(day)` 返回 `Array<string | Node>`；空数组表示没有 popup；
+- 数据在创建前准备好，`render(day)` 返回 `Array<readonly [time?, title?, detail?] | Node>`；空数组表示没有 popup；
+- `[time, title, detail]` 会生成 `.cui__popup-title`（含 `.cui__popup-time` / `.cui__popup-name`）和 `.cui__popup-detail`；字段省略或为空就不渲染对应 UI；
 - 绿点由库内部按 `render(day).length > 0` 计算；
 - 打开时自动显示「日期 · 条数」头部，条数就是数组长度；
 - `render` 在创建 / 重绘时调用并缓存，必须是同步纯函数；
-- 字符串按纯文本挂载，Node 直接 append；
+- Node 直接 append，内部结构完全由使用方决定；
 - 默认皮肤是 `.cui__popup` 卡片 + `.cui__popup-head` 头部 + `.cui__popup-item` 内容层，可以直接用 CSS 覆盖；
 - `trigger` 支持 `"click"`（默认）/ `"hover"` / `"focus"` / `"auto"`；移动端没有 hover；
 - 默认 click 用 `role="dialog"`，其余用 `role="tooltip"`，可通过 `role` 覆盖；

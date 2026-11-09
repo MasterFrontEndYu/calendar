@@ -100,37 +100,40 @@ import "@sanguo-dev/calendar-ui/style.css";
 
 ## 类名
 
-| 选择器              | 对应节点                |
-| ------------------- | ----------------------- |
-| `.cui`              | 根节点                  |
-| `.cui__header`      | 头部                    |
-| `.cui__title`       | 标题容器                |
-| `.cui__title-part`  | 年份 / 月份按钮         |
-| `.cui__nav`         | 翻月按钮                |
-| `.cui__months`      | 月份容器                |
-| `.cui__month`       | 单个月份                |
-| `.cui__weekdays`    | 星期表头                |
-| `.cui__weekday`     | 单个星期                |
-| `.cui__grid`        | 日期网格                |
-| `.cui__week`        | 一周                    |
-| `.cui__day`         | 日期格                  |
-| `.cui__day-num`     | 日期数字                |
-| `.cui__day-sub`     | 副标题                  |
-| `.cui__day-tag`     | 「休 / 班」标记         |
-| `.cui__day-dot`     | 有 popup 的绿点         |
-| `.cui__popup`       | 日期格 popup 根         |
-| `.cui__popup-head`  | popup 的日期 / 条数头部 |
-| `.cui__popup-body`  | popup 的内容容器        |
-| `.cui__popup-item`  | popup 的每一层          |
-| `.cui__popup-title` | 字符串内容的默认标题层  |
-| `.cui__collapse`    | 底部折叠按钮            |
-| `.cui__picker`      | 年月选择层              |
-| `.cui__picker-grid` | 选择层网格              |
-| `.cui__picker-cell` | 选择层单格              |
+| 选择器               | 对应节点                |
+| -------------------- | ----------------------- |
+| `.cui`               | 根节点                  |
+| `.cui__header`       | 头部                    |
+| `.cui__title`        | 标题容器                |
+| `.cui__title-part`   | 年份 / 月份按钮         |
+| `.cui__nav`          | 翻月按钮                |
+| `.cui__months`       | 月份容器                |
+| `.cui__month`        | 单个月份                |
+| `.cui__weekdays`     | 星期表头                |
+| `.cui__weekday`      | 单个星期                |
+| `.cui__grid`         | 日期网格                |
+| `.cui__week`         | 一周                    |
+| `.cui__day`          | 日期格                  |
+| `.cui__day-num`      | 日期数字                |
+| `.cui__day-sub`      | 副标题                  |
+| `.cui__day-tag`      | 「休 / 班」标记         |
+| `.cui__day-dot`      | 有 popup 的绿点         |
+| `.cui__popup`        | 日期格 popup 根         |
+| `.cui__popup-head`   | popup 的日期 / 条数头部 |
+| `.cui__popup-body`   | popup 的内容容器        |
+| `.cui__popup-item`   | popup 的每一层          |
+| `.cui__popup-title`  | 默认结构的标题行        |
+| `.cui__popup-time`   | 默认结构里的 time       |
+| `.cui__popup-name`   | 默认结构里的 title      |
+| `.cui__popup-detail` | 默认结构里的 detail     |
+| `.cui__collapse`     | 底部折叠按钮            |
+| `.cui__picker`       | 年月选择层              |
+| `.cui__picker-grid`  | 选择层网格              |
+| `.cui__picker-cell`  | 选择层单格              |
 
 日期格上的 `data-tone` 来自 `CalendarBadge.tone`，默认皮肤支持 `rest`（休）与 `work`（班），对应 `--cui-rest` 与 `--cui-accent`。
 
-`.cui__popup` 默认提供定位、`max-width` / `max-height`、滚动和一层轻量卡片（背景、边框、圆角、阴影、内边距）；`.cui__popup-head` 是「日期 · 条数」头部，`.cui__popup-body` 是内容容器，`.cui__popup-item` 包裹 `popup.render` 返回的每一项。字符串内容会再包一层 `.cui__popup-title`（12px）；返回 Node 时内部结构由使用方自己决定。想换外观直接用 CSS 覆盖这些类。popup 离开 `.cui` 后会把主题变量复制到根节点，并带 `data-theme` 和 `data-placement`。
+`.cui__popup` 默认提供定位、`max-width` / `max-height`、滚动和一层轻量卡片（背景、边框、圆角、阴影、内边距）；`.cui__popup-head` 是「日期 · 条数」头部，`.cui__popup-body` 是内容容器，`.cui__popup-item` 包裹 `popup.render` 返回的每一项。`[time, title, detail]` 项会生成 `.cui__popup-title`（含 `.cui__popup-time` / `.cui__popup-name`）和 `.cui__popup-detail`；字符串内容只放 `.cui__popup-title`；返回 Node 时内部结构由使用方自己决定。想换外观直接用 CSS 覆盖这些类。popup 离开 `.cui` 后会把主题变量复制到根节点，并带 `data-theme` 和 `data-placement`。
 
 ## 动画偏好
 

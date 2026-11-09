@@ -133,6 +133,7 @@ describe("demo components", () => {
     const popup = document.querySelector(".cui__popup");
     expect(popup?.querySelector(".cui__popup-head")?.textContent).toBe("10 月 1 日 · 2 条");
     expect(popup?.querySelector(".cui__popup-title")?.textContent).toContain("国庆节");
+    expect(popup?.querySelector(".cui__popup-detail")?.textContent).toBe("10 月 1 日 - 7 日放假");
     // 点击外部 / Esc 已经能关闭，示例里不再放关闭按钮
     expect(popup?.querySelector("button")).toBeNull();
   });
