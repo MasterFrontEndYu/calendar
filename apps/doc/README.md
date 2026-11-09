@@ -129,13 +129,11 @@ src/
       calendar-ui-range.tsx        范围选择实例
       calendar-ui-collapse.tsx     折叠实例
       calendar-ui-header.tsx       自定义头部实例
-      calendar-ui-custom.tsx       第三方适配器实例
-      calendar-ui-custom-table.tsx 第三方 xiu / ban 数据表
+      calendar-ui-custom.tsx       第三方适配器实例（数据 / 方法内联）
       calendar-ui-lunar-index.tsx  官方农历实例
       calendar-ui-lunar-custom.tsx 农历自定义 holidays 实例
       calendar-ui-header.css       自定义头部样式
       calendar-ui-lunar-theme.css  农历示例配色
-      company-holidays.ts          第三方节假日 / 调休方法
       demo.css                     演示布局
     HeaderExtras.tsx       头部 GitHub 图标
     header-extras.css      头部 GitHub 图标样式
@@ -149,7 +147,7 @@ vite.config.ts             SolidBase / Solid 插件与主题配置
 
 顶部导航在 `vite.config.ts` 的 `themeConfig.nav` 中配置：指南、calendar-ui、calendar-ui-lunar、API。左侧栏在 `themeConfig.sidebar` 中按 `/guide`、`/calendar-ui`、`/calendar-ui-lunar`、`/api` 分组。
 
-演示代码放在 `components/demo`，路由只负责组合；每个实例下面紧跟对应的代码块。第三方数据方法放在 `components/demo/company-holidays.ts`。
+演示代码放在 `components/demo`，路由只负责组合；每个实例下面紧跟对应的代码块，示例数据和方法直接写在对应 demo 文件里。
 
 404 也走 `.mdx`：`[...404].mdx` 渲染 `components/NotFound.tsx`，组件在 SSR 时调用 `httpStatus(404)`，所以路由目录保持纯 `.mdx`，同时能返回真正的 404 状态码。
 
