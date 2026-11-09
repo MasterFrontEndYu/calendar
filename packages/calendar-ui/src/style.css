@@ -527,6 +527,11 @@
   text-overflow: ellipsis;
 }
 
+.cui[data-size="min"] .cui__day-sub,
+.cui[data-size="normal"] .cui__day-sub {
+  transform: scale(0.9);
+}
+
 /* 没有副标题时不占位：纯数字格才能真正只包住数字 */
 .cui__day-sub:empty {
   display: none;
@@ -549,8 +554,7 @@
 }
 
 .cui[data-size="normal"] .cui__day-tag {
-  top: 2px;
-  left: 2px;
+  transform: scale(0.9);
 }
 
 .cui__day-tag[hidden] {
