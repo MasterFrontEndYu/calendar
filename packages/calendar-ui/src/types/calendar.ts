@@ -169,10 +169,20 @@ export interface HeaderRenderContext {
   month: number;
   /** 当前语言包 */
   locale: CalendarLocale;
-  /** 切到上个月 */
+  /** 切到上个月；年份层打开时翻上一页 */
   prevMonth(): void;
-  /** 切到下个月 */
+  /** 切到下个月；年份层打开时翻下一页 */
   nextMonth(): void;
+  /** 上个月按钮是否已到可选范围起点 */
+  prevDisabled: boolean;
+  /** 下个月按钮是否已到可选范围终点 */
+  nextDisabled: boolean;
+  /** 当前打开的选择层，关闭时为 null */
+  pickerMode: "month" | "year" | null;
+  /** 打开或关闭年份选择层 */
+  toggleYearPicker(): void;
+  /** 打开或关闭月份选择层 */
+  toggleMonthPicker(): void;
 }
 
 /** 自定义头部渲染函数：返回要放进头部的元素，每次换月都会重新调用 */

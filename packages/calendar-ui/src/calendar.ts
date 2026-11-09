@@ -6,6 +6,7 @@ import {
   createBounds,
   isMonthOutOfRange,
   isYearOutOfRange,
+  navDisabled,
   resolveMonthCount,
 } from "./core/bounds";
 import { createCollapse } from "./core/collapse";
@@ -72,6 +73,13 @@ export function createCalendarUI<TData = null>(
     onMonthClick: () => pickerLayer.toggle("month"),
     onPrev: () => pickerLayer.step(-1),
     onNext: () => pickerLayer.step(1),
+    getNavDisabled: () => {
+      if (picker.mode() === "year") {
+        return { prev: !picker.canPage(-1), next: !picker.canPage(1) };
+      }
+      return navDisabled(bounds, state.year, state.month);
+    },
+    getPickerMode: () => picker.mode(),
     renderer: config.renderHeader,
   });
   header.el.hidden = !config.showHeader;

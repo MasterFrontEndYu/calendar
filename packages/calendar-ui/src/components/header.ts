@@ -42,6 +42,9 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
   let year = options.year;
   let month = options.month;
 
+  const toggleYearPicker = options.onYearClick ?? (() => {});
+  const toggleMonthPicker = options.onMonthClick ?? (() => {});
+
   const labels = (): { year: string; month: string } =>
     options.label?.(year, month) ?? {
       year: options.locale.yearLabel?.(year) ?? String(year),
@@ -58,6 +61,7 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
   };
 
   const renderCustom = (): void => {
+    const nav = options.getNavDisabled?.() ?? { prev: false, next: false };
     el.replaceChildren(
       options.renderer!({
         year,
@@ -65,6 +69,11 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
         locale: options.locale,
         prevMonth: options.onPrev,
         nextMonth: options.onNext,
+        prevDisabled: nav.prev,
+        nextDisabled: nav.next,
+        pickerMode: options.getPickerMode?.() ?? null,
+        toggleYearPicker,
+        toggleMonthPicker,
       }),
     );
   };
@@ -83,6 +92,7 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
       month = nextMonth;
       render();
     },
+    refresh: render,
     setNavDisabled: (prevDisabled: boolean, nextDisabled: boolean) => {
       prev.setDisabled(prevDisabled);
       next.setDisabled(nextDisabled);
@@ -97,6 +107,14 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
       if (options.onMonthClick) monthButton.setAttribute("aria-expanded", value);
     },
     focusTitle: () => {
+      if (options.renderer) {
+        const target =
+          el.querySelector<HTMLElement>("[data-cui-title]") ??
+          el.querySelector<HTMLElement>('[aria-haspopup="dialog"]') ??
+          el.querySelector<HTMLElement>("button");
+        target?.focus({ preventScroll: true });
+        return;
+      }
       yearButton.focus({ preventScroll: true });
     },
     destroy: () => {

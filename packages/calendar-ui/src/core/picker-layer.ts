@@ -20,6 +20,7 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
     header.setNavVisible(true);
     syncNav();
     header.setTitleExpanded(false);
+    header.refresh();
     setBackgroundInert(false);
     document.removeEventListener("pointerdown", onPickerPointerDown, true);
     root.removeEventListener("keydown", onPickerKeyDown);
@@ -54,6 +55,7 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
     header.setNavVisible(mode === "year");
     syncNav();
     header.setTitleExpanded(true);
+    header.refresh();
     setBackgroundInert(true);
 
     if (!wasOpen) {
@@ -77,6 +79,7 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
     if (mode === "year") {
       picker.movePage(direction);
       syncNav();
+      header.refresh();
       return;
     }
     if (mode === "month") return;

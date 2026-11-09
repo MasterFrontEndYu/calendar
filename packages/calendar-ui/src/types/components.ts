@@ -36,6 +36,10 @@ export interface HeaderOptions {
   onPrev: () => void;
   /** 下个月 */
   onNext: () => void;
+  /** 当前左右按钮的禁用状态，供自定义头部同步 */
+  getNavDisabled?: () => { prev: boolean; next: boolean };
+  /** 当前选择层模式，供自定义头部同步 */
+  getPickerMode?: () => "month" | "year" | null;
   /** 自定义渲染函数，提供时替换默认的 ‹ 年 月 › */
   renderer?: HeaderRenderer;
 }
@@ -45,6 +49,8 @@ export interface HeaderHandle {
   el: HTMLElement;
   /** 换月时更新标题或重绘自定义头部 */
   update(year: number, month: number): void;
+  /** 重绘头部，用于同步选择层状态 */
+  refresh(): void;
   /** 更新左右按钮的禁用状态 */
   setNavDisabled(prevDisabled: boolean, nextDisabled: boolean): void;
   /** 显示 / 隐藏左右按钮（月份层里不需要） */

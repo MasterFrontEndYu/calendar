@@ -12,11 +12,26 @@
 }
 
 .demo-header-title {
+  display: flex;
   flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
   text-align: center;
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+}
+
+.demo-header-title-button {
+  min-width: 0;
+  padding: 0.2rem 0.35rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.demo-header-title-button[aria-expanded="true"] {
+  background: rgb(99 102 241 / 15%);
 }
 
 .demo-header-button {
@@ -32,6 +47,15 @@
 
 .demo-header-button:hover {
   background: rgb(127 127 127 / 12%);
+}
+
+.demo-header-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.demo-header-button:disabled:hover {
+  background: transparent;
 }
 
 .demo-header-button:focus-visible {

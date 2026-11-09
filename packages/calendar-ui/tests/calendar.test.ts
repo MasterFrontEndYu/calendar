@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vite-plus/test";
-import type { CalendarAdapter, CalendarDay, CalendarSize, MonthInput } from "../src/index.ts";
+import type {
+  CalendarAdapter,
+  CalendarDay,
+  CalendarSize,
+  HeaderRenderContext,
+  MonthInput,
+} from "../src/index.ts";
 import { createCalendarUI } from "../src/index.ts";
 
 const host = function (): HTMLElement {
@@ -1164,6 +1170,102 @@ describe("年月选择层", () => {
     const navs = navsOf(instance.el);
     expect(navs[0]?.disabled).toBe(true);
     expect(navs[1]?.disabled).toBe(true);
+
+    instance.destroy();
+  });
+});
+
+describe("自定义头部", () => {
+  const button = function (
+    className: string,
+    text: string,
+    onClick: () => void,
+  ): HTMLButtonElement {
+    const el = document.createElement("button");
+    el.className = className;
+    el.textContent = text;
+    el.addEventListener("click", onClick);
+    return el;
+  };
+
+  const renderCustomHeader = function (context: HeaderRenderContext): HTMLElement {
+    const header = document.createElement("div");
+    header.className = "test-custom-header";
+
+    const prev = button("test-custom-prev", "‹", () => context.prevMonth());
+    const next = button("test-custom-next", "›", () => context.nextMonth());
+    prev.disabled = context.prevDisabled;
+    next.disabled = context.nextDisabled;
+
+    const year = button("test-custom-year", String(context.year), () => context.toggleYearPicker());
+    year.dataset.cuiTitle = "";
+    year.setAttribute("aria-expanded", String(context.pickerMode === "year"));
+
+    const month = button("test-custom-month", String(context.month), () =>
+      context.toggleMonthPicker(),
+    );
+    month.setAttribute("aria-expanded", String(context.pickerMode === "month"));
+
+    header.append(prev, year, month, next);
+    return header;
+  };
+
+  it("可以通过 context 打开并操作年份、月份选择层", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+      renderHeader: renderCustomHeader,
+    });
+
+    instance.el.querySelector<HTMLButtonElement>(".test-custom-year")!.click();
+    expect(instance.el.querySelector(".cui__picker")?.classList.contains("is-open")).toBe(true);
+    expect(instance.el.querySelector(".cui__picker")?.classList.contains("is-month")).toBe(false);
+    expect(
+      instance.el
+        .querySelector<HTMLButtonElement>(".test-custom-year")
+        ?.getAttribute("aria-expanded"),
+    ).toBe("true");
+
+    instance.el.querySelectorAll<HTMLButtonElement>(".cui__picker-cell")[0]?.click();
+    expect(instance.getMonth()).toEqual({ year: 2016, month: 10 });
+    expect(instance.el.querySelector(".test-custom-year")?.textContent).toBe("2016");
+
+    instance.el.querySelector<HTMLButtonElement>(".test-custom-month")!.click();
+    expect(instance.el.querySelector(".cui__picker")?.classList.contains("is-month")).toBe(true);
+    instance.el.querySelectorAll<HTMLButtonElement>(".cui__picker-cell")[2]?.click();
+    expect(instance.getMonth()).toEqual({ year: 2016, month: 3 });
+    expect(instance.el.querySelector(".cui__picker")?.classList.contains("is-open")).toBe(false);
+
+    instance.destroy();
+  });
+
+  it("关闭选择层后焦点回到自定义头部的标题按钮", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-15",
+      renderHeader: renderCustomHeader,
+    });
+
+    instance.el.querySelector<HTMLButtonElement>(".test-custom-year")!.click();
+    instance.el.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+
+    expect(document.activeElement).toBe(instance.el.querySelector(".test-custom-year"));
+    instance.destroy();
+  });
+
+  it("同步左右按钮的边界禁用状态", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-10",
+      minDate: "2026-10-05",
+      maxDate: "2026-11-20",
+      renderHeader: renderCustomHeader,
+    });
+
+    expect(instance.el.querySelector<HTMLButtonElement>(".test-custom-prev")?.disabled).toBe(true);
+    expect(instance.el.querySelector<HTMLButtonElement>(".test-custom-next")?.disabled).toBe(false);
+
+    instance.el.querySelector<HTMLButtonElement>(".test-custom-next")!.click();
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 11 });
+    expect(instance.el.querySelector<HTMLButtonElement>(".test-custom-prev")?.disabled).toBe(false);
+    expect(instance.el.querySelector<HTMLButtonElement>(".test-custom-next")?.disabled).toBe(true);
 
     instance.destroy();
   });

@@ -25,20 +25,51 @@ export default function CustomHeaderCalendar() {
   const [picked, setPicked] = createSignal("点一个日期看看");
 
   const renderHeader: HeaderRenderer = (context) => {
-    const { year, month, locale } = context;
+    const { year, month, locale, pickerMode, prevDisabled, nextDisabled } = context;
     const header = document.createElement("div");
     header.className = "demo-header";
 
     const prev = createHeaderButton("‹", locale.prevMonth, () => context.prevMonth());
     const next = createHeaderButton("›", locale.nextMonth, () => context.nextMonth());
+    prev.disabled = prevDisabled;
+    next.disabled = nextDisabled;
+
+    const title = document.createElement("div");
+    title.className = "demo-header-title";
+
+    const yearButton = createHeaderButton(
+      locale.yearLabel?.(year) ?? String(year),
+      locale.pickYear ?? "选择年份",
+      () => context.toggleYearPicker(),
+    );
+    yearButton.classList.add("demo-header-title-button");
+    yearButton.dataset.cuiTitle = "";
+    yearButton.setAttribute("aria-haspopup", "dialog");
+    yearButton.setAttribute("aria-expanded", String(pickerMode === "year"));
+
+    const monthButton = createHeaderButton(
+      locale.monthName?.(month) ?? String(month),
+      locale.pickMonth ?? "选择月份",
+      () => context.toggleMonthPicker(),
+    );
+    monthButton.classList.add("demo-header-title-button");
+    monthButton.setAttribute("aria-haspopup", "dialog");
+    monthButton.setAttribute("aria-expanded", String(pickerMode === "month"));
+
+    title.append(yearButton, monthButton);
+
     const today = createHeaderButton("回到今天", "回到今天", () => {
+      if (pickerMode === "year") context.toggleYearPicker();
+      else if (pickerMode === "month") context.toggleMonthPicker();
       instance?.select(new Date());
     });
     today.classList.add("demo-header-button--today");
 
-    const title = document.createElement("div");
-    title.className = "demo-header-title";
-    title.textContent = locale.monthTitle(year, month);
+    // 月份层没有翻月语义，隐藏左右箭头；年份层保留箭头用于翻页
+    if (pickerMode === "month") {
+      prev.hidden = true;
+      next.hidden = true;
+    }
 
     header.append(prev, title, today, next);
     return header;

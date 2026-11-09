@@ -67,7 +67,8 @@ describe("demo components", () => {
 
     expect(container.querySelector(".demo-header")).not.toBeNull();
     expect(container.querySelector(".cui__title")).toBeNull();
-    expect(container.textContent).toContain("2026 年 10 月");
+    expect(container.textContent).toContain("2026 年");
+    expect(container.textContent).toContain("10 月");
 
     const next = container.querySelector<HTMLButtonElement>(
       '.demo-header-button[aria-label="下个月"]',
@@ -75,7 +76,28 @@ describe("demo components", () => {
     next?.click();
     flush();
 
-    expect(container.textContent).toContain("2026 年 11 月");
+    expect(container.textContent).toContain("11 月");
+  });
+
+  it("custom header can open the year and month pickers", () => {
+    const { container } = render(() => <CustomHeaderCalendar />);
+    flush();
+
+    container.querySelector<HTMLButtonElement>('[aria-label="选择年份"]')?.click();
+    flush();
+    expect(container.querySelector(".cui__picker")?.classList.contains("is-open")).toBe(true);
+
+    container.querySelectorAll<HTMLButtonElement>(".cui__picker-cell")[0]?.click();
+    flush();
+    expect(container.textContent).toContain("2016 年");
+
+    container.querySelector<HTMLButtonElement>('[aria-label="选择月份"]')?.click();
+    flush();
+    expect(container.querySelector(".cui__picker")?.classList.contains("is-month")).toBe(true);
+
+    container.querySelectorAll<HTMLButtonElement>(".cui__picker-cell")[2]?.click();
+    flush();
+    expect(container.textContent).toContain("3 月");
   });
 
   it("custom renders a third-party adapter", () => {
