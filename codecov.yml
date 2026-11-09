@@ -10,7 +10,7 @@ coverage:
         threshold: 5%
 
 ignore:
-  - "**/index.ts" # 纯 re-export 文件
+  - "calendar-ui/src/index.ts" # 纯 re-export 文件
   - "**/data/*.json" # 数据文件
   - "**/*.d.ts" # 类型声明
   - "**/file-routes.d.ts"
