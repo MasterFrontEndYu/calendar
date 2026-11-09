@@ -10,6 +10,14 @@ export const node = function <K extends keyof HTMLElementTagNameMap>(
   return el;
 };
 
+/** 统一折叠行的可见性：class / inert / aria-hidden 三处同步 */
+export const setRowVisibility = function (row: HTMLElement, visible: boolean): void {
+  row.classList.toggle("is-collapsed-hidden", !visible);
+  row.toggleAttribute("inert", !visible);
+  if (visible) row.removeAttribute("aria-hidden");
+  else row.setAttribute("aria-hidden", "true");
+};
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**

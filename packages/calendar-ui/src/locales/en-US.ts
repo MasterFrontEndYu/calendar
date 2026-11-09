@@ -30,6 +30,7 @@ export const enUS: CalendarLocale = {
   nextYearPage: "Next years",
   pickMonth: "Choose a month",
   pickYear: "Choose a year",
+  disabledLabel: "unavailable",
   collapse: "Collapse calendar",
   expand: "Expand calendar",
 };

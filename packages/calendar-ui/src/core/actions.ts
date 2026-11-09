@@ -1,5 +1,12 @@
 import type { ActionContext, CalendarDateInput, CalendarDay } from "../types";
-import { monthIndexOf, normalizeMonth, readDate, sameDay, toDateOnly } from "../utils/date";
+import {
+  compareDay,
+  monthIndexOf,
+  normalizeMonth,
+  readDate,
+  sameDay,
+  toDateOnly,
+} from "../utils/date";
 import {
   normalizeEasing,
   prefersReducedMotion,
@@ -10,11 +17,52 @@ import { findSelectable } from "../utils/selectable";
 import { assertBounds, clampStartMonth, isDisabled, setBounds } from "./bounds";
 import { assignRange, clearRange, clickRange, copyRange, withRangeFields } from "./state";
 
-/** 范围模式下点选 / 外部 select：更新状态、重绘并通知范围变化 */
-const applyRangeClick = function <TData = null>(ctx: ActionContext<TData>, target: Date): void {
+type DayResolver<TData> = () => CalendarDay<TData> | undefined;
+
+interface CommitSingleOptions<TData> {
+  /** true 时无论是否折叠都重绘整块日历（select(date) 要同步标题和月份） */
+  forceRender: boolean;
+  /** 已经有格子对象时直接按 index 取更新后的版本，省一次 find */
+  day?: CalendarDay<TData>;
+  index?: number;
+}
+
+/** 范围模式点选后提交：更新状态、重绘、通知范围变化，再回调本次格子的最新对象 */
+const commitRange = function <TData = null>(
+  ctx: ActionContext<TData>,
+  target: Date,
+  resolveDay: DayResolver<TData>,
+): void {
   clickRange(ctx.state, target);
   ctx.render(true);
   ctx.config.onRangeChange?.(copyRange(ctx.state));
+
+  // 在回调之后再取格子，和原来「先通知范围、再构造回调对象」的时序一致
+  const day = resolveDay();
+  if (day) ctx.config.onSelect?.(withRangeFields(day, ctx.state));
+};
+
+/** 单选模式点选后提交；updateState 只刷新状态类，forceRender 才重建格子 */
+const commitSingle = function <TData = null>(
+  ctx: ActionContext<TData>,
+  target: Date,
+  options: CommitSingleOptions<TData>,
+): void {
+  ctx.state.selected = toDateOnly(target);
+
+  // 点选不换月，只需要刷新状态类；折叠状态下要重绘整块才能切到新行
+  const collapsed = ctx.collapse.isCollapsed();
+  const shouldRender = options.forceRender || collapsed;
+  const dayLists = shouldRender ? ctx.render(true) : null;
+  const days = dayLists?.[0] ?? ctx.currentDays();
+  if (!shouldRender) ctx.panels[0]?.grid.updateState(days);
+
+  // 回调用更新后的对象，保证 isSelected 是本次点击的结果
+  const day =
+    options.day !== undefined && options.index !== undefined
+      ? (days[options.index] ?? options.day)
+      : days.find((item) => sameDay(item.date, target));
+  if (day) ctx.config.onSelect?.(day);
 };
 
 /**
@@ -73,26 +121,11 @@ export const selectDay = function <TData = null>(
   if (day.isDisabled) return;
 
   if (ctx.config.mode === "range") {
-    applyRangeClick(ctx, day.date);
-    ctx.config.onSelect?.(withRangeFields(day, ctx.state));
+    commitRange(ctx, day.date, () => day);
     return;
   }
 
-  ctx.state.selected = toDateOnly(day.date);
-  if (day.inCurrentMonth) {
-    ctx.state.year = day.year;
-    ctx.state.month = day.month;
-  }
-
-  // 点选不换月，只需要刷新状态类，不必重建格子
-  const collapsed = ctx.collapse.isCollapsed();
-  if (collapsed) ctx.render(true);
-
-  const days = ctx.currentDays();
-  if (!collapsed) ctx.panels[0]?.grid.updateState(days);
-
-  // 回调用更新后的对象，保证 isSelected 是本次点击的结果
-  ctx.config.onSelect?.(days[index] ?? day);
+  commitSingle(ctx, day.date, { forceRender: false, day, index });
 };
 
 /** 目标日期不在当前展示范围内时，把视图移到目标月份 */
@@ -117,19 +150,16 @@ export const selectDate = function <TData = null>(
   seekMonth(ctx, target);
 
   if (ctx.config.mode === "range") {
-    applyRangeClick(ctx, target);
     const offset =
       monthIndexOf(target.getFullYear(), target.getMonth() + 1) -
       monthIndexOf(ctx.state.year, ctx.state.month);
-    const day = ctx.currentDays(offset).find((item) => sameDay(item.date, target));
-    if (day) ctx.config.onSelect?.(withRangeFields(day, ctx.state));
+    commitRange(ctx, target, () =>
+      ctx.currentDays(offset).find((item) => sameDay(item.date, target)),
+    );
     return;
   }
 
-  ctx.state.selected = target;
-  ctx.render(true);
-  const day = ctx.currentDays().find((item) => sameDay(item.date, target));
-  if (day) ctx.config.onSelect?.(day);
+  commitSingle(ctx, target, { forceRender: true });
 };
 
 /** 外部 setRange(start, end)：禁用日期直接忽略，反向输入自动交换 */
@@ -159,7 +189,12 @@ export const clearRangeValue = function <TData = null>(ctx: ActionContext<TData>
   ctx.config.onRangeChange?.(copyRange(ctx.state));
 };
 
-/** setMinDate / setMaxDate：校验、找最近的可用日期、整体替换后再重绘 */
+/**
+ * setMinDate / setMaxDate：校验、找最近的可用日期、整体替换后再重绘
+ *
+ * 范围模式以 rangeStart 为锚点：起点夹回新范围；终点只有仍然可选且不早于
+ * 新起点时才保留，否则清空让用户重新选择，避免出现反向或越界范围。
+ */
 export const applyBounds = function <TData = null>(
   ctx: ActionContext<TData>,
   nextMin: Date | null,
@@ -167,19 +202,38 @@ export const applyBounds = function <TData = null>(
 ): void {
   assertBounds(nextMin, nextMax);
 
+  const { state, bounds } = ctx;
+  const isRange = ctx.config.mode === "range";
+  const anchor = isRange ? (state.rangeStart ?? state.selected) : state.selected;
+
   // 先确认还有可选日期，再整体替换，失败时不破坏现有状态
-  const nextSelected = findSelectable(ctx.state.selected, nextMin, nextMax, ctx.bounds.disabled);
+  const nextSelected = findSelectable(anchor, nextMin, nextMax, bounds.disabled);
 
-  setBounds(ctx.bounds, nextMin, nextMax);
-  ctx.state.selected = nextSelected;
+  let nextStart: Date | null = null;
+  let nextEnd: Date | null = null;
+  if (isRange) {
+    // rangeStart 非空时它本来就是 anchor，nextSelected 就是夹取后的起点
+    if (state.rangeStart !== null) nextStart = nextSelected;
+    if (state.rangeEnd !== null && nextStart !== null) {
+      const resolvedEnd = findSelectable(state.rangeEnd, nextMin, nextMax, bounds.disabled);
+      if (sameDay(resolvedEnd, state.rangeEnd) && compareDay(resolvedEnd, nextStart) >= 0) {
+        nextEnd = state.rangeEnd;
+      }
+    }
+  }
 
-  const first = clampStartMonth(
-    ctx.bounds,
-    nextSelected.getFullYear(),
-    nextSelected.getMonth() + 1,
-  );
-  ctx.state.year = first.year;
-  ctx.state.month = first.month;
+  setBounds(bounds, nextMin, nextMax);
+
+  const focus = isRange && nextStart !== null ? nextStart : nextSelected;
+  state.selected = focus;
+  if (isRange) {
+    state.rangeStart = nextStart;
+    state.rangeEnd = nextEnd;
+  }
+
+  const first = clampStartMonth(bounds, focus.getFullYear(), focus.getMonth() + 1);
+  state.year = first.year;
+  state.month = first.month;
 
   ctx.render(true);
 };

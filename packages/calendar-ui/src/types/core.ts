@@ -181,7 +181,7 @@ export interface ActionContext<TData = null> {
   panels: readonly CalendarPanel<TData>[];
   collapse: CollapseHandle<TData>;
   slide: MonthSlideHandle;
-  render(animateRows?: boolean): void;
+  render(animateRows?: boolean): CalendarDay<TData>[][];
   currentDays(offset?: number): CalendarDay<TData>[];
 }
 

@@ -66,7 +66,7 @@ const updatePanelLabels = function (
 /** 一次重绘：标题、格子内容、无障碍标签、翻月状态、折叠行一起同步 */
 export const createRenderer = function <TData = null>(
   deps: RendererDeps<TData>,
-): (animateRows?: boolean) => void {
+): (animateRows?: boolean) => CalendarDay<TData>[][] {
   const { root, config, state, bounds, header, panels, panelEls, collapse } = deps;
   /**
    * 是否出现过副标题
@@ -76,7 +76,7 @@ export const createRenderer = function <TData = null>(
    */
   let hasSubtitle = false;
 
-  return function render(animateRows = true): void {
+  return function render(animateRows = true): CalendarDay<TData>[][] {
     header.update(state.year, state.month);
     const dayLists = panels.map((_, index) => deps.currentDays(index));
 
@@ -91,5 +91,7 @@ export const createRenderer = function <TData = null>(
     updateNav(header, bounds, state);
     collapse.updateRows(dayLists, animateRows);
     collapse.updateButton();
+
+    return dayLists;
   };
 };

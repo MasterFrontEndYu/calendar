@@ -1,9 +1,10 @@
 import type { CalendarDay } from "../types";
+import { dateStringKey, weekdayOf } from "../utils/date";
 import { node } from "../utils/dom";
 
 /** 周末判断：只看公历星期，与节日 / 调休数据无关 */
 const isWeekend = function (year: number, month: number, day: number): boolean {
-  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  const weekday = weekdayOf(year, month, day);
   return weekday === 0 || weekday === 6;
 };
 
@@ -26,7 +27,7 @@ export const createDayCell = function (): HTMLButtonElement {
 
 /** 更新格子的日期内容；同一日期不重复写文本，只刷新状态 */
 export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknown>): void {
-  const key = `${day.year}-${day.month}-${day.day}`;
+  const key = dateStringKey(day.year, day.month, day.day);
 
   if (cell.dataset.date !== key) {
     cell.dataset.date = key;

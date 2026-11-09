@@ -3,9 +3,25 @@ import type { CalendarDateInput, YearMonth } from "../types";
 /** 日期字符串：YYYY-M-D，分隔符必须一致 */
 const DATE_INPUT_PATTERN = /^(\d{4})([-/])(\d{1,2})\2(\d{1,2})$/;
 
+/**
+ * 用本地年月日建 Date
+ *
+ * Date 构造器会把 0-99 年解释成 1900+year；只有这段时间走 setFullYear，
+ * 其余年份仍用构造器，避免给 42 个格子增加额外开销。
+ */
+export const createDate = function (year: number, month: number, day: number): Date {
+  if (year >= 0 && year < 100) {
+    const date = new Date(0);
+    date.setHours(0, 0, 0, 0);
+    date.setFullYear(year, month - 1, day);
+    return date;
+  }
+  return new Date(year, month - 1, day);
+};
+
 /** 去掉时分秒，只保留本地年月日 */
 export const toDateOnly = function (date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  return createDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
 };
 
 /**
@@ -40,9 +56,7 @@ export const parseDateInput = function (value: CalendarDateInput, path = "date")
     throw new RangeError(`[calendar-ui] ${path} 月份必须在 1-12 之间`);
   }
 
-  const date = new Date(0);
-  date.setHours(0, 0, 0, 0);
-  date.setFullYear(year, month - 1, day);
+  const date = createDate(year, month, day);
   if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
     throw new RangeError(`[calendar-ui] ${path} 不是有效日期: ${value}`);
   }
@@ -52,6 +66,11 @@ export const parseDateInput = function (value: CalendarDateInput, path = "date")
 /** 把日期转成可比较的数字 key：YYYYMMDD */
 export const dateKey = function (date: Date): number {
   return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+};
+
+/** 拼日期字符串 key：YYYY-M-D，分隔符与 parseDateInput 接受的格式一致 */
+export const dateStringKey = function (year: number, month: number, day: number): string {
+  return `${year}-${month}-${day}`;
 };
 
 /** 加减天数，按本地日历计算 */
@@ -75,10 +94,9 @@ export const sameDay = function (a: Date, b: Date): boolean {
   );
 };
 
-/** 把年月规范成合法值，月份越界时自动进位/退位 */
-export const normalizeMonth = function (year: number, month: number): YearMonth {
-  const date = new Date(year, month - 1, 1);
-  return { year: date.getFullYear(), month: date.getMonth() + 1 };
+/** 某日是星期几（0 为周日），按本地日历 */
+export const weekdayOf = function (year: number, month: number, day: number): number {
+  return createDate(year, month, day).getDay();
 };
 
 /** 年月转成连续月序号，方便比较、加减和夹取 */
@@ -88,7 +106,18 @@ export const monthIndexOf = function (year: number, month: number): number {
 
 /** 连续月序号还原成年月；只做整数运算，不分配 Date */
 export const monthFromIndex = function (index: number): YearMonth {
-  return { year: Math.floor(index / 12), month: (index % 12) + 1 };
+  const year = Math.floor(index / 12);
+  return { year, month: index - year * 12 + 1 };
+};
+
+/**
+ * 把年月规范成合法值，月份越界时自动进位/退位
+ *
+ * 用整数运算而不是 Date，避免 0-99 年被当成 1900+year；
+ * 小数先按 Date 构造器的行为截断。
+ */
+export const normalizeMonth = function (year: number, month: number): YearMonth {
+  return monthFromIndex(monthIndexOf(Math.trunc(year), Math.trunc(month)));
 };
 
 /** 读取可空日期入参：null / undefined 直接返回 null */

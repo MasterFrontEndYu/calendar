@@ -36,7 +36,8 @@ export const createCollapse = function <TData = null>(
       config.mode === "range"
         ? [state.rangeStart, state.rangeEnd].filter((date): date is Date => date !== null)
         : [state.selected];
-    if (targets.length === 0) targets.push(state.selected);
+    // 范围模式还没选端点时不拿 state.selected 兜底：该字段在范围模式没有意义，
+    // 让下面的 rows.size === 0 分支展开到当前月第一行。
 
     panels.forEach((panel, index) => {
       const rows = new Set<number>();

@@ -30,6 +30,8 @@ export interface CalendarLocale {
   pickMonth?: string;
   /** 选择层的无障碍名称：选年份 */
   pickYear?: string;
+  /** 不可选日期的无障碍文案；不传时使用内置「不可选」 */
+  disabledLabel?: string;
   /** 折叠按钮的无障碍名称；不传时使用内置文案 */
   collapse?: string;
   /** 展开按钮的无障碍名称；不传时使用内置文案 */

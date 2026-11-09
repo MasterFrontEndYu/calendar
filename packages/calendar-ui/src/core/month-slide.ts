@@ -1,4 +1,5 @@
 import type { MonthSlideHandle, MonthSlidePanel } from "../types";
+import { setRowVisibility } from "../utils/dom";
 
 interface MonthAnimation {
   token: number;
@@ -67,10 +68,7 @@ export const createMonthSlide = function (panels: readonly MonthSlidePanel[]): M
         if (target === undefined) return;
 
         const hidden = source.classList.contains("is-collapsed-hidden");
-        target.classList.toggle("is-collapsed-hidden", hidden);
-        target.toggleAttribute("inert", hidden);
-        if (hidden) target.setAttribute("aria-hidden", "true");
-        else target.removeAttribute("aria-hidden");
+        setRowVisibility(target, !hidden);
       });
     });
   };

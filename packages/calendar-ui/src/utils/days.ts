@@ -1,10 +1,12 @@
 import type { CalendarDate, CalendarDay, DayDecoration, WeekStartsOn } from "../types";
 import type { BuildDaysOptions } from "../types";
-import { compareDay, sameDay } from "./date";
+import { createDate, dateStringKey, sameDay, weekdayOf } from "./date";
+import type { RangeFields } from "./range";
+import { rangeFields } from "./range";
 
 /** 某个年月 1 号是星期几（0 为周日） */
 export const firstWeekdayOf = function (year: number, month: number): number {
-  return new Date(year, month - 1, 1).getDay();
+  return weekdayOf(year, month, 1);
 };
 
 /** 生成 6 行 × 7 列共 42 个公历日期，包含上下月补位格 */
@@ -17,7 +19,7 @@ const buildMonthDates = function (
   const days: CalendarDate[] = [];
 
   for (let i = 0; i < 42; i++) {
-    const date = new Date(year, month - 1, i - offset + 1);
+    const date = createDate(year, month, i - offset + 1);
     days.push({
       year: date.getFullYear(),
       month: date.getMonth() + 1,
@@ -44,6 +46,16 @@ export const buildDays = function <TData = null>(
         days: dates,
       })
     : [];
+  const disabledLabel = options.locale.disabledLabel ?? "不可选";
+  const rangeStart = options.rangeStart ?? null;
+  const rangeEnd = options.rangeEnd ?? null;
+  // 42 个格子复用同一个范围状态对象，只把最终布尔值拷进 CalendarDay
+  const range: RangeFields = {
+    isRangeStart: false,
+    isRangeEnd: false,
+    isInRange: false,
+    isSelected: false,
+  };
 
   return dates.map((date, index) => {
     const decoration = decorations[index] ?? null;
@@ -52,35 +64,25 @@ export const buildDays = function <TData = null>(
     const customSubtitle = options.subtitle?.(date);
     const subtitle =
       customSubtitle === null || customSubtitle === undefined ? adapterSubtitle : customSubtitle;
-    const key = `${date.year}-${date.month}-${date.day}`;
+    const key = dateStringKey(date.year, date.month, date.day);
     const isDisabled = options.isDisabled?.(date.date) ?? false;
-    const rangeStart = options.rangeStart ?? null;
-    const rangeEnd = options.rangeEnd ?? null;
-    const isRangeStart = rangeStart !== null && sameDay(date.date, rangeStart);
-    const isRangeEnd = rangeEnd !== null && sameDay(date.date, rangeEnd);
-    const isInRange =
-      rangeStart !== null &&
-      rangeEnd !== null &&
-      compareDay(date.date, rangeStart) >= 0 &&
-      compareDay(date.date, rangeEnd) <= 0;
+    rangeFields(date.date, rangeStart, rangeEnd, range);
 
     return {
       ...date,
       isToday: sameDay(date.date, options.today),
       isSelected:
-        (options.selected !== null && sameDay(date.date, options.selected)) ||
-        isRangeStart ||
-        isRangeEnd,
+        (options.selected !== null && sameDay(date.date, options.selected)) || range.isSelected,
       isDisabled,
-      isRangeStart,
-      isRangeEnd,
-      isInRange,
+      isRangeStart: range.isRangeStart,
+      isRangeEnd: range.isRangeEnd,
+      isInRange: range.isInRange,
       subtitle,
       badge,
       data: decoration?.data ?? null,
       ariaLabel:
         decoration?.ariaLabel ??
-        [key, badge?.text ?? "", subtitle, isDisabled ? "不可选" : ""]
+        [key, badge?.text ?? "", subtitle, isDisabled ? disabledLabel : ""]
           .filter((part) => part !== "")
           .join(" "),
     };

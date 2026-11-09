@@ -273,6 +273,43 @@ describe("范围选择", () => {
     instance.destroy();
   });
 
+  it("双视图 select() 落在第二个月时保持当前视图", () => {
+    let picked: CalendarDay | null = null;
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      months: 2,
+      initialDate: "2026-10-15",
+      onSelect: (day) => {
+        picked = day;
+      },
+    });
+
+    instance.select("2026-11-05");
+
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 10 });
+    expect(instance.getRange()).toEqual({ start: new Date(2026, 10, 5), end: null });
+    expect(picked!.isRangeStart).toBe(true);
+    expect(picked!.inCurrentMonth).toBe(true);
+
+    instance.destroy();
+  });
+
+  it("双视图 select() 超出右边界时把视图往前收一档", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      months: 2,
+      initialDate: "2026-10-15",
+      maxDate: "2026-12-31",
+    });
+
+    instance.select("2026-12-05");
+
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 11 });
+    expect(instance.getRange().start).toEqual(new Date(2026, 11, 5));
+
+    instance.destroy();
+  });
+
   it("范围端点不会选中禁用日期", () => {
     const instance = createCalendarUI(host(), {
       mode: "range",
@@ -367,6 +404,29 @@ describe("折叠", () => {
     expect(visibleRows(instance.el)).toHaveLength(2);
     expect(rows[1]?.classList.contains("is-collapsed-hidden")).toBe(false);
     expect(rows[4]?.classList.contains("is-collapsed-hidden")).toBe(false);
+
+    instance.destroy();
+  });
+
+  it("范围模式未选范围时折叠显示各月第一行", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      months: 2,
+      initialDate: "2026-10-15",
+      animation: { collapse: {} },
+    });
+
+    instance.el.querySelector<HTMLButtonElement>(".cui__collapse")!.click();
+
+    const grids = Array.from(instance.el.querySelectorAll<HTMLElement>(".cui__grid"));
+    expect(grids).toHaveLength(2);
+    grids.forEach((grid) => {
+      const visible = Array.from(grid.querySelectorAll<HTMLElement>(".cui__week")).filter(
+        (row) => !row.classList.contains("is-collapsed-hidden"),
+      );
+      expect(visible).toHaveLength(1);
+      expect(visible[0]).toBe(grid.querySelector(".cui__week"));
+    });
 
     instance.destroy();
   });
@@ -635,6 +695,31 @@ describe("日期约束", () => {
     instance.destroy();
   });
 
+  it("支持 100 年以前的年份，不受 Date 0-99 偏移影响", () => {
+    const instance = createCalendarUI(host(), { initialDate: "0050-01-01" });
+
+    expect(instance.getMonth()).toEqual({ year: 50, month: 1 });
+    const selected = instance.getSelected()!;
+    expect(selected.getFullYear()).toBe(50);
+    expect(selected.getMonth()).toBe(0);
+    expect(selected.getDate()).toBe(1);
+    expect(instance.el.querySelector('.cui__day[data-date="50-1-1"]')).not.toBeNull();
+
+    instance.destroy();
+  });
+
+  it("禁用日期的 aria-label 使用语言包文案", () => {
+    const instance = createCalendarUI(host(), {
+      initialDate: "2026-10-01",
+      locale: "en-US",
+      disabledDates: ["2026-10-02"],
+    });
+
+    expect(cellOf(instance.el, "2026-10-2").getAttribute("aria-label")).toContain("unavailable");
+
+    instance.destroy();
+  });
+
   it("拒绝不合法的日期字符串", () => {
     expect(() => createCalendarUI(host(), { initialDate: "2026-02-30" })).toThrow(RangeError);
     expect(() => createCalendarUI(host(), { initialDate: "2026-10/01" })).toThrow(TypeError);
@@ -756,6 +841,76 @@ describe("日期约束", () => {
     instance.setMaxDate(new Date(2026, 9, 1));
     expect(instance.getSelected()).toEqual(new Date(2026, 9, 1));
     expect(instance.getMinDate()).toBeNull();
+
+    instance.destroy();
+  });
+
+  it("范围模式 setMinDate 把起点夹回新范围，终点保留", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: new Date(2026, 9, 1),
+    });
+    instance.setRange("2026-10-05", "2026-10-25");
+
+    instance.setMinDate("2026-10-10");
+
+    expect(instance.getRange()).toEqual({
+      start: new Date(2026, 9, 10),
+      end: new Date(2026, 9, 25),
+    });
+    expect(instance.getMonth()).toEqual({ year: 2026, month: 10 });
+
+    instance.destroy();
+  });
+
+  it("范围模式 setMaxDate 清掉越界终点", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: new Date(2026, 9, 1),
+    });
+    instance.setRange("2026-10-05", "2026-10-25");
+
+    instance.setMaxDate("2026-10-20");
+
+    expect(instance.getRange()).toEqual({
+      start: new Date(2026, 9, 5),
+      end: null,
+    });
+
+    instance.destroy();
+  });
+
+  it("范围模式起点被夹到终点之后时清掉终点", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: new Date(2026, 9, 1),
+    });
+    instance.setRange("2026-10-05", "2026-10-10");
+
+    instance.setMinDate("2026-10-15");
+
+    expect(instance.getRange()).toEqual({
+      start: new Date(2026, 9, 15),
+      end: null,
+    });
+
+    instance.destroy();
+  });
+
+  it("范围模式 setMinDate 失败时范围保持不变", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: new Date(2026, 9, 1),
+      maxDate: new Date(2026, 9, 20),
+    });
+    instance.setRange("2026-10-05", "2026-10-10");
+
+    expect(() => instance.setMinDate(new Date(2026, 9, 21))).toThrow(RangeError);
+    expect(instance.getMinDate()).toBeNull();
+    expect(instance.getRange()).toEqual({
+      start: new Date(2026, 9, 5),
+      end: new Date(2026, 9, 10),
+    });
 
     instance.destroy();
   });

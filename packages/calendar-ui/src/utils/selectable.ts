@@ -31,26 +31,28 @@ export const findSelectable = function (
     return candidate;
   }
 
-  const lower = minDate ?? SEARCH_MIN;
-  const upper = maxDate ?? SEARCH_MAX;
-  // 游标只在 [lower, upper] 内比较 key，避免每轮再算两次 Date
   const lowerKey = minDate === null ? SEARCH_MIN_KEY : minKey;
   const upperKey = maxDate === null ? SEARCH_MAX_KEY : maxKey;
-  // 注意：dateKey 不是逐日递增的，偏移量必须用真实天数算
-  const maxOffset = Math.max(0, compareDay(upper, lower));
 
   const forward = new Date(candidate);
   const backward = new Date(candidate);
+  let forwardKey = dateKey(forward);
+  let backwardKey = dateKey(backward);
 
-  // 同时向两侧扩展，先遇到的可选日期就是距离最近的
-  for (let offset = 1; offset <= maxOffset; offset++) {
-    forward.setDate(forward.getDate() + 1);
-    const forwardKey = dateKey(forward);
-    if (forwardKey <= upperKey && !disabled.has(forwardKey)) return forward;
+  // 同时向两侧扩展，先遇到的可选日期就是距离最近的；
+  // 不预计算偏移上界，避免 desired 落在兜底范围外时提前停止。
+  while (forwardKey <= upperKey || backwardKey >= lowerKey) {
+    if (forwardKey <= upperKey) {
+      forward.setDate(forward.getDate() + 1);
+      forwardKey = dateKey(forward);
+      if (forwardKey <= upperKey && !disabled.has(forwardKey)) return forward;
+    }
 
-    backward.setDate(backward.getDate() - 1);
-    const backwardKey = dateKey(backward);
-    if (backwardKey >= lowerKey && !disabled.has(backwardKey)) return backward;
+    if (backwardKey >= lowerKey) {
+      backward.setDate(backward.getDate() - 1);
+      backwardKey = dateKey(backward);
+      if (backwardKey >= lowerKey && !disabled.has(backwardKey)) return backward;
+    }
   }
 
   throw new RangeError("[calendar-ui] 当前日期约束下没有可选日期");

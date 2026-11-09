@@ -125,7 +125,7 @@ export function createCalendarUI<TData = null>(
     picker,
     getMonth: () => ({ year: state.year, month: state.month }),
     updateNav: () => updateNav(header, bounds, state),
-    onGoTo: goToMonth,
+    onGoTo: (year, month) => goToMonth(year, month),
   });
 
   /** 主函数只保留两个动作入口：翻月和点选 */

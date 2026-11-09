@@ -1,5 +1,6 @@
 import type { CalendarDay, CalendarRange, CalendarState } from "../types";
-import { compareDay, sameDay, toDateOnly } from "../utils/date";
+import { compareDay, toDateOnly } from "../utils/date";
+import { rangeFields } from "../utils/range";
 
 export const createState = function (initial: Date): CalendarState {
   return {
@@ -71,18 +72,8 @@ export const withRangeFields = function <TData = null>(
   day: CalendarDay<TData>,
   state: CalendarState,
 ): CalendarDay<TData> {
-  const isStart = state.rangeStart !== null && sameDay(day.date, state.rangeStart);
-  const isEnd = state.rangeEnd !== null && sameDay(day.date, state.rangeEnd);
-
   return {
     ...day,
-    isSelected: isStart || isEnd,
-    isRangeStart: isStart,
-    isRangeEnd: isEnd,
-    isInRange:
-      state.rangeStart !== null &&
-      state.rangeEnd !== null &&
-      compareDay(day.date, state.rangeStart) >= 0 &&
-      compareDay(day.date, state.rangeEnd) <= 0,
+    ...rangeFields(day.date, state.rangeStart, state.rangeEnd),
   };
 };

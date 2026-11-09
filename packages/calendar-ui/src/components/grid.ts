@@ -1,5 +1,5 @@
 import type { CalendarDay, GridHandle, GridOptions } from "../types";
-import { node } from "../utils/dom";
+import { node, setRowVisibility } from "../utils/dom";
 import { prefersReducedMotion, readCssDuration, readCssEasing } from "../utils/motion";
 import { createDayCell, setDay, setDayState } from "./day";
 
@@ -65,13 +65,6 @@ export const createGrid = function <TData = null>(options: GridOptions<TData>): 
     if (picked && !picked.isDisabled) options.onSelect(picked, index);
   };
 
-  const applyRowState = (row: HTMLElement, visible: boolean): void => {
-    row.classList.toggle("is-collapsed-hidden", !visible);
-    row.toggleAttribute("inert", !visible);
-    if (visible) row.removeAttribute("aria-hidden");
-    else row.setAttribute("aria-hidden", "true");
-  };
-
   const cancelRowAnimations = (): void => {
     rowAnimations.forEach((animation) => {
       try {
@@ -85,7 +78,7 @@ export const createGrid = function <TData = null>(options: GridOptions<TData>): 
 
   const applyInstant = (visible: ReadonlySet<number> | null): void => {
     rowEls.forEach((row, index) => {
-      applyRowState(row, visible === null || visible.has(index));
+      setRowVisibility(row, visible === null || visible.has(index));
     });
   };
 

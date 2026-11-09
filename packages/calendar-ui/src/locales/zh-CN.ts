@@ -15,6 +15,7 @@ export const zhCN: CalendarLocale = {
   nextYearPage: "下一组年份",
   pickMonth: "选择月份",
   pickYear: "选择年份",
+  disabledLabel: "不可选",
   collapse: "收起日历",
   expand: "展开日历",
 };
