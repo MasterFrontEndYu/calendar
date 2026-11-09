@@ -1,0 +1,20 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 85% # 整体覆盖率目标，低于这个数 PR 会标黄
+        threshold: 1% # 允许 1% 的波动，避免小改动就报警
+    patch:
+      default:
+        target: 80% # 新增代码的覆盖率目标，防止 PR 稀释覆盖率
+        threshold: 5%
+
+ignore:
+  - "**/index.ts" # 纯 re-export 文件
+  - "**/data/*.json" # 数据文件
+  - "**/*.d.ts" # 类型声明
+  - "**/file-routes.d.ts"
+
+comment:
+  layout: "reach, diff, flags, files"
+  require_changes: false

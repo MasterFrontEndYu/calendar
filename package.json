@@ -13,10 +13,13 @@
     "version": "bun changeset version",
     "ready": "vp check && vp run -r test && vp run -r build",
     "dev": "vp run --fail-if-no-match doc#dev",
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "test": "vp test",
+    "coverage": "vp run -r coverage"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
+    "@vitest/coverage-v8": "^5.1.0",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   },

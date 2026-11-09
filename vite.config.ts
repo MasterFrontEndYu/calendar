@@ -16,4 +16,12 @@ export default defineConfig({
   run: {
     cache: { tasks: true, scripts: false },
   },
+  test: {
+    include: ["**/tests/*.test.ts"],
+    coverage: {
+      provider: "v8", // 或 "istanbul"
+      reporter: ["text", "lcov"], // lcov 是给 Codecov 用的
+      reportsDirectory: "./coverage",
+    },
+  },
 });
