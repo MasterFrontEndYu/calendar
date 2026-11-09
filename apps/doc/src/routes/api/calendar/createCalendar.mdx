@@ -1,0 +1,56 @@
+---
+title: createCalendar
+lastUpdated: false
+---
+
+# createCalendar
+
+创建一份固定了节日 / 调休配置的日历实例。
+
+## 引入
+
+```ts
+import createCalendar from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+createCalendar(config?: HolidayConfig, options?: SetHolidayOptions): Calendar;
+```
+
+## 用法
+
+```ts
+const calendar = createCalendar({
+  setFestival: { sFtv: { "0419": ["项目上线日"] } },
+  setRest: { 2027: { xiu: ["0101", "0102"], ban: ["0104"] } },
+});
+
+calendar.solarToLunar(2027, 1, 4).ban; // true
+```
+
+## 参数
+
+| 参数              | 类型                | 默认    | 说明                                                                        |
+| ----------------- | ------------------- | ------- | --------------------------------------------------------------------------- |
+| `config`          | `HolidayConfig`     | `{}`    | 节日 / 调休配置，字段见 [HolidayConfig](/api/calendar/types/holiday-config) |
+| `options`         | `SetHolidayOptions` | `{}`    | 创建选项                                                                    |
+| `options.replace` | `boolean`           | `false` | 为 `true` 时丢弃内置节日与调休数据，只使用 `config`                         |
+
+## 返回值
+
+[`Calendar`](/api/calendar/types/calendar) 实例，包含 `solarToLunar`、`lunarToSolar`、`getHolidays` 三个方法。
+
+## 说明
+
+- 每次调用返回独立实例，实例之间不共享状态；
+- 配置在创建时校验、复制并冻结，之后修改传入的对象不会影响实例；
+- 不传 `config` 时使用内置节日与调休数据；
+- 用户配置与内置数据按 `MMDD` / 年份合并去重，`replace: true` 时只保留用户配置。
+
+## 错误
+
+| 异常        | 场景                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------ |
+| `TypeError` | `config` / `options` 不是普通对象，出现未知字段，年份不在 1900-2100，`MMDD` 非法，同一天既是放假日又是补班日 |

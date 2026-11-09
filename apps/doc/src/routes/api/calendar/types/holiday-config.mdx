@@ -1,0 +1,87 @@
+---
+title: HolidayConfig
+lastUpdated: false
+---
+
+# HolidayConfig
+
+`createCalendar()` 的第一个参数，描述要合并或替换的节日与调休数据。
+
+## 引入
+
+```ts
+import type {
+  HolidayConfig,
+  FestivalConfig,
+  FestivalMap,
+  RestConfig,
+  RestEntry,
+} from "@sanguo-dev/calendar";
+```
+
+## 定义
+
+```ts
+interface HolidayConfig {
+  setFestival?: FestivalConfig;
+  setRest?: RestConfig;
+}
+
+interface FestivalConfig {
+  sFtv?: FestivalMap; // 公历节日
+  lFtv?: FestivalMap; // 农历节日
+}
+
+type FestivalMap = Record<string, string[]>; // key 为四位 "MMDD"
+
+type RestConfig = Record<string | number, RestEntry>; // key 为年份
+
+interface RestEntry {
+  xiu?: string[]; // 放假日 MMDD
+  ban?: string[]; // 补班日 MMDD
+}
+```
+
+## 用法
+
+```ts
+const calendar = createCalendar({
+  setFestival: {
+    sFtv: { "0419": ["项目上线日"] },
+    lFtv: { "0815": ["中秋"] },
+  },
+  setRest: {
+    2027: { xiu: ["0101", "0102"], ban: ["0104"] },
+  },
+});
+```
+
+## 字段
+
+| 字段                | 类型             | 说明                            |
+| ------------------- | ---------------- | ------------------------------- |
+| `setFestival`       | `FestivalConfig` | 节日配置                        |
+| `setFestival.sFtv`  | `FestivalMap`    | 公历节日，`MMDD` → 名称数组     |
+| `setFestival.lFtv`  | `FestivalMap`    | 农历节日，`MMDD` → 名称数组     |
+| `setRest`           | `RestConfig`     | 调休配置，年份 → `RestEntry`    |
+| `setRest[year].xiu` | `string[]`       | 该年放假日 `MMDD`，不含普通周末 |
+| `setRest[year].ban` | `string[]`       | 该年补班日 `MMDD`               |
+
+## MMDD 规则
+
+- 必须是四位字符串，月份 `01-12`、日期 `01-31`，例如 `"0101"`；
+- `sFtv` 按公历校验（不存在 `"0231"`）；
+- `lFtv` 与 `xiu` / `ban` 按每月最多 30 天校验。
+
+## 合并规则
+
+- 节日按 `MMDD` 合并，名称数组去重后追加到内置数据；
+- 调休按年份合并，`xiu` / `ban` 分别去重；
+- 同一年同一天不能既在 `xiu` 又在 `ban`；
+- `{ replace: true }` 时不合并内置数据。
+
+## 错误
+
+| 异常        | 场景                                                                                      |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| `TypeError` | 不是普通对象、出现未知字段、年份不在 1900-2100、MMDD 不合法、名称不是非空字符串、休班冲突 |

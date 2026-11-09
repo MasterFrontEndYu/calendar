@@ -1,0 +1,65 @@
+---
+title: HeaderRenderer
+lastUpdated: false
+---
+
+# HeaderRenderer
+
+自定义头部渲染函数，以及它能拿到的上下文。
+
+## 引入
+
+```ts
+import type { HeaderRenderer, HeaderRenderContext } from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+type HeaderRenderer = (context: HeaderRenderContext) => HTMLElement;
+
+interface HeaderRenderContext {
+  year: number;
+  month: number;
+  locale: CalendarLocale;
+  prevMonth(): void;
+  nextMonth(): void;
+  prevDisabled: boolean;
+  nextDisabled: boolean;
+  pickerMode: "month" | "year" | null;
+  toggleYearPicker(): void;
+  toggleMonthPicker(): void;
+}
+```
+
+## 字段
+
+| 字段                  | 类型                        | 说明                               |
+| --------------------- | --------------------------- | ---------------------------------- |
+| `year` / `month`      | `number`                    | 当前展示的年月                     |
+| `locale`              | `CalendarLocale`            | 当前语言包                         |
+| `prevMonth()`         | `() => void`                | 上个月；年份选择层打开时翻上一页   |
+| `nextMonth()`         | `() => void`                | 下个月；年份选择层打开时翻下一页   |
+| `prevDisabled`        | `boolean`                   | 左箭头是否禁用（月份或年份页边界） |
+| `nextDisabled`        | `boolean`                   | 右箭头是否禁用                     |
+| `pickerMode`          | `"month" \| "year" \| null` | 当前打开的选择层，关闭时为 `null`  |
+| `toggleYearPicker()`  | `() => void`                | 打开 / 关闭年份选择层              |
+| `toggleMonthPicker()` | `() => void`                | 打开 / 关闭月份选择层              |
+
+## 用法
+
+```ts
+const renderHeader: HeaderRenderer = (context) => {
+  const el = document.createElement("div");
+  el.textContent = context.locale.monthTitle(context.year, context.month);
+  return el;
+};
+
+createCalendarUI(container, { renderHeader });
+```
+
+## 说明
+
+- 返回值会替换 `.cui__header` 里的默认内容；
+- 每次换月、打开或关闭选择层时都会重新调用；
+- 返回的元素由日历负责替换，不要复用同一个节点。

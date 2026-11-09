@@ -1,0 +1,57 @@
+---
+title: createCalendarUI
+lastUpdated: false
+---
+
+# createCalendarUI
+
+在指定容器里创建日历实例，并把根节点追加到容器末尾。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
+```
+
+## 签名
+
+```ts
+createCalendarUI<TData = null>(
+  container: HTMLElement,
+  options?: CalendarOptions<TData>,
+): CalendarInstance;
+```
+
+## 用法
+
+```ts
+const instance = createCalendarUI(document.querySelector("#app")!, {
+  initialDate: "2026-10-01",
+  onSelect: (day) => console.log(day.year, day.month, day.day),
+});
+```
+
+## 参数
+
+| 参数        | 类型                     | 默认 | 说明                                                                 |
+| ----------- | ------------------------ | ---- | -------------------------------------------------------------------- |
+| `container` | `HTMLElement`            | -    | 日历根节点会追加到这个容器末尾                                       |
+| `options`   | `CalendarOptions<TData>` | `{}` | 创建配置，字段见 [CalendarOptions](/api/calendar-ui/CalendarOptions) |
+
+## 返回值
+
+[`CalendarInstance`](/api/calendar-ui/instance)，根元素是带 `.cui` 类的 `HTMLElement`。
+
+## 说明
+
+- 配置在创建时校验、补全；之后通过实例方法修改，不会重新读取 `options`；
+- 同一个容器可以追加多个实例，销毁时对每个实例各调用一次 [`destroy`](/api/calendar-ui/instance/destroy)；
+- 首次渲染不播放动画。
+
+## 错误
+
+| 异常         | 场景                                                                                   |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `TypeError`  | `size` / `mode` / `animation` 等字段非法，日期字符串格式错误，`disabledDates` 不是数组 |
+| `RangeError` | 日期不存在，`minDate` 晚于 `maxDate`，`months` 不是 1 或 2，约束下没有可选日期         |

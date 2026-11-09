@@ -1,0 +1,59 @@
+---
+title: getHolidays
+lastUpdated: false
+---
+
+# getHolidays
+
+导出实例当前使用的节日 / 调休配置。
+
+## 引入
+
+```ts
+import createCalendar from "@sanguo-dev/calendar";
+
+const calendar = createCalendar();
+```
+
+## 签名
+
+```ts
+getHolidays(options?: GetHolidaysOptions): HolidaySnapshot;
+```
+
+## 用法
+
+```ts
+const snapshot = calendar.getHolidays();
+const copy = createCalendar(snapshot);
+```
+
+## 参数
+
+| 参数             | 类型                 | 默认   | 说明                                                           |
+| ---------------- | -------------------- | ------ | -------------------------------------------------------------- |
+| `options`        | `GetHolidaysOptions` | `{}`   | 导出选项                                                       |
+| `options.merged` | `boolean`            | `true` | `true` 返回内置 + 用户配置；`false` 只返回创建实例时传入的部分 |
+
+## 返回值
+
+`HolidaySnapshot`，结构完整，可以直接再传给 [`createCalendar`](/api/calendar/createCalendar)。
+
+| 字段                | 类型          | 说明                        |
+| ------------------- | ------------- | --------------------------- |
+| `setFestival.sFtv`  | `FestivalMap` | 公历节日，`MMDD` → 名称数组 |
+| `setFestival.lFtv`  | `FestivalMap` | 农历节日，`MMDD` → 名称数组 |
+| `setRest[year].xiu` | `string[]`    | 该年放假日 `MMDD`           |
+| `setRest[year].ban` | `string[]`    | 该年补班日 `MMDD`           |
+
+## 说明
+
+- 返回的是深拷贝，修改它不会影响实例；
+- `merged: false` 时只返回创建时传入的那部分，未传的字段为空对象或空数组；
+- `replace: true` 创建的实例，两种取值结果相同。
+
+## 错误
+
+| 异常        | 场景                                        |
+| ----------- | ------------------------------------------- |
+| `TypeError` | `options` 不是普通对象，`merged` 不是布尔值 |

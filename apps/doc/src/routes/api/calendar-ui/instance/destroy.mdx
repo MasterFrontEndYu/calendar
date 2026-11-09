@@ -1,0 +1,40 @@
+---
+title: destroy
+lastUpdated: false
+---
+
+# calendar.destroy
+
+销毁实例，移除 DOM 与事件监听。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.destroy(): void;
+```
+
+## 用法
+
+```ts
+calendar.destroy();
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`void`。
+
+## 说明
+
+停止进行中的动画，销毁年月选择层、折叠、头部与日期网格，并把根节点从容器中移除。之后不要再调用该实例的方法。

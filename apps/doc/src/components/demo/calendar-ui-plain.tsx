@@ -4,7 +4,7 @@ import type { CalendarSize, CalendarTheme, WeekStartsOn } from "@sanguo-dev/cale
 import "@sanguo-dev/calendar-ui/style.css";
 import "./demo.css";
 
-export interface PlainCalendarProps {
+export interface CalendarUIPlainProps {
   year: number;
   month: number;
   weekStartsOn?: WeekStartsOn;
@@ -13,7 +13,7 @@ export interface PlainCalendarProps {
   size?: CalendarSize;
 }
 
-export default function PlainCalendar(props: PlainCalendarProps) {
+export default function CalendarUIPlain(props: CalendarUIPlainProps) {
   let host: HTMLDivElement | undefined;
   const [picked, setPicked] = createSignal("点一个日期看看");
 

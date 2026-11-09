@@ -1,0 +1,41 @@
+---
+title: getMonth
+lastUpdated: false
+---
+
+# calendar.getMonth
+
+读取当前展示的年月。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.getMonth(): YearMonth;
+```
+
+## 用法
+
+```ts
+calendar.getMonth(); // { year: 2026, month: 10 }
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`YearMonth`，双月视图时返回左侧那个月：
+
+| 字段    | 类型     | 说明         |
+| ------- | -------- | ------------ |
+| `year`  | `number` | 公历年       |
+| `month` | `number` | 公历月，1-12 |

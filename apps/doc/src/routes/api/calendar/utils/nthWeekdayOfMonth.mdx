@@ -1,0 +1,45 @@
+---
+title: nthWeekdayOfMonth
+lastUpdated: false
+---
+
+# utils.nthWeekdayOfMonth
+
+公历某个月第 `nth` 个星期 `weekday` 是几号，用于母亲节、父亲节、感恩节这类浮动节日。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.nthWeekdayOfMonth(y: number, m: number, weekday: number, nth: number): number;
+```
+
+## 用法
+
+```ts
+utils.nthWeekdayOfMonth(2026, 5, 0, 2); // 10，2026 年母亲节是 5 月 10 日
+```
+
+## 参数
+
+| 参数      | 类型     | 说明                  |
+| --------- | -------- | --------------------- |
+| `y`       | `number` | 公历年，1-9999        |
+| `m`       | `number` | 公历月，1-12          |
+| `weekday` | `number` | 星期，0-6，`0` 为周日 |
+| `nth`     | `number` | 第几个，1-5           |
+
+## 返回值
+
+`number`，当月日期数字。
+
+## 错误
+
+| 异常         | 场景                                                                    |
+| ------------ | ----------------------------------------------------------------------- |
+| `RangeError` | 年份 / 月份越界，`weekday` 不在 0-6，`nth` 不在 1-5，当月中不存在该星期 |

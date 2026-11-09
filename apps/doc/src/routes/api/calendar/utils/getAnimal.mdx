@@ -1,0 +1,43 @@
+---
+title: getAnimal
+lastUpdated: false
+---
+
+# utils.getAnimal
+
+年份对应的生肖。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.getAnimal(y: number): string;
+```
+
+## 用法
+
+```ts
+utils.getAnimal(2026); // "马"
+utils.getAnimal(2024); // "龙"
+```
+
+## 参数
+
+| 参数 | 类型     | 说明         |
+| ---- | -------- | ------------ |
+| `y`  | `number` | 年份，1-9999 |
+
+## 返回值
+
+`string`，十二生肖之一。按农历年口径计算，与 [`LunarResult.animal`](/api/calendar/types/lunar-result) 一致。
+
+## 错误
+
+| 异常         | 场景                      |
+| ------------ | ------------------------- |
+| `RangeError` | `y` 不是整数或不在 1-9999 |

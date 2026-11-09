@@ -1,0 +1,67 @@
+---
+title: CalendarAnimationOptions
+lastUpdated: false
+---
+
+# CalendarAnimationOptions
+
+翻月滑动与折叠动画的配置。不传 `animation` 时不做任何动画，也不显示折叠箭头。
+
+## 引入
+
+```ts
+import type {
+  CalendarAnimationOptions,
+  SlideAnimationOptions,
+  CollapseAnimationOptions,
+} from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+interface CalendarAnimationOptions {
+  slide?: SlideAnimationOptions;
+  collapse?: CollapseAnimationOptions;
+}
+
+interface SlideAnimationOptions {
+  duration?: number; // ms，默认 220
+  easing?: string; // 默认 "ease"
+}
+
+interface CollapseAnimationOptions {
+  duration?: number; // ms，默认 200
+  easing?: string; // 默认 "ease"
+  defaultCollapsed?: boolean; // 默认 false
+}
+```
+
+## 字段
+
+| 选项                        | 类型                       | 默认     | 说明                                          |
+| --------------------------- | -------------------------- | -------- | --------------------------------------------- |
+| `slide`                     | `SlideAnimationOptions`    | -        | 传了就开启翻月滑动，`{}` 表示用默认时长与缓动 |
+| `slide.duration`            | `number`                   | `220`    | 动画时长，单位 ms                             |
+| `slide.easing`              | `string`                   | `"ease"` | 缓动函数                                      |
+| `collapse`                  | `CollapseAnimationOptions` | -        | 传了就显示底部折叠箭头并开启过渡              |
+| `collapse.duration`         | `number`                   | `200`    | 折叠时长，单位 ms                             |
+| `collapse.easing`           | `string`                   | `"ease"` | 缓动函数                                      |
+| `collapse.defaultCollapsed` | `boolean`                  | `false`  | 初始是否折叠                                  |
+
+## 用法
+
+```ts
+createCalendarUI(container, {
+  animation: {
+    slide: { duration: 260, easing: "cubic-bezier(0.2, 0, 0, 1)" },
+    collapse: { duration: 180, defaultCollapsed: true },
+  },
+});
+```
+
+## 说明
+
+- 时长与缓动会以内联 CSS 变量（`--cui-month-duration` 等）写到根节点，改动画请改这里的配置；
+- `prefers-reduced-motion: reduce` 生效时会跳过动画；
+- `duration` 必须是大于等于 0 的数字，`easing` 必须是非空字符串，否则创建时抛 `TypeError`。

@@ -2,10 +2,10 @@ import { createSignal, onSettled } from "solid-js";
 import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
 import type { CalendarSize } from "@sanguo-dev/calendar-ui";
 import "@sanguo-dev/calendar-ui/style.css";
-import "./lunar-theme.css";
+import "./calendar-ui-lunar-theme.css";
 import "./demo.css";
 
-export interface LunarCalendarProps {
+export interface CalendarUILunarIndexProps {
   variant?: "builtin" | "custom";
   size?: CalendarSize;
   /** 是否应用示例里的农历自定义样式 */
@@ -17,7 +17,7 @@ const CUSTOM_HOLIDAYS = {
   setRest: { 2026: { xiu: ["0105"], ban: ["0106"] } },
 };
 
-export default function LunarCalendar(props: LunarCalendarProps) {
+export default function CalendarUILunarIndex(props: CalendarUILunarIndexProps) {
   let host: HTMLDivElement | undefined;
   const [picked, setPicked] = createSignal("点一个日期看看");
 

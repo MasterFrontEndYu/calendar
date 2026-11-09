@@ -84,40 +84,72 @@ src/
     index.mdx              首页（layout: home）
     guide/
       index.mdx            指南总览
-      calendar.mdx         calendar 完整 API
-      calendar-ui.mdx      calendar-ui 完整 API
-      calendar-ui-lunar.mdx calendar-ui-lunar 完整 API
+      calendar.mdx         calendar 使用指南
+      calendar-ui.mdx      calendar-ui 使用指南
+      calendar-ui-lunar.mdx calendar-ui-lunar 使用指南
     calendar-ui/
       index.mdx            演示总览
       plain.mdx            基础与多实例
       range.mdx            范围选择
       collapse.mdx         折叠
+      header.mdx           自定义头部
       custom.mdx           第三方适配器
     calendar-ui-lunar/
       index.mdx            内置农历演示
       custom.mdx           自定义 holidays
+    api/
+      index.mdx            API 总览
+      calendar/
+        index.mdx          包总览
+        createCalendar.mdx
+        solarToLunar.mdx
+        lunarToSolar.mdx
+        getHolidays.mdx
+        utils/             17 个 utils 函数（每个一个文件）
+        types/             LunarResult / HolidayConfig / Calendar
+      calendar-ui/
+        index.mdx          包总览
+        createCalendarUI.mdx
+        CalendarOptions.mdx
+        resolveLocale.mdx
+        locales.mdx
+        styles.mdx         样式与 CSS 变量
+        instance/          CalendarInstance 与 24 个实例方法
+        types/             CalendarDate / CalendarDay / CalendarAdapter 等
+      calendar-ui-lunar/
+        index.mdx          包总览
+        createCalendarLunar.mdx
+        createLunarAdapter.mdx
     [...404].mdx           404（渲染 NotFound 组件）
   components/
     demo/
-      PlainCalendar.tsx    纯公历实例
-      RangeCalendar.tsx    范围选择实例
-      CollapseCalendar.tsx 折叠实例
-      LunarCalendar.tsx    官方农历实例
-      CustomCalendar.tsx   第三方适配器实例
-      CompanyRestTable.tsx 第三方 xiu / ban 数据表
-      demo.css             演示布局
+      calendar-ui-index.tsx       演示总览实例
+      calendar-ui-plain.tsx        纯公历实例
+      calendar-ui-transition.tsx   翻月动画实例
+      calendar-ui-range.tsx        范围选择实例
+      calendar-ui-collapse.tsx     折叠实例
+      calendar-ui-header.tsx       自定义头部实例
+      calendar-ui-custom.tsx       第三方适配器实例
+      calendar-ui-custom-table.tsx 第三方 xiu / ban 数据表
+      calendar-ui-lunar-index.tsx  官方农历实例
+      calendar-ui-lunar-custom.tsx 农历自定义 holidays 实例
+      calendar-ui-header.css       自定义头部样式
+      calendar-ui-lunar-theme.css  农历示例配色
+      company-holidays.ts          第三方节假日 / 调休方法
+      demo.css                     演示布局
+    HeaderExtras.tsx       头部 GitHub 图标
+    header-extras.css      头部 GitHub 图标样式
     NotFound.tsx           404 内容 + httpStatus(404)
-  demo/
-    company-holidays.ts    第三方节假日 / 调休方法
   global.d.ts              SolidBase 虚拟模块类型
 tests/
   demo.test.tsx            演示组件挂载测试
+  header-extras.test.tsx   头部 GitHub 图标测试
 vite.config.ts             SolidBase / Solid 插件与主题配置
 ```
 
-顶部导航在 `vite.config.ts` 的 `themeConfig.nav` 中配置：指南、calendar-ui、calendar-ui-lunar。左侧栏在 `themeConfig.sidebar` 中按 `/guide`、`/calendar-ui`、`/calendar-ui-lunar` 分组。
+顶部导航在 `vite.config.ts` 的 `themeConfig.nav` 中配置：指南、calendar-ui、calendar-ui-lunar、API。左侧栏在 `themeConfig.sidebar` 中按 `/guide`、`/calendar-ui`、`/calendar-ui-lunar`、`/api` 分组。
 
-演示代码放在 `components/demo`，路由只负责组合；每个实例下面紧跟对应的代码块。第三方数据方法放在 `src/demo/company-holidays.ts`。
+演示代码放在 `components/demo`，路由只负责组合；每个实例下面紧跟对应的代码块。第三方数据方法放在 `components/demo/company-holidays.ts`。
 
 404 也走 `.mdx`：`[...404].mdx` 渲染 `components/NotFound.tsx`，组件在 SSR 时调用 `httpStatus(404)`，所以路由目录保持纯 `.mdx`，同时能返回真正的 404 状态码。
 

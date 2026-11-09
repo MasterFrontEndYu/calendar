@@ -1,0 +1,44 @@
+---
+title: toChinaDay
+lastUpdated: false
+---
+
+# utils.toChinaDay
+
+农历日期数字转中文日名。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.toChinaDay(d: number): string;
+```
+
+## 用法
+
+```ts
+utils.toChinaDay(1); // "初一"
+utils.toChinaDay(21); // "廿一"
+utils.toChinaDay(30); // "三十"
+```
+
+## 参数
+
+| 参数 | 类型     | 说明         |
+| ---- | -------- | ------------ |
+| `d`  | `number` | 农历日，1-30 |
+
+## 返回值
+
+`string`，例如 `"初一"`、`"初十"`、`"二十"`、`"三十"`。
+
+## 错误
+
+| 异常         | 场景                    |
+| ------------ | ----------------------- |
+| `RangeError` | `d` 不是整数或不在 1-30 |

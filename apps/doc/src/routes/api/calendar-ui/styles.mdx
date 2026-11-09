@@ -1,0 +1,128 @@
+---
+title: 样式
+lastUpdated: false
+---
+
+# 样式
+
+默认皮肤由 `@sanguo-dev/calendar-ui/style.css` 提供，所有颜色与尺寸都通过 CSS 变量控制。
+
+## 引入
+
+```ts
+import "@sanguo-dev/calendar-ui/style.css";
+```
+
+## 根节点
+
+日历根节点是带 `.cui` 类的 `HTMLElement`，通过 data 属性切换预设：
+
+| 属性            | 取值                            | 设置方式                                       |
+| --------------- | ------------------------------- | ---------------------------------------------- |
+| `data-size`     | `"min"` / `"normal"` / `"fill"` | 创建时由 `CalendarOptions.size` 写入，之后不变 |
+| `data-theme`    | `"light"` / `"dark"` / `"auto"` | `CalendarOptions.theme`，之后用 `setTheme()`   |
+| `hidden`        | 布尔                            | `show()` / `hide()` / `toggle()`               |
+| 类 `cui--range` | 布尔                            | 并排显示两个月时自动添加                       |
+| 类 `cui--sub`   | 布尔                            | 首次出现副标题后添加，`min` 尺寸随之放大       |
+
+`size` 的三套模板：
+
+- `min`：纯数字为 24px 方格；出现副标题后整块放大到 40px 方格；
+- `normal`：固定 46px 方格，纯数字与带副标题一样大（默认）；
+- `fill`：宽度铺满容器，日期格为 16:10 长方形；最窄 48px 宽，高度不低于 44px。
+
+## CSS 变量
+
+颜色：
+
+| 变量              | 默认值    | 说明                     |
+| ----------------- | --------- | ------------------------ |
+| `--cui-bg`        | `#ffffff` | 背景                     |
+| `--cui-fg`        | `#1f2328` | 文字                     |
+| `--cui-muted`     | `#8b949e` | 次要文字（星期、副标题） |
+| `--cui-border`    | `#e6e8eb` | 边框                     |
+| `--cui-accent`    | `#2563eb` | 选中态主色               |
+| `--cui-accent-fg` | `#ffffff` | 选中态文字               |
+| `--cui-rest`      | `#e5484d` | 「休」标记颜色           |
+| `--cui-hover`     | `#f3f4f6` | 悬停背景                 |
+| `--cui-radius`    | `8px`     | 根节点圆角               |
+
+尺寸：
+
+| 变量                    | 说明                                |
+| ----------------------- | ----------------------------------- |
+| `--cui-cell-size`       | 日期格边长（min / normal）          |
+| `--cui-cell-aspect`     | `fill` 日期格宽高比，默认 `16 / 10` |
+| `--cui-cell-min-height` | `fill` 日期格最小高度，默认 `44px`  |
+| `--cui-cell-pad`        | 日期格内边距                        |
+| `--cui-cell-gap`        | 日期格内行间距                      |
+| `--cui-cell-radius`     | 日期格圆角                          |
+| `--cui-column-gap`      | 列间距                              |
+| `--cui-row-gap`         | 行间距                              |
+| `--cui-month-gap`       | 双月之间的间距                      |
+| `--cui-pad`             | 根节点内边距                        |
+| `--cui-border-width`    | 根节点边框宽度                      |
+| `--cui-max-width`       | 单月最大宽度                        |
+| `--cui-header-pad`      | 头部内边距                          |
+| `--cui-header-gap`      | 头部元素间距                        |
+| `--cui-title-size`      | 标题字号                            |
+| `--cui-nav-size`        | 翻月按钮边长                        |
+| `--cui-nav-radius`      | 翻月按钮圆角                        |
+| `--cui-nav-font`        | 翻月按钮字号                        |
+| `--cui-weekday-size`    | 星期表头字号                        |
+| `--cui-weekday-pad`     | 星期表头内边距                      |
+| `--cui-num-size`        | 日期数字字号                        |
+| `--cui-sub-size`        | 副标题字号                          |
+| `--cui-sub-line`        | 副标题行高                          |
+| `--cui-tag-size`        | 「休 / 班」标记字号                 |
+| `--cui-collapse-size`   | 折叠箭头字号                        |
+| `--cui-picker-pad`      | 年月选择层内边距                    |
+
+图标：
+
+| 变量               | 说明                             |
+| ------------------ | -------------------------------- |
+| `--cui-icon`       | 当前箭头背景图，默认引用浅色那张 |
+| `--cui-icon-light` | 浅色主题箭头背景图               |
+| `--cui-icon-dark`  | 深色主题箭头背景图               |
+
+动画：
+
+`--cui-month-duration`、`--cui-month-easing`、`--cui-collapse-duration`、`--cui-collapse-easing` 由实例写在根节点的内联样式上，取值来自 [`CalendarAnimationOptions`](/api/calendar-ui/types/calendar-animation)。要调整动画，请改 `animation` 配置，不要覆盖这些变量。
+
+```css
+.cui {
+  --cui-accent: #7c3aed;
+  --cui-cell-size: 52px;
+}
+```
+
+## 类名
+
+| 选择器              | 对应节点        |
+| ------------------- | --------------- |
+| `.cui`              | 根节点          |
+| `.cui__header`      | 头部            |
+| `.cui__title`       | 标题容器        |
+| `.cui__title-part`  | 年份 / 月份按钮 |
+| `.cui__nav`         | 翻月按钮        |
+| `.cui__months`      | 月份容器        |
+| `.cui__month`       | 单个月份        |
+| `.cui__weekdays`    | 星期表头        |
+| `.cui__weekday`     | 单个星期        |
+| `.cui__grid`        | 日期网格        |
+| `.cui__week`        | 一周            |
+| `.cui__day`         | 日期格          |
+| `.cui__day-num`     | 日期数字        |
+| `.cui__day-sub`     | 副标题          |
+| `.cui__day-tag`     | 「休 / 班」标记 |
+| `.cui__collapse`    | 底部折叠按钮    |
+| `.cui__picker`      | 年月选择层      |
+| `.cui__picker-grid` | 选择层网格      |
+| `.cui__picker-cell` | 选择层单格      |
+
+日期格上的 `data-tone` 来自 `CalendarBadge.tone`，默认皮肤支持 `rest`（休）与 `work`（班），对应 `--cui-rest` 与 `--cui-accent`。
+
+## 动画偏好
+
+`prefers-reduced-motion: reduce` 生效时，翻月与折叠动画会被跳过，只更新状态。

@@ -2,7 +2,7 @@
 title: 基础与多实例
 ---
 
-import PlainCalendar from "../../components/demo/PlainCalendar";
+import CalendarUIPlain from "../../components/demo/calendar-ui-plain";
 
 # 基础与多实例
 
@@ -12,7 +12,7 @@ import PlainCalendar from "../../components/demo/PlainCalendar";
 
 ## 默认实例
 
-<PlainCalendar year={2026} month={10} weekStartsOn={1} locale="zh-CN" />
+<CalendarUIPlain year={2026} month={10} weekStartsOn={1} locale="zh-CN" />
 
 ```ts
 const a = createCalendarUI(hostA, {
@@ -25,7 +25,7 @@ const a = createCalendarUI(hostA, {
 
 ## 深色实例
 
-<PlainCalendar year={2026} month={12} weekStartsOn={0} locale="en-US" theme="dark" />
+<CalendarUIPlain year={2026} month={12} weekStartsOn={0} locale="en-US" theme="dark" />
 
 ```ts
 const b = createCalendarUI(hostB, {
@@ -43,7 +43,7 @@ const b = createCalendarUI(hostB, {
 
 24px 正方形格子，没有副标题时整块只有 194px 宽：
 
-<PlainCalendar year={2026} month={10} size="min" />
+<CalendarUIPlain year={2026} month={10} size="min" />
 
 ```ts
 const c = createCalendarUI(hostC, {
@@ -54,9 +54,9 @@ const c = createCalendarUI(hostC, {
 
 ## 铺满容器（fill）
 
-容器有多宽就铺多宽，格子保持正方形跟着放大，最小 48px：
+容器有多宽就铺多宽，格子是 16:10 长方形，高度比正方形矮，最小 48px 宽：
 
-<PlainCalendar year={2026} month={10} size="fill" />
+<CalendarUIPlain year={2026} month={10} size="fill" />
 
 ```ts
 const d = createCalendarUI(hostD, {

@@ -1,0 +1,43 @@
+---
+title: lMonthDays
+lastUpdated: false
+---
+
+# utils.lMonthDays
+
+农历 `y` 年 `m` 月（非闰月）的天数。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.lMonthDays(y: number, m: number): number;
+```
+
+## 用法
+
+```ts
+utils.lMonthDays(2026, 3); // 30
+```
+
+## 参数
+
+| 参数 | 类型     | 说明              |
+| ---- | -------- | ----------------- |
+| `y`  | `number` | 农历年，1900-2100 |
+| `m`  | `number` | 农历月，1-12      |
+
+## 返回值
+
+`number`，非闰月天数，29 或 30。闰月天数用 [`utils.leapDays`](/api/calendar/utils/leapDays)。
+
+## 错误
+
+| 异常         | 场景                                        |
+| ------------ | ------------------------------------------- |
+| `RangeError` | 年份不是整数或不在 1900-2100，月份不在 1-12 |

@@ -1,0 +1,43 @@
+---
+title: leapMonth
+lastUpdated: false
+---
+
+# utils.leapMonth
+
+农历 `y` 年闰哪个月。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.leapMonth(y: number): number;
+```
+
+## 用法
+
+```ts
+utils.leapMonth(2020); // 4
+utils.leapMonth(2026); // 0
+```
+
+## 参数
+
+| 参数 | 类型     | 说明              |
+| ---- | -------- | ----------------- |
+| `y`  | `number` | 农历年，1900-2100 |
+
+## 返回值
+
+`number`，闰月的月份（1-12）；没有闰月时返回 `0`。
+
+## 错误
+
+| 异常         | 场景                                |
+| ------------ | ----------------------------------- |
+| `RangeError` | `y` 不是整数，或不在 1900-2100 之间 |

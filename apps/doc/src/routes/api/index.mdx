@@ -1,0 +1,50 @@
+---
+title: API
+lastUpdated: false
+---
+
+# API
+
+三个包的公开 API 索引。左侧按包分组，每个函数、方法、类型各占一页。
+
+| 包                              | 作用                            | 入口                                                              |
+| ------------------------------- | ------------------------------- | ----------------------------------------------------------------- |
+| `@sanguo-dev/calendar`          | 公历 / 农历换算、节日与调休数据 | [createCalendar](/api/calendar/createCalendar)                    |
+| `@sanguo-dev/calendar-ui`       | 纯 DOM 日历核心                 | [createCalendarUI](/api/calendar-ui/createCalendarUI)             |
+| `@sanguo-dev/calendar-ui-lunar` | 农历适配器                      | [createCalendarLunar](/api/calendar-ui-lunar/createCalendarLunar) |
+
+## 包入口
+
+```ts
+// 公历 / 农历核心
+import createCalendar, { utils } from "@sanguo-dev/calendar";
+
+// UI 核心
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
+
+// 农历适配器
+import { createCalendarLunar, createLunarAdapter } from "@sanguo-dev/calendar-ui-lunar";
+```
+
+## 日期输入
+
+`calendar-ui` 与 `calendar-ui-lunar` 的日期参数统一为 `CalendarDateInput`：
+
+```ts
+type CalendarDateInput = Date | string;
+```
+
+字符串格式为 `YYYY-MM-DD` 或 `YYYY/MM/DD`，月、日允许一位数，分隔符必须一致，按本地时区解析，时分秒会被丢弃。
+
+## 错误
+
+| 异常         | 场景                                                       |
+| ------------ | ---------------------------------------------------------- |
+| `TypeError`  | 参数类型、对象结构、日期字符串格式不合法                   |
+| `RangeError` | 数值越界、日期不存在、给定约束下没有可选日期、日期顺序非法 |
+
+## 支持范围
+
+- `@sanguo-dev/calendar`：农历数据覆盖 `1900-01-31 ~ 2100-12-31`；
+- `calendar-ui`：可选日期搜索的兜底范围为 `1900-01-01 ~ 2100-12-31`。

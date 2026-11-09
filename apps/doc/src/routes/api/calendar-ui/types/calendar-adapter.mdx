@@ -1,0 +1,111 @@
+---
+title: CalendarAdapter
+lastUpdated: false
+---
+
+# CalendarAdapter
+
+日期格装饰适配器。核心只认识这个接口，农历、节气、节日都由适配器提供。
+
+## 引入
+
+```ts
+import type {
+  CalendarAdapter,
+  MonthInput,
+  DayDecoration,
+  CalendarBadge,
+  SubtitleRenderer,
+} from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+interface CalendarAdapter<TData = unknown> {
+  readonly id: string;
+  decorateMonth(input: MonthInput): ReadonlyArray<DayDecoration<TData> | null>;
+}
+
+interface MonthInput {
+  year: number;
+  month: number;
+  weekStartsOn: WeekStartsOn;
+  today: Date;
+  locale: CalendarLocale;
+  days: readonly CalendarDate[];
+}
+
+interface DayDecoration<TData = unknown> {
+  subtitle?: string;
+  badge?: CalendarBadge;
+  data?: TData;
+  ariaLabel?: string;
+}
+
+interface CalendarBadge {
+  text: string;
+  tone?: string;
+}
+
+type SubtitleRenderer = (day: CalendarDate) => string | null | undefined;
+```
+
+## 字段
+
+`CalendarAdapter`：
+
+| 字段            | 类型                                   | 说明                       |
+| --------------- | -------------------------------------- | -------------------------- |
+| `id`            | `string`                               | 适配器标识，用于调试       |
+| `decorateMonth` | `(input) => (DayDecoration \| null)[]` | 生成当前月的 42 个格子装饰 |
+
+`MonthInput`：
+
+| 字段           | 类型                      | 说明                     |
+| -------------- | ------------------------- | ------------------------ |
+| `year`         | `number`                  | 公历年                   |
+| `month`        | `number`                  | 公历月，1-12             |
+| `weekStartsOn` | `WeekStartsOn`            | 一周起始日               |
+| `today`        | `Date`                    | 今天                     |
+| `locale`       | `CalendarLocale`          | 当前语言包               |
+| `days`         | `readonly CalendarDate[]` | 固定 42 个日期，含补位格 |
+
+`DayDecoration`：
+
+| 字段        | 类型            | 说明                     |
+| ----------- | --------------- | ------------------------ |
+| `subtitle`  | `string`        | 格子副标题               |
+| `badge`     | `CalendarBadge` | 左上角标记；不传则不显示 |
+| `data`      | `TData`         | 透传给 `onSelect` 的数据 |
+| `ariaLabel` | `string`        | 覆盖默认无障碍名称       |
+
+`CalendarBadge`：
+
+| 字段   | 类型     | 说明                                           |
+| ------ | -------- | ---------------------------------------------- |
+| `text` | `string` | 显示文字，例如 `"休"`                          |
+| `tone` | `string` | 写入 `data-tone`，默认皮肤支持 `rest` / `work` |
+
+`SubtitleRenderer`：返回 `null` / `undefined` 时回退到适配器的 `subtitle`，返回 `""` 时明确隐藏副标题。
+
+## 用法
+
+```ts
+const adapter: CalendarAdapter<string> = {
+  id: "weekday-name",
+  decorateMonth: (input) =>
+    input.days.map((day) => ({
+      subtitle: day.inCurrentMonth ? input.locale.weekdaysLong[day.date.getDay()] : "",
+      data: `${day.year}-${day.month}-${day.day}`,
+    })),
+};
+
+createCalendarUI(container, { adapter });
+```
+
+## 说明
+
+- 返回值按索引与 `input.days` 对齐，没有装饰的位置返回 `null`；
+- 每次换月、选中、重绘都会调用，适配器应自行缓存重算结果；
+- `subtitle` 选项的优先级高于适配器返回的 `subtitle`。

@@ -1,0 +1,43 @@
+---
+title: getSolarTerm
+lastUpdated: false
+---
+
+# utils.getSolarTerm
+
+按序号取节气名。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.getSolarTerm(n: number): string;
+```
+
+## 用法
+
+```ts
+utils.getSolarTerm(0); // "小寒"
+utils.getSolarTerm(23); // "冬至"
+```
+
+## 参数
+
+| 参数 | 类型     | 说明                       |
+| ---- | -------- | -------------------------- |
+| `n`  | `number` | 节气序号，0-23，`0` 为小寒 |
+
+## 返回值
+
+`string`，节气名。序号从 0 开始，比 [`utils.getTerm`](/api/calendar/utils/getTerm) 的 `n` 小 1。
+
+## 错误
+
+| 异常         | 场景                    |
+| ------------ | ----------------------- |
+| `RangeError` | `n` 不是整数或不在 0-23 |

@@ -1,0 +1,71 @@
+---
+title: calendar
+lastUpdated: false
+---
+
+# @sanguo-dev/calendar
+
+零依赖的公历 / 农历换算库。包内没有全局可变状态，每个实例的节假日配置在创建时固定。
+
+## 引入
+
+```ts
+import createCalendar, { createCalendar, utils } from "@sanguo-dev/calendar";
+```
+
+## 安装
+
+```bash
+bun add @sanguo-dev/calendar
+```
+
+## 函数
+
+| 导出             | 签名                                                                            | 说明                     |
+| ---------------- | ------------------------------------------------------------------------------- | ------------------------ |
+| `createCalendar` | `createCalendar(config?: HolidayConfig, options?: SetHolidayOptions): Calendar` | 创建实例；同时是默认导出 |
+
+## 实例方法
+
+`createCalendar()` 返回的 [`Calendar`](/api/calendar/types/calendar) 实例。
+
+| 方法                                       | 签名                                                                                | 说明                     |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------ |
+| [solarToLunar](/api/calendar/solarToLunar) | `solarToLunar(y?: number, m?: number, d?: number): LunarResult`                     | 公历转农历；不传参取今天 |
+| [lunarToSolar](/api/calendar/lunarToSolar) | `lunarToSolar(y: number, m: number, d: number, isLeapMonth?: boolean): LunarResult` | 农历转公历               |
+| [getHolidays](/api/calendar/getHolidays)   | `getHolidays(options?: GetHolidaysOptions): HolidaySnapshot`                        | 导出当前配置的深拷贝     |
+
+## utils
+
+`utils` 是无状态函数集合，不读取实例配置，签名与返回值见 [utils](/api/calendar/utils)。
+
+| 分组 | 函数                                                                                                                                         |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 农历 | `lYearDays`、`leapMonth`、`leapDays`、`lMonthDays`、`toChinaMonth`、`toChinaDay`、`getSolarTerm`、`toGanZhiYear`、`toGanZhi`、`toHourGanZhi` |
+| 公历 | `solarDays`、`solarFirstWeek`、`nthWeekdayOfMonth`、`toAstro`、`getAnimal`、`getTerm`、`toChinaNum`                                          |
+
+## 类型
+
+| 类型                 | 说明                            | 页面                                                |
+| -------------------- | ------------------------------- | --------------------------------------------------- |
+| `LunarResult`        | 换算结果                        | [LunarResult](/api/calendar/types/lunar-result)     |
+| `HolidayConfig`      | 节日 / 调休配置                 | [HolidayConfig](/api/calendar/types/holiday-config) |
+| `Calendar`           | 实例接口                        | [Calendar](/api/calendar/types/calendar)            |
+| `FestivalMap`        | 节日映射表，key 为 `MMDD`       | [HolidayConfig](/api/calendar/types/holiday-config) |
+| `FestivalConfig`     | `HolidayConfig.setFestival`     | [HolidayConfig](/api/calendar/types/holiday-config) |
+| `RestConfig`         | `HolidayConfig.setRest`         | [HolidayConfig](/api/calendar/types/holiday-config) |
+| `RestEntry`          | 单年放假 / 补班配置             | [HolidayConfig](/api/calendar/types/holiday-config) |
+| `HolidaySnapshot`    | `getHolidays()` 的返回值        | [getHolidays](/api/calendar/getHolidays)            |
+| `SetHolidayOptions`  | `createCalendar()` 的第二个参数 | [createCalendar](/api/calendar/createCalendar)      |
+| `GetHolidaysOptions` | `getHolidays()` 的参数          | [getHolidays](/api/calendar/getHolidays)            |
+
+## 支持范围
+
+农历数据覆盖 `1900-01-31`（农历 1900 年正月初一）到 `2100-12-31`。超出范围的公历日期无法换算。
+
+## 错误
+
+| 异常         | 场景                                                       |
+| ------------ | ---------------------------------------------------------- |
+| `TypeError`  | 配置结构、字段名、字段类型或 `MMDD` 格式不合法             |
+| `RangeError` | 年份、月份、日期越界或不存在，闰月不匹配，日期超出数据范围 |

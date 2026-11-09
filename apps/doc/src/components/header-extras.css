@@ -1,0 +1,29 @@
+.doc-github-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--sb-border-radius);
+  color: var(--sb-text-color);
+  text-decoration: none;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.doc-github-link:hover {
+  color: var(--sb-heading-color);
+  background: color-mix(in hsl, var(--sb-text-color) 7.5%, transparent);
+}
+
+.doc-github-link:focus-visible {
+  outline: 2px solid var(--sb-active-link-color);
+  outline-offset: 1px;
+}
+
+.doc-github-link svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}

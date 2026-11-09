@@ -1,0 +1,41 @@
+---
+title: Calendar
+lastUpdated: false
+---
+
+# Calendar
+
+`createCalendar()` 返回的实例接口。配置在创建时固定，实例方法只做查询。
+
+## 引入
+
+```ts
+import type { Calendar } from "@sanguo-dev/calendar";
+import createCalendar from "@sanguo-dev/calendar";
+
+const calendar: Calendar = createCalendar();
+```
+
+## 定义
+
+```ts
+interface Calendar {
+  solarToLunar(this: void, y?: number, m?: number, d?: number): LunarResult;
+  lunarToSolar(this: void, y: number, m: number, d: number, isLeapMonth?: boolean): LunarResult;
+  getHolidays(this: void, options?: GetHolidaysOptions): HolidaySnapshot;
+}
+```
+
+## 方法
+
+| 方法                                       | 返回              | 说明                     |
+| ------------------------------------------ | ----------------- | ------------------------ |
+| [solarToLunar](/api/calendar/solarToLunar) | `LunarResult`     | 公历转农历；不传参取今天 |
+| [lunarToSolar](/api/calendar/lunarToSolar) | `LunarResult`     | 农历转公历               |
+| [getHolidays](/api/calendar/getHolidays)   | `HolidaySnapshot` | 导出当前配置的深拷贝     |
+
+## 说明
+
+- 方法都是同步的，不读写模块级状态；
+- `solarToLunar` / `lunarToSolar` 返回新对象，`gljr` / `nljr` 可能是共享的只读空数组；
+- 实例之间互不影响，配置在 `createCalendar()` 时已经冻结。

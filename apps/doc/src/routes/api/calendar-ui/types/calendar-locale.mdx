@@ -1,0 +1,72 @@
+---
+title: CalendarLocale
+lastUpdated: false
+---
+
+# CalendarLocale
+
+日历界面文案的语言包。只负责日历自身的文字，农历、节气、节日由适配器提供。
+
+## 引入
+
+```ts
+import type { CalendarLocale, CalendarLocaleName } from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+interface CalendarLocale {
+  name: string;
+  weekdays: readonly string[];
+  weekdaysLong: readonly string[];
+  monthTitle(year: number, month: number): string;
+  titleOrder?: "year-first" | "month-first";
+  monthName?(month: number): string;
+  yearLabel?(year: number): string;
+  prevMonth: string;
+  nextMonth: string;
+  prevYearPage?: string;
+  nextYearPage?: string;
+  pickMonth?: string;
+  pickYear?: string;
+  disabledLabel?: string;
+  collapse?: string;
+  expand?: string;
+}
+
+type CalendarLocaleName = "zh-CN" | "en-US";
+```
+
+## 字段
+
+| 字段            | 必填 | 说明                                               |
+| --------------- | ---- | -------------------------------------------------- |
+| `name`          | 是   | 语言标签，例如 `"zh-CN"`，用于调试                 |
+| `weekdays`      | 是   | 7 个短星期名，下标 0 为周日                        |
+| `weekdaysLong`  | 是   | 7 个长星期名，用于 `title` 提示                    |
+| `monthTitle`    | 是   | 头部标题，例如 `"2026 年 10 月"`                   |
+| `titleOrder`    | 否   | 年份 / 月份按钮顺序，默认 `"year-first"`           |
+| `monthName`     | 否   | 选择层月份名，例如 `"10 月"`；不传时用 `${month}`  |
+| `yearLabel`     | 否   | 选择层年份名，例如 `"2026 年"`；不传时用 `${year}` |
+| `prevMonth`     | 是   | 上个月按钮的无障碍名称                             |
+| `nextMonth`     | 是   | 下个月按钮的无障碍名称                             |
+| `prevYearPage`  | 否   | 年份层上一组按钮名称                               |
+| `nextYearPage`  | 否   | 年份层下一组按钮名称                               |
+| `pickMonth`     | 否   | 月份选择层的无障碍名称                             |
+| `pickYear`      | 否   | 年份选择层的无障碍名称                             |
+| `disabledLabel` | 否   | 不可选日期的说明文字；默认 `"不可选"`              |
+| `collapse`      | 否   | 折叠按钮文案；默认 `"收起日历"`                    |
+| `expand`        | 否   | 展开按钮文案；默认 `"展开日历"`                    |
+
+## 用法
+
+```ts
+const locale: CalendarLocale = {
+  ...zhCN,
+  name: "zh-CN-custom",
+  monthTitle: (year, month) => `${year} / ${month}`,
+};
+
+createCalendarUI(container, { locale });
+```

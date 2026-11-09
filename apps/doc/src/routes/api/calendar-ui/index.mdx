@@ -1,0 +1,64 @@
+---
+title: calendar-ui
+lastUpdated: false
+---
+
+# @sanguo-dev/calendar-ui
+
+纯 DOM、零依赖的日历核心。默认只渲染公历；副标题、标记等单元格内容由适配器提供。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+import "@sanguo-dev/calendar-ui/style.css";
+```
+
+## 安装
+
+```bash
+bun add @sanguo-dev/calendar-ui
+```
+
+## 函数
+
+| 导出                                                  | 签名                                                                                                         | 说明                 |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------- |
+| [createCalendarUI](/api/calendar-ui/createCalendarUI) | `createCalendarUI<TData = null>(container: HTMLElement, options?: CalendarOptions<TData>): CalendarInstance` | 在容器中创建日历实例 |
+| [resolveLocale](/api/calendar-ui/resolveLocale)       | `resolveLocale(locale?: CalendarLocale \| CalendarLocaleName): CalendarLocale`                               | 解析语言包名称或对象 |
+
+## 语言包
+
+| 导出                                | 类型                                         | 说明               |
+| ----------------------------------- | -------------------------------------------- | ------------------ |
+| [locales](/api/calendar-ui/locales) | `Record<CalendarLocaleName, CalendarLocale>` | 内置语言包         |
+| [zhCN](/api/calendar-ui/locales)    | `CalendarLocale`                             | 简体中文，默认语言 |
+| [enUS](/api/calendar-ui/locales)    | `CalendarLocale`                             | 英文               |
+
+## 实例
+
+`createCalendarUI()` 返回 [`CalendarInstance`](/api/calendar-ui/instance)，包含日期选择、范围、显示控制、边界与主题等方法。
+
+## 类型
+
+| 类型                                                                  | 说明                                               |
+| --------------------------------------------------------------------- | -------------------------------------------------- |
+| [CalendarOptions](/api/calendar-ui/CalendarOptions)                   | 创建配置                                           |
+| [CalendarDate](/api/calendar-ui/types/calendar-date)                  | 日期格中的公历日期                                 |
+| [CalendarDay](/api/calendar-ui/types/calendar-day)                    | 日期格数据                                         |
+| [CalendarAdapter](/api/calendar-ui/types/calendar-adapter)            | 日期格装饰适配器                                   |
+| [CalendarLocale](/api/calendar-ui/types/calendar-locale)              | 语言包                                             |
+| [CalendarAnimationOptions](/api/calendar-ui/types/calendar-animation) | 动画配置                                           |
+| [HeaderRenderer](/api/calendar-ui/types/header-renderer)              | 自定义头部渲染函数与上下文                         |
+| [枚举与别名](/api/calendar-ui/types/aliases)                          | `CalendarMode`、`CalendarTheme`、`CalendarSize` 等 |
+
+## 样式
+
+默认皮肤由 `@sanguo-dev/calendar-ui/style.css` 提供，根节点类为 `.cui`。CSS 变量、`data-size` 与 `data-theme` 见 [样式](/api/calendar-ui/styles)。
+
+## 错误
+
+| 异常         | 场景                                                                      |
+| ------------ | ------------------------------------------------------------------------- |
+| `TypeError`  | 配置字段类型不合法、日期字符串格式错误、动画参数非法                      |
+| `RangeError` | 日期不存在、`minDate` 晚于 `maxDate`、`months` 非 1/2、约束下没有可选日期 |

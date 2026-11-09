@@ -1,0 +1,55 @@
+---
+title: setRange
+lastUpdated: false
+---
+
+# calendar.setRange
+
+以代码方式设置选择范围。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.setRange(start: CalendarDateInput | null, end?: CalendarDateInput | null): void;
+```
+
+## 用法
+
+```ts
+calendar.setRange("2026-10-01", "2026-10-07");
+calendar.setRange("2026-10-07", "2026-10-01"); // 自动交换
+calendar.setRange("2026-10-01"); // 只设起点
+calendar.setRange(null); // 清空
+```
+
+## 参数
+
+| 参数    | 类型                        | 默认   | 说明                                 |
+| ------- | --------------------------- | ------ | ------------------------------------ |
+| `start` | `CalendarDateInput \| null` | -      | 起点；传 `null` 清空整个范围         |
+| `end`   | `CalendarDateInput \| null` | `null` | 终点；省略或传 `null` 表示只选了起点 |
+
+## 返回值
+
+`void`。
+
+## 说明
+
+- `start` 晚于 `end` 时自动交换，`start` 始终是较早的日期；
+- 任一日期被 `minDate` / `maxDate` / `disabledDates` 禁止时，整次调用被忽略，范围保持不变；
+- 设置成功后原地重绘并触发 `onRangeChange(range)`，不切换展示月份。
+
+## 错误
+
+| 异常         | 场景                              |
+| ------------ | --------------------------------- |
+| `TypeError`  | 日期字符串格式错误，或不是 `Date` |
+| `RangeError` | 日期不存在（例如 `2026-02-30`）   |

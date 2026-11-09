@@ -4,7 +4,7 @@ import type { CalendarRange } from "@sanguo-dev/calendar-ui";
 import "@sanguo-dev/calendar-ui/style.css";
 import "./demo.css";
 
-export interface RangeCalendarProps {
+export interface CalendarUIRangeProps {
   /** 1 = 单视图，2 = 相邻两个月 */
   months?: 1 | 2;
 }
@@ -23,7 +23,7 @@ const formatRange = function (range: CalendarRange): string {
   return `${formatDate(range.start)} → ${formatDate(range.end)}`;
 };
 
-export default function RangeCalendar(props: RangeCalendarProps) {
+export default function CalendarUIRange(props: CalendarUIRangeProps) {
   let host: HTMLDivElement | undefined;
   const [range, setRange] = createSignal("还没有选择范围");
 

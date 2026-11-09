@@ -4,7 +4,7 @@ import type { CalendarRange } from "@sanguo-dev/calendar-ui";
 import "@sanguo-dev/calendar-ui/style.css";
 import "./demo.css";
 
-export interface CollapseCalendarProps {
+export interface CalendarUICollapseProps {
   mode?: "single" | "range";
 }
 
@@ -20,7 +20,7 @@ const formatRange = function (range: CalendarRange): string {
   return `${start} → ${end}`;
 };
 
-export default function CollapseCalendar(props: CollapseCalendarProps) {
+export default function CalendarUICollapse(props: CalendarUICollapseProps) {
   let host: HTMLDivElement | undefined;
   const [range, setRange] = createSignal("先选起点，再选终点");
 

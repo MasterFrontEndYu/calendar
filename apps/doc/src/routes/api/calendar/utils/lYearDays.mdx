@@ -1,0 +1,42 @@
+---
+title: lYearDays
+lastUpdated: false
+---
+
+# utils.lYearDays
+
+农历 `y` 年一整年的天数，包含闰月。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.lYearDays(y: number): number;
+```
+
+## 用法
+
+```ts
+utils.lYearDays(2026); // 354
+```
+
+## 参数
+
+| 参数 | 类型     | 说明              |
+| ---- | -------- | ----------------- |
+| `y`  | `number` | 农历年，1900-2100 |
+
+## 返回值
+
+`number`，全年天数，取值 348-385。
+
+## 错误
+
+| 异常         | 场景                                |
+| ------------ | ----------------------------------- |
+| `RangeError` | `y` 不是整数，或不在 1900-2100 之间 |

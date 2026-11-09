@@ -1,0 +1,45 @@
+---
+title: setMonth
+lastUpdated: false
+---
+
+# calendar.setMonth
+
+跳到指定年月。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.setMonth(year: number, month: number): void;
+```
+
+## 用法
+
+```ts
+calendar.setMonth(2026, 10);
+```
+
+## 参数
+
+| 参数    | 类型     | 说明                                                       |
+| ------- | -------- | ---------------------------------------------------------- |
+| `year`  | `number` | 公历年                                                     |
+| `month` | `number` | 公历月，按连续月份归一：`13` 为次年 1 月，`0` 为上年 12 月 |
+
+## 返回值
+
+`void`。
+
+## 说明
+
+- 目标月会被夹取到 `minDate` / `maxDate` 允许的起始月；
+- 起始月没有变化时直接返回，不重绘、不触发 `onMonthChange`；
+- 换月时重绘并触发 `onMonthChange(year, month)`，配置了 `animation.slide` 时播放翻月动画。

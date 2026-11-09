@@ -2,7 +2,7 @@ import { createSignal, onSettled } from "solid-js";
 import { createCalendarUI } from "@sanguo-dev/calendar-ui";
 import type { CalendarInstance, HeaderRenderer } from "@sanguo-dev/calendar-ui";
 import "@sanguo-dev/calendar-ui/style.css";
-import "./custom-header.css";
+import "./calendar-ui-header.css";
 import "./demo.css";
 
 const createHeaderButton = function (
@@ -19,7 +19,7 @@ const createHeaderButton = function (
   return button;
 };
 
-export default function CustomHeaderCalendar() {
+export default function CalendarUIHeader() {
   let host: HTMLDivElement | undefined;
   let instance: CalendarInstance | undefined;
   const [picked, setPicked] = createSignal("点一个日期看看");

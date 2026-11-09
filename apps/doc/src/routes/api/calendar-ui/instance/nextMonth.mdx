@@ -1,0 +1,40 @@
+---
+title: nextMonth
+lastUpdated: false
+---
+
+# calendar.nextMonth
+
+切到下一个月。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.nextMonth(): void;
+```
+
+## 用法
+
+```ts
+calendar.nextMonth();
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`void`。
+
+## 说明
+
+等价于 `setMonth(year, month + 1)`：跨年时自动归一；已到可选范围终点时停住，不重绘、不触发 `onMonthChange`。

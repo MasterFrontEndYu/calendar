@@ -6,6 +6,59 @@ import { defineConfig } from "vite-plus";
 
 const solidBase = createSolidBase(defaultTheme);
 
+/** 把 API 名称展开成侧栏链接；link 相对于所属分组的 base */
+const apiLinks = (names: readonly string[]) =>
+  names.map((name) => ({ title: name, link: `/${name}` }));
+
+/** calendar 包的 utils，顺序与 utils 对象一致 */
+const CALENDAR_UTILS = [
+  "lYearDays",
+  "leapMonth",
+  "leapDays",
+  "lMonthDays",
+  "toChinaMonth",
+  "toChinaDay",
+  "toChinaNum",
+  "solarDays",
+  "solarFirstWeek",
+  "nthWeekdayOfMonth",
+  "toAstro",
+  "getAnimal",
+  "getTerm",
+  "getSolarTerm",
+  "toGanZhi",
+  "toGanZhiYear",
+  "toHourGanZhi",
+] as const;
+
+/** calendar-ui 实例方法，顺序与 CalendarInstance 接口一致 */
+const CALENDAR_UI_METHODS = [
+  "setMonth",
+  "getMonth",
+  "prevMonth",
+  "nextMonth",
+  "select",
+  "getSelected",
+  "getRange",
+  "setRange",
+  "clearRange",
+  "show",
+  "hide",
+  "toggle",
+  "isVisible",
+  "showHeader",
+  "hideHeader",
+  "toggleHeader",
+  "isHeaderVisible",
+  "getMinDate",
+  "setMinDate",
+  "getMaxDate",
+  "setMaxDate",
+  "getTheme",
+  "setTheme",
+  "destroy",
+] as const;
+
 export default defineConfig(({ command }) => {
   // 部署基路径由 DOC_BASE 决定：
   // - GitHub Pages 项目站点：/calendar/（workflow 里设置）
@@ -26,6 +79,7 @@ export default defineConfig(({ command }) => {
             { text: "指南", link: "/guide" },
             { text: "calendar-ui", link: "/calendar-ui" },
             { text: "calendar-ui-lunar", link: "/calendar-ui-lunar" },
+            { text: "API", link: "/api" },
           ],
           sidebar: {
             "/guide": [
@@ -62,6 +116,83 @@ export default defineConfig(({ command }) => {
                 items: [
                   { title: "总览", link: "/" },
                   { title: "自定义 holidays", link: "/custom" },
+                ],
+              },
+            ],
+            "/api": [
+              { title: "总览", link: "/" },
+              {
+                title: "calendar",
+                base: "/calendar",
+                collapsed: false,
+                items: [
+                  { title: "包总览", link: "/" },
+                  { title: "createCalendar", link: "/createCalendar" },
+                  { title: "solarToLunar", link: "/solarToLunar" },
+                  { title: "lunarToSolar", link: "/lunarToSolar" },
+                  { title: "getHolidays", link: "/getHolidays" },
+                  {
+                    title: "utils",
+                    base: "/utils",
+                    collapsed: false,
+                    items: [{ title: "utils 总览", link: "/" }, ...apiLinks(CALENDAR_UTILS)],
+                  },
+                  {
+                    title: "类型",
+                    base: "/types",
+                    collapsed: false,
+                    items: [
+                      { title: "LunarResult", link: "/lunar-result" },
+                      { title: "HolidayConfig", link: "/holiday-config" },
+                      { title: "Calendar", link: "/calendar" },
+                    ],
+                  },
+                ],
+              },
+              {
+                title: "calendar-ui",
+                base: "/calendar-ui",
+                collapsed: false,
+                items: [
+                  { title: "包总览", link: "/" },
+                  { title: "createCalendarUI", link: "/createCalendarUI" },
+                  { title: "CalendarOptions", link: "/CalendarOptions" },
+                  { title: "resolveLocale", link: "/resolveLocale" },
+                  { title: "locales", link: "/locales" },
+                  { title: "样式", link: "/styles" },
+                  {
+                    title: "实例方法",
+                    base: "/instance",
+                    collapsed: false,
+                    items: [
+                      { title: "CalendarInstance", link: "/" },
+                      ...apiLinks(CALENDAR_UI_METHODS),
+                    ],
+                  },
+                  {
+                    title: "类型",
+                    base: "/types",
+                    collapsed: false,
+                    items: [
+                      { title: "CalendarDate", link: "/calendar-date" },
+                      { title: "CalendarDay", link: "/calendar-day" },
+                      { title: "CalendarAdapter", link: "/calendar-adapter" },
+                      { title: "CalendarLocale", link: "/calendar-locale" },
+                      { title: "CalendarAnimationOptions", link: "/calendar-animation" },
+                      { title: "HeaderRenderer", link: "/header-renderer" },
+                      { title: "枚举与别名", link: "/aliases" },
+                    ],
+                  },
+                ],
+              },
+              {
+                title: "calendar-ui-lunar",
+                base: "/calendar-ui-lunar",
+                collapsed: false,
+                items: [
+                  { title: "包总览", link: "/" },
+                  { title: "createCalendarLunar", link: "/createCalendarLunar" },
+                  { title: "createLunarAdapter", link: "/createLunarAdapter" },
                 ],
               },
             ],

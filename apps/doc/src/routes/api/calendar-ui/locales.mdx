@@ -1,0 +1,51 @@
+---
+title: locales
+lastUpdated: false
+---
+
+# locales / zhCN / enUS
+
+内置语言包。
+
+## 引入
+
+```ts
+import { locales, zhCN, enUS } from "@sanguo-dev/calendar-ui";
+```
+
+## 签名
+
+```ts
+const locales: Record<CalendarLocaleName, CalendarLocale>;
+const zhCN: CalendarLocale;
+const enUS: CalendarLocale;
+```
+
+## 用法
+
+```ts
+createCalendarUI(container, { locale: "en-US" });
+createCalendarUI(container, { locale: enUS });
+```
+
+## 导出
+
+| 导出      | 类型                                         | 说明                               |
+| --------- | -------------------------------------------- | ---------------------------------- |
+| `locales` | `Record<CalendarLocaleName, CalendarLocale>` | `{ "zh-CN": zhCN, "en-US": enUS }` |
+| `zhCN`    | `CalendarLocale`                             | 简体中文，默认语言                 |
+| `enUS`    | `CalendarLocale`                             | 英文                               |
+
+## 字段差异
+
+两个内置语言包的字段结构相同，见 [CalendarLocale](/api/calendar-ui/types/calendar-locale)。
+
+| 字段         | `zhCN`            | `enUS`              |
+| ------------ | ----------------- | ------------------- |
+| `monthTitle` | `"2026 年 10 月"` | `"October 2026"`    |
+| `weekdays`   | `["日", "一", …]` | `["Sun", "Mon", …]` |
+| `titleOrder` | `"year-first"`    | `"month-first"`     |
+
+## 扩展
+
+自定义语言包按 `CalendarLocale` 实现后，可以直接传给 `createCalendarUI` 的 `locale` 选项，不必注册到 `locales`。

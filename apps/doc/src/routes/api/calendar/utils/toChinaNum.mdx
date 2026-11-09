@@ -1,0 +1,44 @@
+---
+title: toChinaNum
+lastUpdated: false
+---
+
+# utils.toChinaNum
+
+一位数字转中文，按星期编号取值。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.toChinaNum(num: number): string;
+```
+
+## 用法
+
+```ts
+utils.toChinaNum(0); // "日"
+utils.toChinaNum(3); // "三"
+utils.toChinaNum(10); // "十"
+```
+
+## 参数
+
+| 参数  | 类型     | 说明       |
+| ----- | -------- | ---------- |
+| `num` | `number` | 数字，0-10 |
+
+## 返回值
+
+`string`。`0` 对应 `"日"`（与 `dayOfWeek` / `solarFirstWeek` 的周日口径一致），`1-9` 为 `"一"` … `"九"`，`10` 为 `"十"`。
+
+## 错误
+
+| 异常         | 场景                      |
+| ------------ | ------------------------- |
+| `RangeError` | `num` 不是整数或不在 0-10 |

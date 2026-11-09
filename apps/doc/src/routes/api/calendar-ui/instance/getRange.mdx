@@ -1,0 +1,46 @@
+---
+title: getRange
+lastUpdated: false
+---
+
+# calendar.getRange
+
+读取当前选择范围。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.getRange(): CalendarRange;
+```
+
+## 用法
+
+```ts
+calendar.getRange(); // { start: Date | null, end: Date | null }
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`CalendarRange`：
+
+| 字段    | 类型           | 说明                        |
+| ------- | -------------- | --------------------------- |
+| `start` | `Date \| null` | 起点；未选择时为 `null`     |
+| `end`   | `Date \| null` | 终点；只选了起点时为 `null` |
+
+## 说明
+
+- 单选模式下返回 `{ start: null, end: null }`；
+- 返回的是新对象与新日期，修改它不会影响实例。

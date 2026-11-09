@@ -1,0 +1,40 @@
+---
+title: getSelected
+lastUpdated: false
+---
+
+# calendar.getSelected
+
+读取当前选中的日期。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.getSelected(): Date | null;
+```
+
+## 用法
+
+```ts
+calendar.getSelected(); // Date 或 null
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`Date | null`：单选模式返回选中的日期；范围模式返回范围起点，没有起点时为 `null`。
+
+## 说明
+
+返回的是日期副本，修改它不会影响实例。范围终点请用 [`getRange`](/api/calendar-ui/instance/getRange)。

@@ -1,0 +1,76 @@
+---
+title: CalendarOptions
+lastUpdated: false
+---
+
+# CalendarOptions
+
+`createCalendarUI()` 与 `createCalendarLunar()` 的创建配置。所有字段可选。
+
+## 引入
+
+```ts
+import type { CalendarOptions } from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+interface CalendarOptions<TData = null> {
+  initialDate?: CalendarDateInput;
+  minDate?: CalendarDateInput;
+  maxDate?: CalendarDateInput;
+  disabledDates?: readonly CalendarDateInput[];
+  mode?: CalendarMode;
+  months?: 1 | 2;
+  onRangeChange?: (range: CalendarRange) => void;
+  weekStartsOn?: WeekStartsOn;
+  locale?: CalendarLocale | CalendarLocaleName;
+  theme?: CalendarTheme;
+  size?: CalendarSize;
+  animation?: CalendarAnimationOptions;
+  subtitle?: SubtitleRenderer;
+  header?: boolean;
+  renderHeader?: HeaderRenderer;
+  onSelect?: (day: CalendarDay<TData>) => void;
+  onMonthChange?: (year: number, month: number) => void;
+  adapter?: CalendarAdapter<TData>;
+}
+```
+
+## 字段
+
+| 选项            | 类型                                    | 默认       | 说明                                                         |
+| --------------- | --------------------------------------- | ---------- | ------------------------------------------------------------ |
+| `initialDate`   | `CalendarDateInput`                     | 今天       | 初始日期；超出约束或被禁用时取最近的可选日期                 |
+| `minDate`       | `CalendarDateInput`                     | -          | 最小可选日期（含当天）                                       |
+| `maxDate`       | `CalendarDateInput`                     | -          | 最大可选日期（含当天）                                       |
+| `disabledDates` | `readonly CalendarDateInput[]`          | `[]`       | 禁止选中的日期，按本地年月日比较                             |
+| `mode`          | `CalendarMode`                          | `"single"` | 单选 / 范围模式                                              |
+| `months`        | `1 \| 2`                                | `1`        | 范围模式下并排显示的月数；边界不足两个月时退化为 1           |
+| `onRangeChange` | `(range: CalendarRange) => void`        | -          | 范围变化时触发                                               |
+| `weekStartsOn`  | `WeekStartsOn`                          | `1`        | 一周起始日：`0` 为周日，`1` 为周一                           |
+| `locale`        | `CalendarLocale \| CalendarLocaleName`  | `"zh-CN"`  | 界面语言；可传自定义语言包                                   |
+| `theme`         | `CalendarTheme`                         | `"auto"`   | 主题；`auto` 跟随最近的 `data-theme`，没有则跟随系统         |
+| `size`          | `CalendarSize`                          | `"normal"` | 尺寸模板：`min` / `normal` / `fill`                          |
+| `animation`     | `CalendarAnimationOptions`              | -          | 动画配置；不传时翻月直接切换、不显示折叠箭头                 |
+| `subtitle`      | `SubtitleRenderer`                      | -          | 自定义副标题，优先于适配器；返回 `null` / `undefined` 时回退 |
+| `header`        | `boolean`                               | `true`     | 是否显示头部                                                 |
+| `renderHeader`  | `HeaderRenderer`                        | -          | 自定义头部，替换默认的「‹ 标题 ›」                           |
+| `onSelect`      | `(day: CalendarDay<TData>) => void`     | -          | 选中某一天或范围变化后触发                                   |
+| `onMonthChange` | `(year: number, month: number) => void` | -          | 翻月时触发：`setMonth`、`prevMonth`、`nextMonth`、头部翻页   |
+| `adapter`       | `CalendarAdapter<TData>`                | -          | 日期格装饰适配器；不传时只渲染公历                           |
+
+## 约束
+
+- `minDate` 不能晚于 `maxDate`；
+- `months: 2` 只在 `mode: "range"` 且可选范围覆盖至少两个月时生效；
+- `disabledDates` 里的日期即使满足 `minDate` / `maxDate` 也不可选；
+- `initialDate` 会先夹到 `minDate` / `maxDate`，再找最近的可选日期。
+
+## 错误
+
+| 异常         | 场景                                                                           |
+| ------------ | ------------------------------------------------------------------------------ |
+| `TypeError`  | 字段类型不合法，日期字符串格式错误，`disabledDates` 不是数组，动画参数非法     |
+| `RangeError` | 日期不存在，`minDate` 晚于 `maxDate`，`months` 不是 1 或 2，约束下没有可选日期 |

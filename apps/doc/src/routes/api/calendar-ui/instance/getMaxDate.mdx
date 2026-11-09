@@ -1,0 +1,36 @@
+---
+title: getMaxDate
+lastUpdated: false
+---
+
+# calendar.getMaxDate
+
+读取当前最大可选日期。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.getMaxDate(): Date | null;
+```
+
+## 用法
+
+```ts
+calendar.getMaxDate(); // Date 或 null
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`Date | null`，未设置时为 `null`。返回的是日期副本。

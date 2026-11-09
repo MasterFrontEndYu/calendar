@@ -1,0 +1,43 @@
+---
+title: toChinaMonth
+lastUpdated: false
+---
+
+# utils.toChinaMonth
+
+农历月份数字转中文月名。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.toChinaMonth(m: number): string;
+```
+
+## 用法
+
+```ts
+utils.toChinaMonth(1); // "正月"
+utils.toChinaMonth(12); // "腊月"
+```
+
+## 参数
+
+| 参数 | 类型     | 说明         |
+| ---- | -------- | ------------ |
+| `m`  | `number` | 农历月，1-12 |
+
+## 返回值
+
+`string`，例如 `"正月"`、`"二月"` … `"腊月"`。闰月的「闰」字由调用方拼接（`LunarResult.lMonthCn` 已包含）。
+
+## 错误
+
+| 异常         | 场景                    |
+| ------------ | ----------------------- |
+| `RangeError` | `m` 不是整数或不在 1-12 |

@@ -1,0 +1,76 @@
+---
+title: createLunarAdapter
+lastUpdated: false
+---
+
+# createLunarAdapter
+
+只创建农历适配器，供 `createCalendarUI()` 的 `adapter` 选项使用。
+
+## 引入
+
+```ts
+import { createLunarAdapter } from "@sanguo-dev/calendar-ui-lunar";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+```
+
+## 签名
+
+```ts
+createLunarAdapter(options?: LunarAdapterOptions): CalendarAdapter<LunarResult>;
+
+interface LunarAdapterOptions {
+  holidays?: HolidayConfig;
+  replaceHolidays?: boolean;
+}
+```
+
+## 用法
+
+```ts
+const adapter = createLunarAdapter({
+  holidays: { setRest: { 2027: { xiu: ["0101"], ban: ["0104"] } } },
+});
+
+const instance = createCalendarUI(container, { adapter });
+```
+
+## 参数
+
+| 参数                      | 类型                  | 默认    | 说明                                        |
+| ------------------------- | --------------------- | ------- | ------------------------------------------- |
+| `options`                 | `LunarAdapterOptions` | `{}`    | 适配器配置                                  |
+| `options.holidays`        | `HolidayConfig`       | -       | 本适配器使用的节日 / 调休配置               |
+| `options.replaceHolidays` | `boolean`             | `false` | 为 `true` 时忽略内置数据，只使用 `holidays` |
+
+## 返回值
+
+`CalendarAdapter<LunarResult>`：
+
+```ts
+interface CalendarAdapter<TData = unknown> {
+  readonly id: string;
+  decorateMonth(input: MonthInput): ReadonlyArray<DayDecoration<TData> | null>;
+}
+```
+
+`id` 形如 `"lunar-1"`，用于调试。`decorateMonth` 为每月的 42 个日期生成：
+
+| 字段       | 说明                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| `subtitle` | 取值顺序：节气 > 农历节日 > 公历节日 > 农历初一显示月名 > 农历日                                       |
+| `badge`    | `xiu` 为 `{ text: "休", tone: "rest" }`；`ban` 为 `{ text: "班", tone: "work" }`，其余不显示           |
+| `data`     | 完整的 [`LunarResult`](/api/calendar/types/lunar-result)；日期超出 1900-01-31 ~ 2100-12-31 时为 `null` |
+
+## 说明
+
+- 同一份 `holidays` 对象 + 相同的 `replaceHolidays` 会复用内部转换器；
+- 月份装饰按「转换器 + 年 + 月 + `weekStartsOn`」缓存，最多保留 24 个月；
+- 不同 `holidays` 对象互不影响；
+- `holidays` 在创建时校验并冻结。
+
+## 错误
+
+| 异常        | 场景                                                              |
+| ----------- | ----------------------------------------------------------------- |
+| `TypeError` | `holidays` 结构、年份或字段类型不合法，由 `createCalendar()` 抛出 |

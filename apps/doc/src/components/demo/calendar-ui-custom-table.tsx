@@ -1,8 +1,8 @@
 import { For } from "solid-js";
-import { COMPANY_REST } from "../../demo/company-holidays";
+import { COMPANY_REST } from "./company-holidays";
 import "./demo.css";
 
-export default function CompanyRestTable() {
+export default function CalendarUICustomTable() {
   return (
     <table class="demo-table">
       <thead>

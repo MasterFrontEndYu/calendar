@@ -1,0 +1,43 @@
+---
+title: solarFirstWeek
+lastUpdated: false
+---
+
+# utils.solarFirstWeek
+
+公历某个月 1 日是星期几。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.solarFirstWeek(y: number, m: number): number;
+```
+
+## 用法
+
+```ts
+utils.solarFirstWeek(2026, 4); // 3
+```
+
+## 参数
+
+| 参数 | 类型     | 说明           |
+| ---- | -------- | -------------- |
+| `y`  | `number` | 公历年，1-9999 |
+| `m`  | `number` | 公历月，1-12   |
+
+## 返回值
+
+`number`，0-6，`0` 为周日。与 [`LunarResult.dayOfWeek`](/api/calendar/types/lunar-result) 同口径。
+
+## 错误
+
+| 异常         | 场景                           |
+| ------------ | ------------------------------ |
+| `RangeError` | 年份不在 1-9999，月份不在 1-12 |

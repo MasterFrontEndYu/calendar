@@ -1,0 +1,49 @@
+---
+title: utils
+lastUpdated: false
+---
+
+# utils
+
+无状态工具函数集合。`utils` 不读取实例配置，所有函数只依赖传入参数。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 农历工具
+
+| 函数                                             | 签名                                       | 返回       | 说明                            |
+| ------------------------------------------------ | ------------------------------------------ | ---------- | ------------------------------- |
+| [lYearDays](/api/calendar/utils/lYearDays)       | `lYearDays(y: number): number`             | `number`   | 农历年总天数，348-385           |
+| [leapMonth](/api/calendar/utils/leapMonth)       | `leapMonth(y: number): number`             | `number`   | 闰哪个月；没有闰月返回 0        |
+| [leapDays](/api/calendar/utils/leapDays)         | `leapDays(y: number): number`              | `number`   | 闰月天数；没有闰月返回 0        |
+| [lMonthDays](/api/calendar/utils/lMonthDays)     | `lMonthDays(y: number, m: number): number` | `number`   | 非闰月天数，29 或 30            |
+| [toChinaMonth](/api/calendar/utils/toChinaMonth) | `toChinaMonth(m: number): string`          | `string`   | `1` → `"正月"`，`12` → `"腊月"` |
+| [toChinaDay](/api/calendar/utils/toChinaDay)     | `toChinaDay(d: number): string`            | `string`   | `1` → `"初一"`，`21` → `"廿一"` |
+| [getSolarTerm](/api/calendar/utils/getSolarTerm) | `getSolarTerm(n: number): string`          | `string`   | 节气名；`0` 为小寒              |
+| [toGanZhiYear](/api/calendar/utils/toGanZhiYear) | `toGanZhiYear(lYear: number): string`      | `string`   | 农历年 → 干支年                 |
+| [toGanZhi](/api/calendar/utils/toGanZhi)         | `toGanZhi(offset: number): string`         | `string`   | 相对甲子的偏移 → 干支           |
+| [toHourGanZhi](/api/calendar/utils/toHourGanZhi) | `toHourGanZhi(offset: number): string[]`   | `string[]` | 当天十二个时辰的干支            |
+
+## 公历工具
+
+| 函数                                                       | 签名                                            | 返回     | 说明                                 |
+| ---------------------------------------------------------- | ----------------------------------------------- | -------- | ------------------------------------ |
+| [solarDays](/api/calendar/utils/solarDays)                 | `solarDays(y: number, m: number): number`       | `number` | 当月天数，自动处理闰年               |
+| [solarFirstWeek](/api/calendar/utils/solarFirstWeek)       | `solarFirstWeek(y: number, m: number): number`  | `number` | 当月 1 日星期，0 为周日              |
+| [nthWeekdayOfMonth](/api/calendar/utils/nthWeekdayOfMonth) | `nthWeekdayOfMonth(y, m, weekday, nth): number` | `number` | 当月第 `nth` 个星期 `weekday` 是几号 |
+| [toAstro](/api/calendar/utils/toAstro)                     | `toAstro(m: number, d: number): string`         | `string` | 星座                                 |
+| [getAnimal](/api/calendar/utils/getAnimal)                 | `getAnimal(y: number): string`                  | `string` | 生肖                                 |
+| [getTerm](/api/calendar/utils/getTerm)                     | `getTerm(y: number, n: number): number`         | `number` | 第 `n` 个节气所在公历月的日期数字    |
+| [toChinaNum](/api/calendar/utils/toChinaNum)               | `toChinaNum(num: number): string`               | `string` | 数字转中文                           |
+
+## 错误
+
+| 异常         | 场景                       |
+| ------------ | -------------------------- |
+| `RangeError` | 参数不是整数或超出取值范围 |
+
+各函数的取值范围见对应页面。

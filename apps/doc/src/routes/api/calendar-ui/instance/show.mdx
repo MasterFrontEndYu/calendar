@@ -1,0 +1,40 @@
+---
+title: show
+lastUpdated: false
+---
+
+# calendar.show
+
+显示整个日历。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.show(): void;
+```
+
+## 用法
+
+```ts
+calendar.show();
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`void`。
+
+## 说明
+
+把根节点的 `hidden` 置为 `false`，不重建 DOM、不改变选中状态。

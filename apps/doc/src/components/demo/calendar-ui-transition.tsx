@@ -3,13 +3,13 @@ import { createCalendarUI } from "@sanguo-dev/calendar-ui";
 import "@sanguo-dev/calendar-ui/style.css";
 import "./demo.css";
 
-export interface MonthTransitionCalendarProps {
+export interface CalendarUITransitionProps {
   duration?: number;
   easing?: string;
   label?: string;
 }
 
-export default function MonthTransitionCalendar(props: MonthTransitionCalendarProps) {
+export default function CalendarUITransition(props: CalendarUITransitionProps) {
   let host: HTMLDivElement | undefined;
   const [month, setMonth] = createSignal("2026-10");
 

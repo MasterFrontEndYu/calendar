@@ -1,0 +1,40 @@
+---
+title: toggle
+lastUpdated: false
+---
+
+# calendar.toggle
+
+切换整个日历的显示状态。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.toggle(): void;
+```
+
+## 用法
+
+```ts
+calendar.toggle();
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`void`。
+
+## 说明
+
+相当于按当前 `hidden` 取反，等价于在 [`show`](/api/calendar-ui/instance/show) 与 [`hide`](/api/calendar-ui/instance/hide) 之间切换。

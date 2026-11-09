@@ -1,0 +1,42 @@
+---
+title: resolveLocale
+lastUpdated: false
+---
+
+# resolveLocale
+
+把内置语言包名称或自定义语言包统一解析成 `CalendarLocale` 对象。
+
+## 引入
+
+```ts
+import { resolveLocale } from "@sanguo-dev/calendar-ui";
+```
+
+## 签名
+
+```ts
+resolveLocale(locale?: CalendarLocale | CalendarLocaleName): CalendarLocale;
+```
+
+## 用法
+
+```ts
+resolveLocale(); // zhCN
+resolveLocale("en-US"); // enUS
+resolveLocale(customLocale); // 原样返回
+```
+
+## 参数
+
+| 参数     | 类型                                   | 默认      | 说明                     |
+| -------- | -------------------------------------- | --------- | ------------------------ |
+| `locale` | `CalendarLocale \| CalendarLocaleName` | `"zh-CN"` | 语言包名称或自定义语言包 |
+
+## 返回值
+
+`CalendarLocale`。传入对象时原样返回；传入内置名称时从 [`locales`](/api/calendar-ui/locales) 中取对应语言包。
+
+## 说明
+
+内置名称只有 `"zh-CN"` 与 `"en-US"`。名称不在 `locales` 中时不会回退，返回值为 `undefined`，调用方需要保证名称合法。

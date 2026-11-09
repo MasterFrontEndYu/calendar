@@ -1,0 +1,109 @@
+---
+title: LunarResult
+lastUpdated: false
+---
+
+# LunarResult
+
+`solarToLunar()` 与 `lunarToSolar()` 的返回值。
+
+## 引入
+
+```ts
+import type { LunarResult } from "@sanguo-dev/calendar";
+```
+
+## 定义
+
+```ts
+interface LunarResult {
+  xiu: boolean;
+  ban: boolean;
+  gljr: readonly string[];
+  nljr: readonly string[];
+  lYear: number;
+  lMonth: number;
+  lDay: number;
+  animal: string;
+  lMonthCn: string;
+  lDayCn: string;
+  cYear: number;
+  cMonth: number;
+  cDay: number;
+  gzYear: string;
+  gzYearLunar: string;
+  gzMonth: string;
+  gzDay: string;
+  gzHour: string[];
+  isToday: boolean;
+  isLeap: boolean;
+  nWeek: number;
+  dayOfWeek: number;
+  ncWeek: string;
+  term: string | null;
+  astro: string;
+}
+```
+
+## 字段
+
+| 字段          | 类型                | 说明                                                      |
+| ------------- | ------------------- | --------------------------------------------------------- |
+| `xiu`         | `boolean`           | 是否在放假日列表；只由配置决定，与周末无关                |
+| `ban`         | `boolean`           | 是否在补班日列表；与 `xiu` 互斥                           |
+| `gljr`        | `readonly string[]` | 公历节日；没有节日时是共享的只读空数组                    |
+| `nljr`        | `readonly string[]` | 农历节日；闰月不返回节日，没有节日时是共享的只读空数组    |
+| `lYear`       | `number`            | 农历年                                                    |
+| `lMonth`      | `number`            | 农历月，1-12                                              |
+| `lDay`        | `number`            | 农历日，1-30                                              |
+| `animal`      | `string`            | 生肖，以农历年为准，例如 `"马"`                           |
+| `lMonthCn`    | `string`            | 农历月中文，例如 `"正月"`、`"闰四月"`                     |
+| `lDayCn`      | `string`            | 农历日中文，例如 `"初一"`、`"廿一"`                       |
+| `cYear`       | `number`            | 公历年                                                    |
+| `cMonth`      | `number`            | 公历月，1-12                                              |
+| `cDay`        | `number`            | 公历日                                                    |
+| `gzYear`      | `string`            | 干支年，以立春为界                                        |
+| `gzYearLunar` | `string`            | 干支年，以正月初一为界，与 `animal` 同一口径              |
+| `gzMonth`     | `string`            | 干支月，以节气为界                                        |
+| `gzDay`       | `string`            | 干支日                                                    |
+| `gzHour`      | `string[]`          | 当天十二个时辰的干支，从子时开始                          |
+| `isToday`     | `boolean`           | 是否本地时区的今天                                        |
+| `isLeap`      | `boolean`           | `lMonth` 是否为闰月                                       |
+| `nWeek`       | `number`            | 星期数字，1-7，周一为 1、周日为 7                         |
+| `dayOfWeek`   | `number`            | 星期数字，0-6，周日为 0，与 `utils.solarFirstWeek` 同口径 |
+| `ncWeek`      | `string`            | 星期中文，例如 `"星期日"`                                 |
+| `term`        | `string \| null`    | 节气名；当天不是节气时为 `null`                           |
+| `astro`       | `string`            | 星座，例如 `"天秤座"`                                     |
+
+## 示例
+
+```ts
+calendar.solarToLunar(2026, 10, 1);
+// {
+//   xiu: true,
+//   ban: false,
+//   gljr: ["国庆节", "国际音乐日", "国际老人节"],
+//   nljr: [],
+//   lYear: 2026,
+//   lMonth: 8,
+//   lDay: 21,
+//   animal: "马",
+//   lMonthCn: "八月",
+//   lDayCn: "廿一",
+//   cYear: 2026,
+//   cMonth: 10,
+//   cDay: 1,
+//   gzYear: "丙午",
+//   gzYearLunar: "丙午",
+//   gzMonth: "丁酉",
+//   gzDay: "戊申",
+//   gzHour: ["壬子", "癸丑", "甲寅", "…"],
+//   isToday: false,
+//   isLeap: false,
+//   nWeek: 4,
+//   dayOfWeek: 4,
+//   ncWeek: "星期四",
+//   term: null,
+//   astro: "天秤座",
+// }
+```

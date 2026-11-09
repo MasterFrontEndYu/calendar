@@ -1,0 +1,61 @@
+---
+title: 枚举与别名
+lastUpdated: false
+---
+
+# 枚举与别名
+
+`calendar-ui` 中不单独成页的标量类型。
+
+## 引入
+
+```ts
+import type {
+  WeekStartsOn,
+  CalendarMode,
+  CalendarTheme,
+  CalendarSize,
+  CalendarRange,
+  YearMonth,
+} from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+type WeekStartsOn = 0 | 1;
+type CalendarMode = "single" | "range";
+type CalendarTheme = "light" | "dark" | "auto";
+type CalendarSize = "min" | "normal" | "fill";
+type CalendarLocaleName = "zh-CN" | "en-US";
+
+interface CalendarRange {
+  start: Date | null;
+  end: Date | null;
+}
+
+interface YearMonth {
+  year: number;
+  month: number; // 1-12
+}
+```
+
+## 取值
+
+| 类型                  | 取值                            | 说明                                       |
+| --------------------- | ------------------------------- | ------------------------------------------ |
+| `WeekStartsOn`        | `0` / `1`                       | 一周起始日，`0` 为周日，`1` 为周一（默认） |
+| `CalendarMode`        | `"single"` / `"range"`          | 单选 / 范围，默认 `"single"`               |
+| `CalendarTheme`       | `"light"` / `"dark"` / `"auto"` | 主题，默认 `"auto"`                        |
+| `CalendarSize`        | `"min"` / `"normal"` / `"fill"` | 尺寸模板，默认 `"normal"`                  |
+| `CalendarLocaleName`  | `"zh-CN"` / `"en-US"`           | 内置语言包名称                             |
+| `CalendarRange.start` | `Date \| null`                  | 范围起点，未选择时为 `null`                |
+| `CalendarRange.end`   | `Date \| null`                  | 范围终点，只选了起点时为 `null`            |
+| `YearMonth.month`     | `number`                        | 公历月，1-12                               |
+
+## 用法
+
+```ts
+calendar.getMonth(); // YearMonth
+calendar.getRange(); // CalendarRange
+```

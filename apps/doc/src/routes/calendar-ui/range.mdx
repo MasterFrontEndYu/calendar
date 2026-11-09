@@ -2,7 +2,7 @@
 title: 范围选择
 ---
 
-import RangeCalendar from "../../components/demo/RangeCalendar";
+import CalendarUIRange from "../../components/demo/calendar-ui-range";
 
 # 范围选择
 
@@ -10,7 +10,7 @@ import RangeCalendar from "../../components/demo/RangeCalendar";
 
 ## 单视图
 
-<RangeCalendar months={1} />
+<CalendarUIRange months={1} />
 
 ```ts
 const instance = createCalendarUI(host, {
@@ -25,7 +25,7 @@ const instance = createCalendarUI(host, {
 
 `months: 2` 显示相邻两个月，范围可以跨月：
 
-<RangeCalendar months={2} />
+<CalendarUIRange months={2} />
 
 ```ts
 const instance = createCalendarUI(host, {

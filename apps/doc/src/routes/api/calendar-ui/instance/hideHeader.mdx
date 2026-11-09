@@ -1,0 +1,40 @@
+---
+title: hideHeader
+lastUpdated: false
+---
+
+# calendar.hideHeader
+
+隐藏头部。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.hideHeader(): void;
+```
+
+## 用法
+
+```ts
+calendar.hideHeader();
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`void`。
+
+## 说明
+
+把头部节点的 `hidden` 置为 `true`，日期网格不受影响。

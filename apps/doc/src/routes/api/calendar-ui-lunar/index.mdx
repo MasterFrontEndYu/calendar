@@ -1,0 +1,49 @@
+---
+title: calendar-ui-lunar
+lastUpdated: false
+---
+
+# @sanguo-dev/calendar-ui-lunar
+
+`@sanguo-dev/calendar-ui` 的官方农历适配器，把 `@sanguo-dev/calendar` 的农历、节气、节日与调休数据接到公历日历核心上。
+
+## 引入
+
+```ts
+import { createCalendarLunar, createLunarAdapter } from "@sanguo-dev/calendar-ui-lunar";
+import "@sanguo-dev/calendar-ui/style.css";
+```
+
+## 安装
+
+```bash
+bun add @sanguo-dev/calendar-ui @sanguo-dev/calendar-ui-lunar
+```
+
+## 函数
+
+| 导出                                                              | 签名                                                                                            | 说明                   |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------- |
+| [createCalendarLunar](/api/calendar-ui-lunar/createCalendarLunar) | `createCalendarLunar(container: HTMLElement, options?: LunarCalendarOptions): CalendarInstance` | 创建带农历适配器的日历 |
+| [createLunarAdapter](/api/calendar-ui-lunar/createLunarAdapter)   | `createLunarAdapter(options?: LunarAdapterOptions): CalendarAdapter<LunarResult>`               | 只创建适配器           |
+
+## 类型
+
+| 类型                   | 说明                                                                                                            |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `LunarCalendarOptions` | `CalendarOptions<LunarResult>` + 农历配置，见 [createCalendarLunar](/api/calendar-ui-lunar/createCalendarLunar) |
+| `LunarAdapterOptions`  | `createLunarAdapter()` 的配置，见 [createLunarAdapter](/api/calendar-ui-lunar/createLunarAdapter)               |
+| `LunarCalendarDay`     | 等价于 `CalendarDay<LunarResult>`                                                                               |
+
+同时重新导出 `@sanguo-dev/calendar-ui` 的 `CalendarAdapter`、`CalendarDay`、`CalendarInstance`、`CalendarOptions`、`CalendarRange`、`MonthInput`、`WeekStartsOn` 等类型，以及 `@sanguo-dev/calendar` 的 `HolidayConfig`、`LunarResult`。
+
+## day.data
+
+适配器把完整的 [`LunarResult`](/api/calendar/types/lunar-result) 放在 `CalendarDay.data` 里，可以从中读取 `lMonthCn`、`term`、`xiu`、`ban` 等字段。
+
+## 错误
+
+| 异常         | 场景                                                                           |
+| ------------ | ------------------------------------------------------------------------------ |
+| `TypeError`  | `holidays` 结构、年份或字段类型不合法，其它配置字段非法                        |
+| `RangeError` | 日期不存在、`minDate` 晚于 `maxDate`、`months` 不是 1 或 2、约束下没有可选日期 |

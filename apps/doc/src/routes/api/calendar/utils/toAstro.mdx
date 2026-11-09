@@ -1,0 +1,43 @@
+---
+title: toAstro
+lastUpdated: false
+---
+
+# utils.toAstro
+
+公历月、日对应的星座。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.toAstro(m: number, d: number): string;
+```
+
+## 用法
+
+```ts
+utils.toAstro(4, 19); // "白羊座"
+```
+
+## 参数
+
+| 参数 | 类型     | 说明         |
+| ---- | -------- | ------------ |
+| `m`  | `number` | 公历月，1-12 |
+| `d`  | `number` | 公历日，1-31 |
+
+## 返回值
+
+`string`，十二星座之一，例如 `"摩羯座"`、`"白羊座"`。
+
+## 错误
+
+| 异常         | 场景                         |
+| ------------ | ---------------------------- |
+| `RangeError` | 月份不在 1-12，日期不在 1-31 |

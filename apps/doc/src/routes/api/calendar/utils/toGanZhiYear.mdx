@@ -1,0 +1,47 @@
+---
+title: toGanZhiYear
+lastUpdated: false
+---
+
+# utils.toGanZhiYear
+
+农历年转干支纪年。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.toGanZhiYear(lYear: number): string;
+```
+
+## 用法
+
+```ts
+utils.toGanZhiYear(2024); // "甲辰"
+utils.toGanZhiYear(2026); // "丙午"
+```
+
+## 参数
+
+| 参数    | 类型     | 说明                                                 |
+| ------- | -------- | ---------------------------------------------------- |
+| `lYear` | `number` | 农历年，整数；只做算术，不查农历表，允许 1899 等年份 |
+
+## 返回值
+
+`string`，干支年，例如 `"甲辰"`。
+
+## 说明
+
+返回值只看传入的年份数字，不判断立春或正月初一的边界。`LunarResult.gzYear` 已经把公历日期换算到对应年份后再调用本函数。
+
+## 错误
+
+| 异常         | 场景             |
+| ------------ | ---------------- |
+| `RangeError` | `lYear` 不是整数 |

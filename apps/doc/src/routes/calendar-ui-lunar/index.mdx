@@ -2,7 +2,7 @@
 title: calendar-ui-lunar 演示
 ---
 
-import LunarCalendar from "../../components/demo/LunarCalendar";
+import CalendarUILunarIndex from "../../components/demo/calendar-ui-lunar-index";
 
 # calendar-ui-lunar 演示
 
@@ -10,7 +10,7 @@ import LunarCalendar from "../../components/demo/LunarCalendar";
 
 ## 内置数据
 
-<LunarCalendar variant="builtin" />
+<CalendarUILunarIndex variant="builtin" />
 
 ```ts
 import { createCalendarLunar } from "@sanguo-dev/calendar-ui-lunar";
@@ -34,17 +34,27 @@ const instance = createCalendarLunar(container, {
 
 有副标题时整块从 194px 放大到 306px，格子 40px 正方形：
 
-<LunarCalendar variant="builtin" size="min" />
+<CalendarUILunarIndex variant="builtin" size="min" />
 
 ```ts
 createCalendarLunar(container, { size: "min" });
 ```
 
+## 铺满容器（fill）
+
+宽度铺满容器，格子是 16:10 长方形：数字和副标题居中堆叠，休 / 班角标留在左上角。
+
+<CalendarUILunarIndex variant="builtin" size="fill" />
+
+```ts
+createCalendarLunar(container, { size: "fill" });
+```
+
 ## 自定义样式
 
-下面只保留这一个实例使用自定义样式，其他演示都使用默认皮肤。做法是给实例根节点加类，再覆写 CSS 变量（示例源码 `apps/doc/src/components/demo/lunar-theme.css`）：
+下面只保留这一个实例使用自定义样式，其他演示都使用默认皮肤。做法是给实例根节点加类，再覆写 CSS 变量（示例源码 `apps/doc/src/components/demo/calendar-ui-lunar-theme.css`）：
 
-<LunarCalendar variant="builtin" styled />
+<CalendarUILunarIndex variant="builtin" styled />
 
 ```ts
 instance.el.classList.add("cui--lunar-demo");

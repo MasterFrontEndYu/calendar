@@ -1,0 +1,44 @@
+---
+title: setTheme
+lastUpdated: false
+---
+
+# calendar.setTheme
+
+切换主题。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.setTheme(theme: CalendarTheme): void;
+```
+
+## 用法
+
+```ts
+calendar.setTheme("dark");
+```
+
+## 参数
+
+| 参数    | 类型            | 说明                            |
+| ------- | --------------- | ------------------------------- |
+| `theme` | `CalendarTheme` | `"light"` / `"dark"` / `"auto"` |
+
+## 返回值
+
+`void`。
+
+## 说明
+
+只改写根节点的 `data-theme`，不重建 DOM、不重绘日期格。`"auto"` 由 CSS 跟随最近的 `data-theme` 或系统配色。
+
+参数不做校验，传入其它字符串会原样写入 `data-theme`，但不匹配默认皮肤的任何预设。

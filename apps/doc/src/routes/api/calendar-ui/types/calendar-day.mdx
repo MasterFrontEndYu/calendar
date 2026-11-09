@@ -1,0 +1,61 @@
+---
+title: CalendarDay
+lastUpdated: false
+---
+
+# CalendarDay
+
+一个日期格的完整数据，回调与适配器里使用的就是它。
+
+## 引入
+
+```ts
+import type { CalendarDay } from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+interface CalendarDay<TData = null> extends CalendarDate {
+  isToday: boolean;
+  isSelected: boolean;
+  isDisabled: boolean;
+  isRangeStart: boolean;
+  isRangeEnd: boolean;
+  isInRange: boolean;
+  subtitle: string;
+  badge: CalendarBadge | null;
+  data: TData | null;
+  ariaLabel: string;
+}
+```
+
+## 字段
+
+| 字段                     | 类型                    | 说明                                                |
+| ------------------------ | ----------------------- | --------------------------------------------------- |
+| `year` / `month` / `day` | `number`                | 公历年 / 月 / 日                                    |
+| `date`                   | `Date`                  | 本地日期对象                                        |
+| `inCurrentMonth`         | `boolean`               | 是否属于当前展示月份                                |
+| `isToday`                | `boolean`               | 是否今天                                            |
+| `isSelected`             | `boolean`               | 是否当前选中（范围模式下为起点或终点）              |
+| `isDisabled`             | `boolean`               | 是否被 `minDate` / `maxDate` / `disabledDates` 禁止 |
+| `isRangeStart`           | `boolean`               | 是否范围起点                                        |
+| `isRangeEnd`             | `boolean`               | 是否范围终点                                        |
+| `isInRange`              | `boolean`               | 是否在已选范围内（含起终点）                        |
+| `subtitle`               | `string`                | 最终副标题，例如节气、节日、农历日；没有时为 `""`   |
+| `badge`                  | `CalendarBadge \| null` | 左上角标记                                          |
+| `data`                   | `TData \| null`         | 适配器透传的数据，默认 `null`                       |
+| `ariaLabel`              | `string`                | 无障碍名称，可由 `DayDecoration.ariaLabel` 覆盖     |
+
+## 用法
+
+```ts
+createCalendarUI(container, {
+  onSelect: (day) => {
+    day.year; // 2026
+    day.subtitle; // "国庆节"
+    day.isDisabled; // false
+  },
+});
+```

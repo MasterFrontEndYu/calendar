@@ -1,0 +1,43 @@
+---
+title: toGanZhi
+lastUpdated: false
+---
+
+# utils.toGanZhi
+
+相对甲子的偏移量转干支。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.toGanZhi(offset: number): string;
+```
+
+## 用法
+
+```ts
+utils.toGanZhi(0); // "甲子"
+utils.toGanZhi(40); // "甲辰"
+```
+
+## 参数
+
+| 参数     | 类型     | 说明                         |
+| -------- | -------- | ---------------------------- |
+| `offset` | `number` | 整数，相对甲子的偏移，可为负 |
+
+## 返回值
+
+`string`，干支组合。偏移按 `mod 10` / `mod 12` 折算，负数同样有效。
+
+## 错误
+
+| 异常         | 场景              |
+| ------------ | ----------------- |
+| `RangeError` | `offset` 不是整数 |

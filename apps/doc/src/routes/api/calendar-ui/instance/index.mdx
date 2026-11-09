@@ -1,0 +1,107 @@
+---
+title: CalendarInstance
+lastUpdated: false
+---
+
+# CalendarInstance
+
+`createCalendarUI()` / `createCalendarLunar()` 返回的实例接口。所有方法同步执行，不返回 `Promise`。
+
+## 引入
+
+```ts
+import type { CalendarInstance } from "@sanguo-dev/calendar-ui";
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar: CalendarInstance = createCalendarUI(container);
+```
+
+## 定义
+
+```ts
+interface CalendarInstance {
+  readonly el: HTMLElement;
+  setMonth(year: number, month: number): void;
+  getMonth(): YearMonth;
+  prevMonth(): void;
+  nextMonth(): void;
+  select(date: CalendarDateInput): void;
+  getRange(): CalendarRange;
+  setRange(start: CalendarDateInput | null, end?: CalendarDateInput | null): void;
+  clearRange(): void;
+  getSelected(): Date | null;
+  show(): void;
+  hide(): void;
+  toggle(): void;
+  isVisible(): boolean;
+  showHeader(): void;
+  hideHeader(): void;
+  toggleHeader(): void;
+  isHeaderVisible(): boolean;
+  getMinDate(): Date | null;
+  setMinDate(date: CalendarDateInput | null): void;
+  getMaxDate(): Date | null;
+  setMaxDate(date: CalendarDateInput | null): void;
+  getTheme(): CalendarTheme;
+  setTheme(theme: CalendarTheme): void;
+  destroy(): void;
+}
+```
+
+## 属性
+
+| 属性 | 类型          | 说明                             |
+| ---- | ------------- | -------------------------------- |
+| `el` | `HTMLElement` | 根节点，带 `.cui` 类，可再挂样式 |
+
+## 方法
+
+展示月份：
+
+| 方法                                             | 返回        | 说明         |
+| ------------------------------------------------ | ----------- | ------------ |
+| [setMonth](/api/calendar-ui/instance/setMonth)   | `void`      | 跳到指定年月 |
+| [getMonth](/api/calendar-ui/instance/getMonth)   | `YearMonth` | 当前展示年月 |
+| [prevMonth](/api/calendar-ui/instance/prevMonth) | `void`      | 上个月       |
+| [nextMonth](/api/calendar-ui/instance/nextMonth) | `void`      | 下个月       |
+
+选择：
+
+| 方法                                                 | 返回            | 说明         |
+| ---------------------------------------------------- | --------------- | ------------ |
+| [select](/api/calendar-ui/instance/select)           | `void`          | 选中指定日期 |
+| [getSelected](/api/calendar-ui/instance/getSelected) | `Date \| null`  | 当前选中日期 |
+| [getRange](/api/calendar-ui/instance/getRange)       | `CalendarRange` | 当前范围     |
+| [setRange](/api/calendar-ui/instance/setRange)       | `void`          | 设置范围     |
+| [clearRange](/api/calendar-ui/instance/clearRange)   | `void`          | 清空范围     |
+
+显示：
+
+| 方法                                                         | 返回      | 说明         |
+| ------------------------------------------------------------ | --------- | ------------ |
+| [show](/api/calendar-ui/instance/show)                       | `void`    | 显示整个日历 |
+| [hide](/api/calendar-ui/instance/hide)                       | `void`    | 隐藏整个日历 |
+| [toggle](/api/calendar-ui/instance/toggle)                   | `void`    | 切换显示状态 |
+| [isVisible](/api/calendar-ui/instance/isVisible)             | `boolean` | 当前是否可见 |
+| [showHeader](/api/calendar-ui/instance/showHeader)           | `void`    | 显示头部     |
+| [hideHeader](/api/calendar-ui/instance/hideHeader)           | `void`    | 隐藏头部     |
+| [toggleHeader](/api/calendar-ui/instance/toggleHeader)       | `void`    | 切换头部     |
+| [isHeaderVisible](/api/calendar-ui/instance/isHeaderVisible) | `boolean` | 头部是否可见 |
+
+边界与主题：
+
+| 方法                                               | 返回            | 说明             |
+| -------------------------------------------------- | --------------- | ---------------- |
+| [getMinDate](/api/calendar-ui/instance/getMinDate) | `Date \| null`  | 当前最小可选日期 |
+| [setMinDate](/api/calendar-ui/instance/setMinDate) | `void`          | 设置最小可选日期 |
+| [getMaxDate](/api/calendar-ui/instance/getMaxDate) | `Date \| null`  | 当前最大可选日期 |
+| [setMaxDate](/api/calendar-ui/instance/setMaxDate) | `void`          | 设置最大可选日期 |
+| [getTheme](/api/calendar-ui/instance/getTheme)     | `CalendarTheme` | 当前主题         |
+| [setTheme](/api/calendar-ui/instance/setTheme)     | `void`          | 切换主题         |
+| [destroy](/api/calendar-ui/instance/destroy)       | `void`          | 移除 DOM 与事件  |
+
+## 说明
+
+- 显示 / 隐藏只切换根节点的 `hidden`，不重建 DOM；
+- 边界变化会把当前选中日期与展示月份夹到新的可选范围；
+- `destroy()` 会移除根节点与全部事件监听，之后不要再调用实例方法。

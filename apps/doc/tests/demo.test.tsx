@@ -1,20 +1,20 @@
 import { render } from "@solidjs/testing-library";
 import { flush } from "solid-js";
 import { describe, expect, it } from "vite-plus/test";
-import CustomCalendar from "../src/components/demo/CustomCalendar";
-import CustomHeaderCalendar from "../src/components/demo/CustomHeaderCalendar";
-import CollapseCalendar from "../src/components/demo/CollapseCalendar";
-import LunarCalendar from "../src/components/demo/LunarCalendar";
-import MonthTransitionCalendar from "../src/components/demo/MonthTransitionCalendar";
-import PlainCalendar from "../src/components/demo/PlainCalendar";
-import RangeCalendar from "../src/components/demo/RangeCalendar";
+import CalendarUICustom from "../src/components/demo/calendar-ui-custom";
+import CalendarUIHeader from "../src/components/demo/calendar-ui-header";
+import CalendarUICollapse from "../src/components/demo/calendar-ui-collapse";
+import CalendarUILunarIndex from "../src/components/demo/calendar-ui-lunar-index";
+import CalendarUITransition from "../src/components/demo/calendar-ui-transition";
+import CalendarUIPlain from "../src/components/demo/calendar-ui-plain";
+import CalendarUIRange from "../src/components/demo/calendar-ui-range";
 
 describe("demo components", () => {
   it("plain renders two independent calendars", () => {
     const { container } = render(() => (
       <div>
-        <PlainCalendar year={2026} month={10} />
-        <PlainCalendar year={2026} month={12} weekStartsOn={0} locale="en-US" />
+        <CalendarUIPlain year={2026} month={10} />
+        <CalendarUIPlain year={2026} month={12} weekStartsOn={0} locale="en-US" />
       </div>
     ));
     flush();
@@ -25,8 +25,8 @@ describe("demo components", () => {
   it("month transition demo renders calendars", () => {
     const { container } = render(() => (
       <div>
-        <MonthTransitionCalendar />
-        <MonthTransitionCalendar duration={600} easing="linear" />
+        <CalendarUITransition />
+        <CalendarUITransition duration={600} easing="linear" />
       </div>
     ));
     flush();
@@ -38,8 +38,8 @@ describe("demo components", () => {
   it("lunar renders built-in and custom configurations", () => {
     const { container } = render(() => (
       <div>
-        <LunarCalendar variant="builtin" />
-        <LunarCalendar variant="custom" />
+        <CalendarUILunarIndex variant="builtin" />
+        <CalendarUILunarIndex variant="custom" />
       </div>
     ));
     flush();
@@ -51,8 +51,8 @@ describe("demo components", () => {
   it("lunar custom style is opt-in", () => {
     const { container } = render(() => (
       <div>
-        <LunarCalendar variant="builtin" />
-        <LunarCalendar variant="builtin" styled />
+        <CalendarUILunarIndex variant="builtin" />
+        <CalendarUILunarIndex variant="builtin" styled />
       </div>
     ));
     flush();
@@ -62,7 +62,7 @@ describe("demo components", () => {
   });
 
   it("custom header replaces the default header controls", () => {
-    const { container } = render(() => <CustomHeaderCalendar />);
+    const { container } = render(() => <CalendarUIHeader />);
     flush();
 
     expect(container.querySelector(".demo-header")).not.toBeNull();
@@ -80,7 +80,7 @@ describe("demo components", () => {
   });
 
   it("custom header can open the year and month pickers", () => {
-    const { container } = render(() => <CustomHeaderCalendar />);
+    const { container } = render(() => <CalendarUIHeader />);
     flush();
 
     container.querySelector<HTMLButtonElement>('[aria-label="选择年份"]')?.click();
@@ -101,7 +101,7 @@ describe("demo components", () => {
   });
 
   it("custom renders a third-party adapter", () => {
-    const { container } = render(() => <CustomCalendar />);
+    const { container } = render(() => <CalendarUICustom />);
     flush();
 
     expect(container.querySelectorAll(".cui")).toHaveLength(1);
@@ -113,8 +113,8 @@ describe("demo components", () => {
   it("range renders single and dual views", () => {
     const { container } = render(() => (
       <div>
-        <RangeCalendar months={1} />
-        <RangeCalendar months={2} />
+        <CalendarUIRange months={1} />
+        <CalendarUIRange months={2} />
       </div>
     ));
     flush();
@@ -127,8 +127,8 @@ describe("demo components", () => {
   it("collapse renders the bottom arrow", () => {
     const { container } = render(() => (
       <div>
-        <CollapseCalendar mode="single" />
-        <CollapseCalendar mode="range" />
+        <CalendarUICollapse mode="single" />
+        <CalendarUICollapse mode="range" />
       </div>
     ));
     flush();

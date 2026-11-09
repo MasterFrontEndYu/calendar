@@ -2,7 +2,7 @@
 title: 翻月动画
 ---
 
-import MonthTransitionCalendar from "../../components/demo/MonthTransitionCalendar";
+import CalendarUITransition from "../../components/demo/calendar-ui-transition";
 
 # 翻月动画
 
@@ -10,7 +10,7 @@ import MonthTransitionCalendar from "../../components/demo/MonthTransitionCalend
 
 ## 开启滑动
 
-<MonthTransitionCalendar />
+<CalendarUITransition />
 
 ```ts
 const instance = createCalendarUI(host, {
@@ -26,7 +26,7 @@ const instance = createCalendarUI(host, {
 
 ## 慢速 + linear
 
-<MonthTransitionCalendar duration={600} easing="linear" />
+<CalendarUITransition duration={600} easing="linear" />
 
 ```ts
 const instance = createCalendarUI(host, {

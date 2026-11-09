@@ -2,8 +2,8 @@ import { createSignal, onSettled } from "solid-js";
 import { createCalendarUI } from "@sanguo-dev/calendar-ui";
 import type { CalendarAdapter } from "@sanguo-dev/calendar-ui";
 import "@sanguo-dev/calendar-ui/style.css";
-import { getCompanyRest } from "../../demo/company-holidays";
-import type { CompanyRest } from "../../demo/company-holidays";
+import { getCompanyRest } from "./company-holidays";
+import type { CompanyRest } from "./company-holidays";
 import "./demo.css";
 
 const adapter: CalendarAdapter<CompanyRest> = {
@@ -23,7 +23,7 @@ const adapter: CalendarAdapter<CompanyRest> = {
   },
 };
 
-export default function CustomCalendar() {
+export default function CalendarUICustom() {
   let host: HTMLDivElement | undefined;
   const [picked, setPicked] = createSignal("点一个日期看看");
 

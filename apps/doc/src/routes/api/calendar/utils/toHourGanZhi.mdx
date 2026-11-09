@@ -1,0 +1,42 @@
+---
+title: toHourGanZhi
+lastUpdated: false
+---
+
+# utils.toHourGanZhi
+
+当天的干支偏移量转十二个时辰的干支。
+
+## 引入
+
+```ts
+import { utils } from "@sanguo-dev/calendar";
+```
+
+## 签名
+
+```ts
+utils.toHourGanZhi(offset: number): string[];
+```
+
+## 用法
+
+```ts
+utils.toHourGanZhi(40); // ["甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉", "甲戌", "乙亥"]
+```
+
+## 参数
+
+| 参数     | 类型     | 说明                                          |
+| -------- | -------- | --------------------------------------------- |
+| `offset` | `number` | 整数，与 `LunarResult.gzDay` 使用同一个偏移量 |
+
+## 返回值
+
+`string[]`，长度 12，从子时开始，依次为丑、寅 … 亥时。
+
+## 错误
+
+| 异常         | 场景              |
+| ------------ | ----------------- |
+| `RangeError` | `offset` 不是整数 |

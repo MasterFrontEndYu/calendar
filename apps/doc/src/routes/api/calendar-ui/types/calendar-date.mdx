@@ -1,0 +1,58 @@
+---
+title: CalendarDate
+lastUpdated: false
+---
+
+# CalendarDate
+
+日历格里的公历日期，以及接受日期输入的联合类型。
+
+## 引入
+
+```ts
+import type { CalendarDate, CalendarDateInput } from "@sanguo-dev/calendar-ui";
+```
+
+## 定义
+
+```ts
+type CalendarDateInput = Date | string;
+
+interface CalendarDate {
+  year: number;
+  month: number;
+  day: number;
+  date: Date;
+  inCurrentMonth: boolean;
+}
+```
+
+## 字段
+
+| 字段             | 类型      | 说明                                           |
+| ---------------- | --------- | ---------------------------------------------- |
+| `year`           | `number`  | 公历年                                         |
+| `month`          | `number`  | 公历月，1-12                                   |
+| `day`            | `number`  | 公历日                                         |
+| `date`           | `Date`    | 该格对应的本地日期对象                         |
+| `inCurrentMonth` | `boolean` | 是否属于当前展示月份；`false` 表示上下月补位格 |
+
+## 日期输入
+
+`CalendarDateInput` 接受 `Date` 或本地日期字符串：
+
+```text
+2026-10-01
+2026-10-1
+2026/10/01
+2026/10/1
+```
+
+月、日允许一位数，分隔符必须前后一致。解析时只保留年月日，时、分、秒与毫秒会被丢弃。
+
+## 错误
+
+| 异常         | 场景                                          |
+| ------------ | --------------------------------------------- |
+| `TypeError`  | 不是 `Date` 或字符串，字符串格式不匹配        |
+| `RangeError` | 传入的 `Date` 无效、月份不在 1-12、日期不存在 |

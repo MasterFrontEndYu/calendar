@@ -1,0 +1,52 @@
+---
+title: setMaxDate
+lastUpdated: false
+---
+
+# calendar.setMaxDate
+
+设置最大可选日期，传 `null` 取消限制。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.setMaxDate(date: CalendarDateInput | null): void;
+```
+
+## 用法
+
+```ts
+calendar.setMaxDate("2026-12-31");
+calendar.setMaxDate(null); // 取消限制
+```
+
+## 参数
+
+| 参数   | 类型                        | 说明                          |
+| ------ | --------------------------- | ----------------------------- |
+| `date` | `CalendarDateInput \| null` | 新的最大可选日期；`null` 取消 |
+
+## 返回值
+
+`void`。
+
+## 说明
+
+- 新边界会立即生效：当前选中日期、范围终点与展示月份都会被夹到仍有可选日期的位置；
+- 若新边界下没有任何可选日期，抛 `RangeError`，实例状态保持不变；
+- 不会触发 `onMonthChange`。
+
+## 错误
+
+| 异常         | 场景                                                       |
+| ------------ | ---------------------------------------------------------- |
+| `TypeError`  | 日期字符串格式错误，或不是 `Date`                          |
+| `RangeError` | 日期不存在，新边界晚于当前 `minDate`，或约束下没有可选日期 |

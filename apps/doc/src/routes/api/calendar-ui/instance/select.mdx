@@ -1,0 +1,54 @@
+---
+title: select
+lastUpdated: false
+---
+
+# calendar.select
+
+以代码方式选中某个日期。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.select(date: CalendarDateInput): void;
+```
+
+## 用法
+
+```ts
+calendar.select("2026-10-01");
+calendar.select(new Date(2026, 9, 1));
+```
+
+## 参数
+
+| 参数   | 类型                | 说明                |
+| ------ | ------------------- | ------------------- |
+| `date` | `CalendarDateInput` | `Date` 或日期字符串 |
+
+## 返回值
+
+`void`。
+
+## 说明
+
+- 被 `minDate` / `maxDate` / `disabledDates` 禁止的日期会被忽略，不抛错；
+- 目标日期不在当前展示的月份里时，会先把视图切到目标月；
+- 单选模式更新选中日期并触发 `onSelect(day)`；
+- 范围模式按点击语义更新范围：没有起点时设起点，已有起点时设终点（终点早于起点会自动交换），范围已完整时重新开始一段，并触发 `onRangeChange` 与 `onSelect`；
+- 由 `select` 引起的换月不触发 `onMonthChange`。
+
+## 错误
+
+| 异常         | 场景                              |
+| ------------ | --------------------------------- |
+| `TypeError`  | 日期字符串格式错误，或不是 `Date` |
+| `RangeError` | 日期不存在（例如 `2026-02-30`）   |

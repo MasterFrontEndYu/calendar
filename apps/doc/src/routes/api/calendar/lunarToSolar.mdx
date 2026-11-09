@@ -1,0 +1,56 @@
+---
+title: lunarToSolar
+lastUpdated: false
+---
+
+# lunarToSolar
+
+农历转公历，返回换算后的公历日期对应的完整结果。
+
+## 引入
+
+```ts
+import createCalendar from "@sanguo-dev/calendar";
+
+const calendar = createCalendar();
+```
+
+## 签名
+
+```ts
+lunarToSolar(y: number, m: number, d: number, isLeapMonth?: boolean): LunarResult;
+```
+
+## 用法
+
+```ts
+calendar.lunarToSolar(2024, 1, 1).cMonth; // 2
+calendar.lunarToSolar(2024, 1, 1).cDay; // 10
+
+calendar.lunarToSolar(2020, 4, 1, true); // 闰四月
+```
+
+## 参数
+
+| 参数          | 类型      | 默认    | 说明                                                      |
+| ------------- | --------- | ------- | --------------------------------------------------------- |
+| `y`           | `number`  | -       | 农历年，1900-2100                                         |
+| `m`           | `number`  | -       | 农历月，1-12                                              |
+| `d`           | `number`  | -       | 农历日，按当月实际天数校验（29 或 30）                    |
+| `isLeapMonth` | `boolean` | `false` | 是否按闰月换算；只接受布尔值，闰月不匹配时抛 `RangeError` |
+
+## 返回值
+
+[`LunarResult`](/api/calendar/types/lunar-result)，`cYear` / `cMonth` / `cDay` 为换算出的公历日期。
+
+## 说明
+
+- `isLeapMonth: true` 时，`m` 必须正好是该年的闰月；
+- 换算结果晚于 `2100-12-31` 时抛 `RangeError`。
+
+## 错误
+
+| 异常         | 场景                                                            |
+| ------------ | --------------------------------------------------------------- |
+| `TypeError`  | `isLeapMonth` 不是布尔值                                        |
+| `RangeError` | 年份 / 月份 / 日期越界或不存在，闰月不匹配，结果超出 2100-12-31 |

@@ -1,0 +1,40 @@
+---
+title: hide
+lastUpdated: false
+---
+
+# calendar.hide
+
+隐藏整个日历。
+
+## 引入
+
+```ts
+import { createCalendarUI } from "@sanguo-dev/calendar-ui";
+
+const calendar = createCalendarUI(container);
+```
+
+## 签名
+
+```ts
+calendar.hide(): void;
+```
+
+## 用法
+
+```ts
+calendar.hide();
+```
+
+## 参数
+
+无。
+
+## 返回值
+
+`void`。
+
+## 说明
+
+把根节点的 `hidden` 置为 `true`，DOM 与事件监听都保留，可以随时用 [`show`](/api/calendar-ui/instance/show) 恢复。

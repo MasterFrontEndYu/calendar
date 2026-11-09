@@ -1,0 +1,56 @@
+---
+title: solarToLunar
+lastUpdated: false
+---
+
+# solarToLunar
+
+公历转农历，返回该公历日期对应的完整换算结果。
+
+## 引入
+
+```ts
+import createCalendar from "@sanguo-dev/calendar";
+
+const calendar = createCalendar();
+```
+
+## 签名
+
+```ts
+solarToLunar(y?: number, m?: number, d?: number): LunarResult;
+```
+
+## 用法
+
+```ts
+calendar.solarToLunar(2026, 10, 1).lDayCn; // "廿一"
+calendar.solarToLunar(2026, 10, 1).gljr; // ["国庆节", "国际音乐日", "国际老人节"]
+calendar.solarToLunar(); // 今天
+```
+
+## 参数
+
+| 参数 | 类型     | 默认 | 说明                       |
+| ---- | -------- | ---- | -------------------------- |
+| `y`  | `number` | -    | 公历年，1900-2100          |
+| `m`  | `number` | -    | 公历月，1-12               |
+| `d`  | `number` | -    | 公历日，按当月实际天数校验 |
+
+三个参数必须同时传入或全部省略；省略时取本地时区的今天。
+
+## 返回值
+
+[`LunarResult`](/api/calendar/types/lunar-result)，`cYear` / `cMonth` / `cDay` 为传入的公历日期，其余字段为农历与历法信息。
+
+## 说明
+
+- 日期必须真实存在，且在 `1900-01-31 ~ 2100-12-31` 内；
+- `nljr` 不包含闰月里的农历节日（闰月不过节）；
+- 除夕按腊月最后一天计算，不固定为 `12-30`。
+
+## 错误
+
+| 异常         | 场景                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `RangeError` | 只传了部分参数，年份 / 月份 / 日期越界，日期不存在，日期超出 1900-01-31 ~ 2100-12-31 |
