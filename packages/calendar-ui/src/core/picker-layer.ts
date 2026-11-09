@@ -3,6 +3,7 @@ import type { PickerLayerHandle, PickerLayerOptions } from "../types";
 /** 创建年月选择层控制器。 */
 export const createPickerLayer = function (options: PickerLayerOptions): PickerLayerHandle {
   const { root, header, picker } = options;
+  const doc = root.ownerDocument ?? document;
 
   /** 设置选择层背景的 inert 状态。 */
   const setBackgroundInert = function (inert: boolean): void {
@@ -15,14 +16,14 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
   function close(): void {
     if (!picker.isOpen()) return;
 
-    const hadFocus = picker.el.contains(document.activeElement);
+    const hadFocus = picker.el.contains(doc.activeElement);
     picker.close();
     header.setNavVisible(true);
     syncNav();
     header.setTitleExpanded(false);
     header.refresh();
     setBackgroundInert(false);
-    document.removeEventListener("pointerdown", onPickerPointerDown, true);
+    doc.removeEventListener("pointerdown", onPickerPointerDown, true);
     root.removeEventListener("keydown", onPickerKeyDown);
     if (hadFocus) header.focusTitle();
   }
@@ -59,7 +60,7 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
     setBackgroundInert(true);
 
     if (!wasOpen) {
-      document.addEventListener("pointerdown", onPickerPointerDown, true);
+      doc.addEventListener("pointerdown", onPickerPointerDown, true);
       root.addEventListener("keydown", onPickerKeyDown);
     }
   };
@@ -95,7 +96,7 @@ export const createPickerLayer = function (options: PickerLayerOptions): PickerL
     isOpen: () => picker.isOpen(),
     destroy: () => {
       close();
-      document.removeEventListener("pointerdown", onPickerPointerDown, true);
+      doc.removeEventListener("pointerdown", onPickerPointerDown, true);
       root.removeEventListener("keydown", onPickerKeyDown);
     },
   };

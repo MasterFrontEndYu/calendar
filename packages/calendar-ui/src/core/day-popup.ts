@@ -6,6 +6,7 @@ import type {
   ResolvedCalendarPopupOptions,
 } from "../types";
 import { createDate, dateKey } from "../utils/date";
+import { node } from "../utils/dom";
 
 /** 从月视图复制到 popup 的 CSS 变量 */
 const THEME_VARS = [
@@ -73,8 +74,7 @@ export const createDayPopup = function (options: CreateDayPopupOptions): DayPopu
   const win = doc.defaultView;
   const body = doc.body ?? doc.documentElement;
 
-  const el = doc.createElement("div");
-  el.className = "cui__popup";
+  const el = node("div", "cui__popup", undefined, doc);
   el.hidden = true;
   el.id = `cui-popup-${++popupSeed}`;
   el.setAttribute("role", popup.role);
@@ -205,8 +205,7 @@ export const createDayPopup = function (options: CreateDayPopupOptions): DayPopu
   const renderItems = function (day: CalendarDate, items: readonly DayPopupItem[]): void {
     el.replaceChildren();
 
-    const head = doc.createElement("div");
-    head.className = "cui__popup-head";
+    const head = node("div", "cui__popup-head", undefined, doc);
     head.textContent = locale.popupTitle
       ? locale.popupTitle(day, items.length)
       : defaultPopupTitle(day, items.length);
@@ -214,13 +213,14 @@ export const createDayPopup = function (options: CreateDayPopupOptions): DayPopu
 
     if (items.length === 0) return;
 
-    const content = doc.createElement("div");
-    content.className = "cui__popup-body";
+    const content = node("div", "cui__popup-body", undefined, doc);
     for (const item of items) {
-      const itemEl = doc.createElement("div");
-      itemEl.className = "cui__popup-item";
-      if (typeof item === "string") itemEl.textContent = item;
-      else itemEl.append(item);
+      const itemEl = node("div", "cui__popup-item", undefined, doc);
+      if (typeof item === "string") {
+        itemEl.append(node("div", "cui__popup-title", item, doc));
+      } else {
+        itemEl.append(item);
+      }
       content.append(itemEl);
     }
     el.append(content);

@@ -105,6 +105,7 @@ describe("日期格 popup", () => {
 
     cellOf(instance.el, "2026-10-1").click();
 
+    expect(popupOf().querySelector(".cui__popup-title")?.textContent).toBe("<b>不是标签</b>");
     expect(popupOf().querySelector(".cui__popup-item")?.textContent).toBe("<b>不是标签</b>");
     expect(popupOf().querySelector(".cui__popup-item b")).toBeNull();
   });

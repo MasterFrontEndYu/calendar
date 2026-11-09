@@ -122,6 +122,7 @@ import "@sanguo-dev/calendar-ui/style.css";
 | `.cui__popup-head`  | popup 的日期 / 条数头部 |
 | `.cui__popup-body`  | popup 的内容容器        |
 | `.cui__popup-item`  | popup 的每一层          |
+| `.cui__popup-title` | 字符串内容的默认标题层  |
 | `.cui__collapse`    | 底部折叠按钮            |
 | `.cui__picker`      | 年月选择层              |
 | `.cui__picker-grid` | 选择层网格              |
@@ -129,7 +130,7 @@ import "@sanguo-dev/calendar-ui/style.css";
 
 日期格上的 `data-tone` 来自 `CalendarBadge.tone`，默认皮肤支持 `rest`（休）与 `work`（班），对应 `--cui-rest` 与 `--cui-accent`。
 
-`.cui__popup` 默认提供定位、`max-width` / `max-height`、滚动和一层轻量卡片（背景、边框、圆角、阴影、内边距）；`.cui__popup-head` 是「日期 · 条数」头部，`.cui__popup-body` 是内容容器，`.cui__popup-item` 包裹 `popup.render` 返回的每一项。想换外观直接用 CSS 覆盖这些类。popup 离开 `.cui` 后会把主题变量复制到根节点，并带 `data-theme` 和 `data-placement`。
+`.cui__popup` 默认提供定位、`max-width` / `max-height`、滚动和一层轻量卡片（背景、边框、圆角、阴影、内边距）；`.cui__popup-head` 是「日期 · 条数」头部，`.cui__popup-body` 是内容容器，`.cui__popup-item` 包裹 `popup.render` 返回的每一项。字符串内容会再包一层 `.cui__popup-title`（12px）；返回 Node 时内部结构由使用方自己决定。想换外观直接用 CSS 覆盖这些类。popup 离开 `.cui` 后会把主题变量复制到根节点，并带 `data-theme` 和 `data-placement`。
 
 ## 动画偏好
 

@@ -3,8 +3,9 @@ export const node = function <K extends keyof HTMLElementTagNameMap>(
   tag: K,
   className?: string,
   text?: string,
+  doc: Document = document,
 ): HTMLElementTagNameMap[K] {
-  const el = document.createElement(tag);
+  const el = doc.createElement(tag);
   if (className) el.className = className;
   if (text !== undefined) el.textContent = text;
   return el;

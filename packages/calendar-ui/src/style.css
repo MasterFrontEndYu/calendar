@@ -783,7 +783,7 @@
   box-shadow: 0 10px 28px rgb(0 0 0 / 16%);
   color: var(--cui-fg, inherit);
   font-family: var(--cui-popup-font, inherit);
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.4;
   color-scheme: var(--cui-popup-color-scheme, normal);
 }
@@ -804,6 +804,12 @@
   color: var(--cui-muted, #8b949e);
   font-size: 12px;
   letter-spacing: 0.02em;
+}
+
+/* 字符串内容统一放进 title 层，保持 12px 的默认排版 */
+.cui__popup-title {
+  display: block;
+  font-size: 12px;
 }
 
 .cui__popup-item {
