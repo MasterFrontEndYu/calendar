@@ -11,7 +11,7 @@ export type CalendarTheme = "light" | "dark" | "auto";
  *
  * - `min`：最小。纯数字为 24px 方格；出现副标题（农历、节气）时整块放大到 40px 方格
  * - `normal`：正常大小，固定 46px 方格，纯数字和带副标题一样大
- * - `fill`：跟随容器宽度等比放大，方格最小 48px
+ * - `fill`：宽度铺满容器，日期格为 16:10 长方形；最小 48px 宽、44px 高
  */
 export type CalendarSize = "min" | "normal" | "fill";
 

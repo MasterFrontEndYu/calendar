@@ -161,7 +161,7 @@ instance.setTheme("light");
 
 ## 尺寸
 
-三套尺寸模板，通过 `size` 选择，默认 `normal`；所有日期格都是正方形：
+三套尺寸模板，通过 `size` 选择，默认 `normal`；`min` / `normal` 用正方形，`fill` 用 16:10 长方形：
 
 ```ts
 createCalendarUI(container, { size: "min" }); // 最小
@@ -169,17 +169,17 @@ createCalendarUI(container, { size: "normal" }); // 正常（默认）
 createCalendarUI(container, { size: "fill" }); // 跟随容器宽度
 ```
 
-| 模板     | 格子                  | 整块宽度      | 说明                                 |
-| -------- | --------------------- | ------------- | ------------------------------------ |
-| `min`    | 24px（有副标题 40px） | 194px / 306px | 纯数字最小；出现副标题后整块放大一档 |
-| `normal` | 46px                  | 372px         | 纯数字和带副标题一样大               |
-| `fill`   | ≥48px，随容器放大     | 100% 容器     | 随容器宽度变化，格子始终正方形       |
+| 模板     | 格子                  | 整块宽度      | 说明                                  |
+| -------- | --------------------- | ------------- | ------------------------------------- |
+| `min`    | 24px（有副标题 40px） | 194px / 306px | 纯数字最小；出现副标题后整块放大一档  |
+| `normal` | 46px                  | 372px         | 纯数字和带副标题一样大                |
+| `fill`   | 宽随容器，16:10       | 100% 容器     | 高度比正方形矮，副标题 / 角标仍有位置 |
 
 - `min`：一旦出现过副标题就放大到 40px 格，之后不再缩回，避免翻月时整块跳动；
 - `normal`：固定 46px 格，副标题多少都不改变尺寸；
-- `fill`：最小 48px 格，容器更窄时整块会超出容器宽度（保持正方形而不是压扁）；
+- `fill`：宽度铺满容器，格子是 16:10 长方形；最窄 48px 格时整块会横向溢出，高度不会低于 44px，避免双月 / 窄容器压掉副标题；
 - 双月（`months: 2`）装不下时自动上下排列，`normal` 会保持 46px 格并居中；
-- 尺寸全部走 CSS 变量：`--cui-cell-size`、`--cui-pad`、`--cui-column-gap`、`--cui-num-size`、`--cui-sub-size`、`--cui-tag-size` 等，外部可直接覆盖；
+- 尺寸全部走 CSS 变量：`--cui-cell-size`、`--cui-pad`、`--cui-column-gap`、`--cui-num-size`、`--cui-sub-size`、`--cui-tag-size` 等，外部可直接覆盖；`fill` 的长方形由 `--cui-cell-aspect`（默认 `16 / 10`）和 `--cui-cell-min-height`（默认 `44px`）控制；
 - 运行时切换直接改属性：`instance.el.dataset.size = "fill"`。
 
 ## 年月选择

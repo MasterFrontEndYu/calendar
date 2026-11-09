@@ -37,7 +37,7 @@ const instance = createCalendarLunar(container, {
 instance.el.classList.add("cui--lunar-demo");
 ```
 
-完整示例（含 light / dark / auto 三套配色）见文档站 [calendar-ui-lunar 演示](/calendar-ui-lunar) 的源码 `apps/doc/src/components/demo/lunar-theme.css`。
+完整示例（含 light / dark / auto 三套配色）见文档站 [calendar-ui-lunar 演示](/calendar-ui-lunar) 的源码 `apps/doc/src/components/demo/calendar-ui-lunar-theme.css`。
 
 ## 选项
 

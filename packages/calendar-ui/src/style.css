@@ -1,10 +1,10 @@
 /*
  * calendar-ui 的默认皮肤：颜色 / 尺寸全部走 CSS 变量，外部改 .cui 即可换主题、调尺寸
  *
- * 三套尺寸模板，写在 .cui[data-size] 上，单元格一律正方形：
- *   min     最小：纯数字 24px 格；一旦有副标题（农历 / 节气）整块放大到 40px 格
- *   normal  正常：46px 格，纯数字和带副标题一样大（默认）
- *   fill    随容器：格子按容器宽度等比放大，最小不小于 48px
+ * 三套尺寸模板，写在 .cui[data-size] 上：
+ *   min     最小：纯数字 24px 正方形；一旦有副标题（农历 / 节气）整块放大到 40px 格
+ *   normal  正常：46px 正方形，纯数字和带副标题一样大（默认）
+ *   fill    随容器：宽度铺满，格子是 16:10 的长方形，最小高度 44px
  */
 .cui {
   /* —— 颜色 —— */
@@ -47,6 +47,10 @@
   --cui-tag-size: 10px;
   --cui-collapse-size: 12px;
   --cui-picker-pad: 4px;
+
+  /* fill 专用：日期格的宽高比与最小高度；min / normal 不读取 */
+  --cui-cell-aspect: 16 / 10;
+  --cui-cell-min-height: 44px;
 
   /* 单月宽度 = 7 个格子 + 6 条列间距 + 左右内边距 + 左右边框 */
   --cui-max-width: calc(
@@ -108,7 +112,11 @@
 }
 
 /*
- * fill：宽度铺满容器，格子跟着放大。
+ * fill：宽度铺满容器，格子会变成 16:10 的长方形。
+ *
+ * 为什么不是正方形：铺满宽度后正方形格子会同步变得很高，
+ * 副标题和休 / 班角标周围会留出大片空白；长方形把高度压下来，
+ * 数字 + 副标题两行仍然居中，角标仍在左上角，读起来和 min / normal 一致。
  *
  * 日期格的 cqi 到 .cui__viewport（每个月的宽度），双月时两个月各算各的；
  * 头部、星期表头、折叠按钮的 cqi 到 .cui（整块宽度）。
@@ -127,13 +135,13 @@
   --cui-nav-font: clamp(16px, 3.8cqi, 26px);
   --cui-weekday-size: clamp(16px, 3.2cqi, 30px);
   --cui-weekday-pad: 12px 0;
-  --cui-cell-pad: 4px;
+  --cui-cell-pad: 4px 5px;
   --cui-cell-gap: 2px;
   --cui-cell-radius: 8px;
-  --cui-num-size: clamp(16px, 3.6cqi, 32px);
-  --cui-sub-size: clamp(10px, 2.2cqi, 18px);
+  --cui-num-size: clamp(16px, 3.3cqi, 30px);
+  --cui-sub-size: clamp(10px, 2cqi, 16px);
   --cui-sub-line: 1.2;
-  --cui-tag-size: clamp(10px, 2cqi, 16px);
+  --cui-tag-size: clamp(11px, 2.2cqi, 16px);
   --cui-collapse-size: 14px;
   --cui-picker-pad: 8px;
 
@@ -141,6 +149,26 @@
   min-width: calc(
     7 * 48px + 6 * var(--cui-column-gap) + 2 * var(--cui-pad) + 2 * var(--cui-border-width)
   );
+}
+
+/*
+ * 长方形只作用于日期格；min / normal 继续用正方形。
+ * min-height 兜住双月 / 窄容器：这时格宽变小，16:10 的高度会不够放两行字。
+ */
+.cui[data-size="fill"] .cui__day {
+  aspect-ratio: var(--cui-cell-aspect);
+  min-height: var(--cui-cell-min-height);
+}
+
+/* 数字行高收紧一点，把省下来的高度留给副标题和角标 */
+.cui[data-size="fill"] .cui__day-num {
+  line-height: 1.05;
+}
+
+/* 角标放大后往里收：小格仍贴边，大格逐步退到 9–10px，避开圆角 */
+.cui[data-size="fill"] .cui__day-tag {
+  top: clamp(5px, 0.8cqi, 9px);
+  left: clamp(5px, 1cqi, 10px);
 }
 
 /* 双月：两列月份 + 月间距 + 左右内边距 + 左右边框 */
@@ -451,7 +479,7 @@
   text-align: center;
 }
 
-/* 日期格：正方形，高度永远等于列宽 */
+/* 日期格：默认正方形，高度跟着列宽；fill 由 --cui-cell-aspect 改成 16:10 长方形 */
 .cui__day {
   position: relative;
   display: flex;
@@ -510,7 +538,6 @@
   top: 2px;
   left: 2px;
   font-size: var(--cui-tag-size);
-  font-weight: 600;
   line-height: 1;
   pointer-events: none;
 }
@@ -519,6 +546,11 @@
 .cui[data-size="min"] .cui__day-tag {
   transform: scale(0.8);
   transform-origin: top left;
+}
+
+.cui[data-size="normal"] .cui__day-tag {
+  top: 2px;
+  left: 2px;
 }
 
 .cui__day-tag[hidden] {
