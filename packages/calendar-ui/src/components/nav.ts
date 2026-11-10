@@ -10,9 +10,15 @@ export const createNav = function (options: NavOptions): NavHandle {
   el.append(createArrowIcon());
   el.addEventListener("click", options.onClick);
 
+  /** 上次写入的禁用状态；每次重绘都写一遍没有必要 */
+  let disabledState = false;
+
   return {
     el,
     setDisabled: (disabled: boolean) => {
+      if (disabledState === disabled) return;
+      disabledState = disabled;
+
       el.disabled = disabled;
       if (disabled) el.setAttribute("aria-disabled", "true");
       else el.removeAttribute("aria-disabled");

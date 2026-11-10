@@ -66,19 +66,31 @@ export const createRenderer = function <TData = null>(
   const { root, config, state, bounds, header, panels, panelEls, collapse, popup } = deps;
   /** 是否已经出现过副标题。 */
   let hasSubtitle = false;
+  /** 没有适配器也没有自定义副标题时，42 个格子不可能有副标题，连扫描都省掉 */
+  const canHaveSubtitle = config.adapter !== undefined || config.subtitle !== undefined;
+  /** 上次写面板 aria-label 时的年月；只选不换月时整段跳过 */
+  let labelKey = "";
 
   return function render(animateRows = true): CalendarDay<TData>[][] {
     header.update(state.year, state.month);
     const dayLists = panels.map((_, index) => deps.currentDays(index));
 
     // 最小档按「有没有副标题」切换格宽；normal / fill 不受影响
-    if (!hasSubtitle && dayLists.some((days) => days.some((day) => day.subtitle !== ""))) {
-      hasSubtitle = true;
-      root.classList.add("cui--sub");
+    if (canHaveSubtitle && !hasSubtitle) {
+      if (dayLists.some((days) => days.some((day) => day.subtitle !== ""))) {
+        hasSubtitle = true;
+        root.classList.add("cui--sub");
+      }
     }
 
     panels.forEach((panel, index) => panel.grid.render(dayLists[index]!));
-    updatePanelLabels(panelEls, state, config.locale);
+
+    const nextLabelKey = `${state.year}-${state.month}`;
+    if (nextLabelKey !== labelKey) {
+      labelKey = nextLabelKey;
+      updatePanelLabels(panelEls, state, config.locale);
+    }
+
     updateNav(header, bounds, state);
     collapse.updateRows(dayLists, animateRows);
     collapse.updateButton();

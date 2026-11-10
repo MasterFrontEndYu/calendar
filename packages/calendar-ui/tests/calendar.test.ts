@@ -1270,3 +1270,62 @@ describe("自定义头部", () => {
     instance.destroy();
   });
 });
+
+describe("重绘只动变化的格子", () => {
+  /** 收集一段 DOM 子树里的变更落在哪些格子上 */
+  const watchedCells = function (root: HTMLElement, run: () => void): Set<Element> {
+    const touched = new Set<Element>();
+    const cellOfTarget = function (target: Node): Element | null {
+      const element = target instanceof Element ? target : target.parentElement;
+      return element?.closest(".cui__day") ?? null;
+    };
+
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        const cell = cellOfTarget(record.target);
+        if (cell) touched.add(cell);
+      }
+    });
+    observer.observe(root, {
+      attributes: true,
+      characterData: true,
+      childList: true,
+      subtree: true,
+    });
+
+    run();
+
+    for (const record of observer.takeRecords()) {
+      const cell = cellOfTarget(record.target);
+      if (cell) touched.add(cell);
+    }
+    observer.disconnect();
+    return touched;
+  };
+
+  it("点选一格只改旧选中和新选中的格子", () => {
+    const instance = createCalendarUI(host(), { initialDate: "2026-10-15" });
+    const untouched = cellOf(instance.el, "2026-10-1");
+    const next = cellOf(instance.el, "2026-10-20");
+
+    const touched = watchedCells(instance.el, () => next.click());
+
+    expect(touched.has(untouched)).toBe(false);
+    expect(touched.has(next)).toBe(true);
+    expect(touched.has(cellOf(instance.el, "2026-10-15"))).toBe(true);
+    expect(next.getAttribute("aria-pressed")).toBe("true");
+    instance.destroy();
+  });
+
+  it("外部的 select() 同月换选中不重写未变化格子的文本和 aria-label", () => {
+    const instance = createCalendarUI(host(), { initialDate: "2026-10-15" });
+    const untouched = cellOf(instance.el, "2026-10-1");
+    const label = untouched.getAttribute("aria-label");
+
+    const touched = watchedCells(instance.el, () => instance.select("2026-10-20"));
+
+    expect(touched.has(untouched)).toBe(false);
+    expect(untouched.getAttribute("aria-label")).toBe(label);
+    instance.destroy();
+  });
+});

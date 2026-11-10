@@ -88,6 +88,8 @@ export const createHeader = function (options: HeaderOptions): HeaderHandle {
   return {
     el,
     update: (nextYear: number, nextMonth: number) => {
+      // 只选不换月时标题没有任何变化，自定义头部尤其不该重建节点
+      if (year === nextYear && month === nextMonth) return;
       year = nextYear;
       month = nextMonth;
       render();

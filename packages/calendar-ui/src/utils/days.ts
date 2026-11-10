@@ -1,8 +1,6 @@
 import type { CalendarDate, CalendarDay, DayDecoration, WeekStartsOn } from "../types";
 import type { BuildDaysOptions } from "../types";
-import { createDate, dateStringKey, sameDay, weekdayOf } from "./date";
-import type { RangeFields } from "./range";
-import { rangeFields } from "./range";
+import { createDate, dateKey, dateStringKey, weekdayOf } from "./date";
 
 /** 某个年月 1 号是星期几（0 为周日） */
 export const firstWeekdayOf = function (year: number, month: number): number {
@@ -47,14 +45,14 @@ export const buildDays = function <TData = null>(
       })
     : [];
   const disabledLabel = options.locale.disabledLabel ?? "不可选";
-  const rangeStart = options.rangeStart ?? null;
-  const rangeEnd = options.rangeEnd ?? null;
-  const range: RangeFields = {
-    isRangeStart: false,
-    isRangeEnd: false,
-    isInRange: false,
-    isSelected: false,
-  };
+
+  // 把「今天 / 选中 / 范围」都换成一串数字 key，42 个格子只做整数比较，
+  // 不再每格调用十几次 Date 的 getter
+  const todayKey = dateKey(options.today);
+  const selectedKey = options.selected === null ? 0 : dateKey(options.selected);
+  const startKey = options.rangeStart == null ? 0 : dateKey(options.rangeStart);
+  const endKey = options.rangeEnd == null ? 0 : dateKey(options.rangeEnd);
+  const hasRange = startKey !== 0 && endKey !== 0;
 
   return dates.map((date, index) => {
     const decoration = decorations[index] ?? null;
@@ -63,27 +61,40 @@ export const buildDays = function <TData = null>(
     const customSubtitle = options.subtitle?.(date);
     const subtitle =
       customSubtitle === null || customSubtitle === undefined ? adapterSubtitle : customSubtitle;
-    const key = dateStringKey(date.year, date.month, date.day);
+
+    const key = date.year * 10000 + date.month * 100 + date.day;
     const isDisabled = options.isDisabled?.(date.date) ?? false;
-    rangeFields(date.date, rangeStart, rangeEnd, range);
+    const isRangeStart = key === startKey;
+    const isRangeEnd = key === endKey;
+    const isInRange = hasRange && key >= startKey && key <= endKey;
+
+    let ariaLabel = decoration?.ariaLabel;
+    if (ariaLabel === undefined) {
+      // 拼三段文案；不给默认的「无标记无副标题」路径分配数组
+      let text = dateStringKey(date.year, date.month, date.day);
+      const badgeText = badge?.text ?? "";
+      if (badgeText !== "") text += " " + badgeText;
+      if (subtitle !== "") text += " " + subtitle;
+      if (isDisabled) text += " " + disabledLabel;
+      ariaLabel = text;
+    }
 
     return {
-      ...date,
-      isToday: sameDay(date.date, options.today),
-      isSelected:
-        (options.selected !== null && sameDay(date.date, options.selected)) || range.isSelected,
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      date: date.date,
+      inCurrentMonth: date.inCurrentMonth,
+      isToday: key === todayKey,
+      isSelected: (selectedKey !== 0 && key === selectedKey) || isRangeStart || isRangeEnd,
       isDisabled,
-      isRangeStart: range.isRangeStart,
-      isRangeEnd: range.isRangeEnd,
-      isInRange: range.isInRange,
+      isRangeStart,
+      isRangeEnd,
+      isInRange,
       subtitle,
       badge,
       data: decoration?.data ?? null,
-      ariaLabel:
-        decoration?.ariaLabel ??
-        [key, badge?.text ?? "", subtitle, isDisabled ? disabledLabel : ""]
-          .filter((part) => part !== "")
-          .join(" "),
+      ariaLabel,
     };
   });
 };

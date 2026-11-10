@@ -1,11 +1,34 @@
 import type { CalendarDay } from "../types";
-import { dateStringKey, weekdayOf } from "../utils/date";
+import { dateStringKey } from "../utils/date";
 import { node } from "../utils/dom";
 
-/** 判断日期是否为周末。 */
-const isWeekend = function (year: number, month: number, day: number): boolean {
-  const weekday = weekdayOf(year, month, day);
-  return weekday === 0 || weekday === 6;
+/** 日期格的状态位；值没变就跳过整段 DOM 写入 */
+const STATE_OUTSIDE = 1;
+const STATE_TODAY = 2;
+const STATE_SELECTED = 4;
+const STATE_RANGE_START = 8;
+const STATE_RANGE_END = 16;
+const STATE_IN_RANGE = 32;
+const STATE_DISABLED = 64;
+
+interface CellMark {
+  /** 状态位组合，见 STATE_* */
+  mask: number;
+  /** 上一次写入的 aria-label */
+  label: string;
+}
+
+/** 每个格子最近一次写入的状态；结构固定，不用 WeakMap 之外的地方保存 */
+const marks = new WeakMap<HTMLElement, CellMark>();
+
+/** 取（或建）格子的状态记录 */
+const markOf = function (cell: HTMLElement): CellMark {
+  let mark = marks.get(cell);
+  if (mark === undefined) {
+    mark = { mask: -1, label: "" };
+    marks.set(cell, mark);
+  }
+  return mark;
 };
 
 /** 创建日期格元素。 */
@@ -38,22 +61,29 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknow
     const sub = num.nextElementSibling as HTMLElement;
     const badge = day.badge;
 
-    tag.textContent = badge?.text ?? "";
-    tag.hidden = badge === null;
+    // 纯公历格没有标记和副标题，写成空串会白白触发一次 DOM 变更，先比再写
+    const tagText = badge?.text ?? "";
+    if (tag.textContent !== tagText) tag.textContent = tagText;
+
+    const tagHidden = badge === null;
+    if (tag.hidden !== tagHidden) tag.hidden = tagHidden;
 
     if (badge?.tone !== undefined) {
       tag.dataset.tone = badge.tone;
       cell.dataset.tone = badge.tone;
-    } else {
+    } else if (tag.dataset.tone !== undefined) {
       delete tag.dataset.tone;
       delete cell.dataset.tone;
     }
 
-    num.textContent = String(day.day);
-    sub.textContent = day.subtitle;
+    const numText = String(day.day);
+    if (num.textContent !== numText) num.textContent = numText;
+    if (sub.textContent !== day.subtitle) sub.textContent = day.subtitle;
 
-    // 周六 / 周日固定标红：和法定节假日同色，但不由节假日数据决定
-    cell.classList.toggle("is-weekend", isWeekend(day.year, day.month, day.day));
+    // 周六 / 周日固定标红：和法定节假日同色，但不由节假日数据决定。
+    // day.date 是同一份数据里的 Date，直接用它的 getDay，不再按年月日另建 Date。
+    const weekday = day.date.getDay();
+    cell.classList.toggle("is-weekend", weekday === 0 || weekday === 6);
   }
 
   setDayState(cell, day);
@@ -61,6 +91,21 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknow
 
 /** 更新日期格的状态。 */
 export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay<unknown>): void {
+  const mask =
+    (day.inCurrentMonth ? 0 : STATE_OUTSIDE) |
+    (day.isToday ? STATE_TODAY : 0) |
+    (day.isSelected ? STATE_SELECTED : 0) |
+    (day.isRangeStart ? STATE_RANGE_START : 0) |
+    (day.isRangeEnd ? STATE_RANGE_END : 0) |
+    (day.isInRange ? STATE_IN_RANGE : 0) |
+    (day.isDisabled ? STATE_DISABLED : 0);
+
+  // 42 个格子里每次通常只有 1-2 个真的变了，其余直接跳过
+  const mark = markOf(cell);
+  if (mark.mask === mask && mark.label === day.ariaLabel) return;
+  mark.mask = mask;
+  mark.label = day.ariaLabel;
+
   cell.classList.toggle("is-outside", !day.inCurrentMonth);
   cell.classList.toggle("is-today", day.isToday);
   cell.classList.toggle("is-selected", day.isSelected);

@@ -40,7 +40,14 @@ const readDay = function (cell: HTMLElement): CalendarDate | null {
   const key = cell.dataset.date;
   if (!key) return null;
 
-  const [year, month, day] = key.split("-").map(Number);
+  // 比 split + map 少两次数组分配；只在日期真正变化时才会走到这里
+  const first = key.indexOf("-");
+  const second = key.indexOf("-", first + 1);
+  if (first < 0 || second < 0) return null;
+
+  const year = Number(key.slice(0, first));
+  const month = Number(key.slice(first + 1, second));
+  const day = Number(key.slice(second + 1));
   if (!year || !month || !day) return null;
 
   return {
@@ -255,16 +262,38 @@ export const createDayPopup = function (options: CreateDayPopupOptions): DayPopu
     el.append(content);
   };
 
+  /** 每个格子最近一次算出的绿点状态，日期没变就整段跳过 */
+  const indicatorMarks = new WeakMap<
+    HTMLElement,
+    { key: string; dot: HTMLElement | null; has: boolean }
+  >();
+
   const updateIndicators = function (): void {
     const cells = root.querySelectorAll<HTMLButtonElement>(".cui__day");
+    const dialog = popup.role === "dialog";
+
     cells.forEach((cell) => {
-      const dot = cell.querySelector<HTMLElement>(".cui__day-dot");
+      let mark = indicatorMarks.get(cell);
+      if (mark === undefined) {
+        mark = { key: "", dot: cell.querySelector<HTMLElement>(".cui__day-dot"), has: false };
+        indicatorMarks.set(cell, mark);
+      }
+
+      // 同一个格里还是同一天：绿点不会变，不用回头再问一次 popup.render
+      const key = cell.dataset.date ?? "";
+      if (mark.key === key) return;
+      mark.key = key;
+
       const day = readDay(cell);
       const hasContent = day !== null && contentOf(day).length > 0;
 
-      if (dot) dot.hidden = !hasContent;
+      // 换月时 42 个格子全换，但绝大多数没有内容，值没变就别写 DOM
+      if (mark.has === hasContent) return;
+      mark.has = hasContent;
 
-      if (popup.role === "dialog") {
+      if (mark.dot) mark.dot.hidden = !hasContent;
+
+      if (dialog) {
         if (hasContent) cell.setAttribute("aria-haspopup", "dialog");
         else cell.removeAttribute("aria-haspopup");
       }

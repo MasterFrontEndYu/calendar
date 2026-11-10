@@ -59,10 +59,15 @@ const commitSingle = function <TData = null>(
   if (!shouldRender) ctx.panels[0]?.grid.updateState(days);
 
   // 回调用更新后的对象，保证 isSelected 是本次点击的结果
-  const day =
-    options.day !== undefined && options.index !== undefined
-      ? (days[options.index] ?? options.day)
-      : days.find((item) => sameDay(item.date, target));
+  let day: CalendarDay<TData> | undefined;
+  if (options.day !== undefined && options.index !== undefined) {
+    day = days[options.index] ?? options.day;
+  } else {
+    const year = target.getFullYear();
+    const month = target.getMonth() + 1;
+    const date = target.getDate();
+    day = days.find((item) => item.year === year && item.month === month && item.day === date);
+  }
   if (day) ctx.config.onSelect?.(day);
 };
 

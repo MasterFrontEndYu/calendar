@@ -266,4 +266,23 @@ describe("日期格 popup", () => {
 
     expect(document.querySelector(".cui__popup")).toBeNull();
   });
+
+  it("同一批日期再次重绘时不重写绿点", () => {
+    const instance = create({ render: sharedRender });
+    const dot = dotOf(instance.el, "2026-10-2");
+
+    let writes = 0;
+    const observer = new MutationObserver((records) => {
+      writes += records.length;
+    });
+    observer.observe(dot, { attributes: true });
+
+    // select() 会整块重绘，42 个格子的日期都没变，绿点一个都不该动
+    instance.select("2026-10-20");
+    writes += observer.takeRecords().length;
+    observer.disconnect();
+
+    expect(writes).toBe(0);
+    expect(dot.hidden).toBe(true);
+  });
 });

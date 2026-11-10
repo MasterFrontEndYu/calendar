@@ -1,5 +1,5 @@
 import type { CalendarDay, CollapseHandle, CollapseOptions } from "../types";
-import { sameDay } from "../utils/date";
+import { dateKey } from "../utils/date";
 import { createArrowIcon, node } from "../utils/dom";
 
 /** 创建折叠控制器。 */
@@ -11,9 +11,13 @@ export const createCollapse = function <TData = null>(
 
   let collapsed = collapsible && config.animation.defaultCollapsed;
   let button: HTMLButtonElement | null = null;
+  /** 上次写入按钮的折叠状态；每次重绘都写一遍没有必要 */
+  let buttonState: boolean | null = null;
 
   const updateButton = function (): void {
-    if (button === null) return;
+    if (button === null || buttonState === collapsed) return;
+    buttonState = collapsed;
+
     button.classList.toggle("is-collapsed", collapsed);
     button.setAttribute("aria-expanded", String(!collapsed));
     button.setAttribute(
@@ -28,10 +32,12 @@ export const createCollapse = function <TData = null>(
       return;
     }
 
-    const targets: Date[] =
+    const targets: number[] =
       config.mode === "range"
-        ? [state.rangeStart, state.rangeEnd].filter((date): date is Date => date !== null)
-        : [state.selected];
+        ? [state.rangeStart, state.rangeEnd]
+            .filter((date): date is Date => date !== null)
+            .map(dateKey)
+        : [dateKey(state.selected)];
 
     panels.forEach((panel, index) => {
       const rows = new Set<number>();
@@ -39,7 +45,9 @@ export const createCollapse = function <TData = null>(
 
       targets.forEach((target) => {
         const dayIndex = days.findIndex(
-          (day) => sameDay(day.date, target) && (monthCount === 1 || day.inCurrentMonth),
+          (day) =>
+            day.year * 10000 + day.month * 100 + day.day === target &&
+            (monthCount === 1 || day.inCurrentMonth),
         );
         if (dayIndex >= 0) rows.add(Math.floor(dayIndex / 7));
       });

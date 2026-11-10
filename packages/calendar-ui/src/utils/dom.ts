@@ -11,8 +11,14 @@ export const node = function <K extends keyof HTMLElementTagNameMap>(
   return el;
 };
 
+/** 每行最近一次写入的可见性，值没变就不碰 DOM */
+const rowVisibility = new WeakMap<HTMLElement, boolean>();
+
 /** 设置行的可见性。 */
 export const setRowVisibility = function (row: HTMLElement, visible: boolean): void {
+  if (rowVisibility.get(row) === visible) return;
+  rowVisibility.set(row, visible);
+
   row.classList.toggle("is-collapsed-hidden", !visible);
   row.toggleAttribute("inert", !visible);
   if (visible) row.removeAttribute("aria-hidden");
