@@ -1,6 +1,6 @@
 {
   "name": "@sanguo-dev/calendar",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "ts版本的日历生成器 LTS",
   "keywords": [
     "calendar",

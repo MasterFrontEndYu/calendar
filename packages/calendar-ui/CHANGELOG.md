@@ -1,5 +1,13 @@
 # @sanguo-dev/calendar-ui
 
+## 0.2.0
+
+### Minor Changes
+
+- 优化性能
+- 移除日历 header api ，show\hide 等，只保留 是否渲染的参数。
+- 添加测试案例
+
 ## 0.1.0
 
 ### Minor Changes

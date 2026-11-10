@@ -40,7 +40,7 @@
     },
     "packages/calendar": {
       "name": "@sanguo-dev/calendar",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "devDependencies": {
         "@types/node": "catalog:",
         "typescript": "catalog:",
@@ -50,7 +50,7 @@
     },
     "packages/calendar-ui": {
       "name": "@sanguo-dev/calendar-ui",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "devDependencies": {
         "@types/node": "catalog:",
         "jsdom": "^25.0.1",
@@ -61,7 +61,7 @@
     },
     "packages/calendar-ui-lunar": {
       "name": "@sanguo-dev/calendar-ui-lunar",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "dependencies": {
         "@sanguo-dev/calendar": "workspace:*",
         "@sanguo-dev/calendar-ui": "workspace:*",

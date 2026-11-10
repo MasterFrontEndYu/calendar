@@ -1,5 +1,11 @@
 # @sanguo-dev/calendar
 
+## 1.0.2
+
+### Patch Changes
+
+- 优化性能
+
 ## 1.0.1
 
 ### Patch Changes
