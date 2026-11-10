@@ -12,6 +12,8 @@ export default function Document(props: ParentProps) {
       <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* public/favicon.ico 会随 base 一起部署；显式声明避免项目站点回退到域名根 */}
+        <link rel="icon" href={`${import.meta.env.BASE_URL}favicon.ico`} />
         <HydrationScript />
       </head>
       <body>
