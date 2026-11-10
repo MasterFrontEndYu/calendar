@@ -18,10 +18,11 @@ import type { LunarMonthSegment } from "./utils/LunarFunction";
 import {
   toAstro,
   getTerm,
+  termsOf,
   getAnimal,
   solarDays,
   solarFirstWeek,
-  weekdayOf,
+  weekdayFromDays,
   toChinaNum,
   nthWeekdayOfMonth,
 } from "./utils/SolarFunction";
@@ -52,8 +53,36 @@ const MAX_YEAR = 2100;
 const DAY_MS = 86400000;
 /** 农历数据起点：1900-01-31，即农历 1900 年正月初一 */
 const MIN_SOLAR_UTC = Date.UTC(MIN_YEAR, 0, 31);
+/** 起点距 1970-01-01 的天数；换算时直接拿天数相减，省掉一次取整 */
+const MIN_SOLAR_DAYS = MIN_SOLAR_UTC / DAY_MS;
 /** 支持的最后一个公历日 */
 const MAX_SOLAR_UTC = Date.UTC(MAX_YEAR, 11, 31);
+/** 干支日偏移的基准：1970-01-01 距甲子起点的天数 */
+const GANZHI_DAY_BASE = 25577;
+
+/**
+ * 「今天」的短时缓存
+ *
+ * 渲染一屏日历要算 42 天的 isToday，每次 new Date() 是纯浪费；
+ * 250ms 内复用同一个日期，跨天最多滞后 250ms，对「今天」这个标记没有影响。
+ */
+const TODAY_TTL = 250;
+let todayAt = 0;
+let todayYear = 0;
+let todayMonth = 0;
+let todayDay = 0;
+
+/** 刷新「今天」缓存；TTL 内直接返回 */
+const refreshToday = function (): void {
+  const now = Date.now();
+  if (now - todayAt <= TODAY_TTL) return;
+
+  const date = new Date(now);
+  todayAt = now;
+  todayYear = date.getFullYear();
+  todayMonth = date.getMonth() + 1;
+  todayDay = date.getDate();
+};
 
 /** 把公历年月日校验成合法的、在支持范围内的日期 */
 const validateSolar = function (
@@ -74,6 +103,32 @@ const validateSolar = function (
   return { year, month, day };
 };
 
+/** 按年缓存的浮动节日日期：母亲节、父亲节、感恩节 */
+interface FloatingDays {
+  /** 5 月第二个周日 */
+  mother: number;
+  /** 6 月第三个周日 */
+  father: number;
+  /** 11 月第四个周四 */
+  thanksgiving: number;
+}
+
+const floatingCache = new Map<number, FloatingDays>();
+
+/** 某年的三个浮动节日是几号，同一年只算一次 */
+const floatingOf = function (y: number): FloatingDays {
+  let days = floatingCache.get(y);
+  if (days === undefined) {
+    days = {
+      mother: nthWeekdayOfMonth(y, 5, 0, 2),
+      father: nthWeekdayOfMonth(y, 6, 0, 3),
+      thanksgiving: nthWeekdayOfMonth(y, 11, 4, 4),
+    };
+    floatingCache.set(y, days);
+  }
+  return days;
+};
+
 /** 某一天的公历节日，包含按规则计算的浮动节日 */
 const solarFestivals = function (
   y: number,
@@ -82,18 +137,18 @@ const solarFestivals = function (
   sFtv: Record<string, string[]>,
 ): readonly string[] {
   const base = festivalList(sFtv, m, d);
-  const extra: string[] = [];
 
-  const add = function (name: string) {
-    if (base.indexOf(name) === -1 && extra.indexOf(name) === -1) extra.push(name);
-  };
+  // 浮动节日只有 5 / 6 / 11 月才有，其它月份直接返回配置里的只读数组
+  if (m !== 5 && m !== 6 && m !== 11) return base;
 
-  if (m === 5 && d === nthWeekdayOfMonth(y, 5, 0, 2)) add("母亲节");
-  if (m === 6 && d === nthWeekdayOfMonth(y, 6, 0, 3)) add("父亲节");
-  if (m === 11 && d === nthWeekdayOfMonth(y, 11, 4, 4)) add("感恩节");
+  const floating = floatingOf(y);
+  let name: string | null;
+  if (m === 5) name = d === floating.mother ? "母亲节" : null;
+  else if (m === 6) name = d === floating.father ? "父亲节" : null;
+  else name = d === floating.thanksgiving ? "感恩节" : null;
 
-  // 没有浮动节日时直接返回配置里的只读数组，省掉一次拷贝
-  return extra.length === 0 ? base : Object.freeze(base.concat(extra));
+  if (name === null || base.indexOf(name) !== -1) return base;
+  return Object.freeze(base.concat(name));
 };
 
 /**
@@ -126,9 +181,9 @@ const computeLunar = function (
   sm: number,
   sd: number,
 ): LunarResult {
-  const utc = Date.UTC(sy, sm - 1, sd);
-  const offset = Math.round((utc - MIN_SOLAR_UTC) / DAY_MS);
-  const { year, offsetInYear } = resolveLunarYear(offset);
+  // 一次 Date.UTC 拿到绝对天数，后面的星期、干支、农历定位都复用它
+  const utcDays = Date.UTC(sy, sm - 1, sd) / DAY_MS;
+  const { year, offsetInYear } = resolveLunarYear(utcDays - MIN_SOLAR_DAYS);
 
   // 月份段（闰月单独一段）按顺序扫描，最多 13 段
   const segments = monthSegmentsOf(year);
@@ -142,9 +197,12 @@ const computeLunar = function (
   const day = offsetInYear - segment.start + 1;
   const isLeap = segment.isLeap;
 
-  const dayOfWeek = weekdayOf(sy, sm, sd);
-  const firstTermDay = getTerm(sy, sm * 2 - 1);
-  const secondTermDay = getTerm(sy, sm * 2);
+  const dayOfWeek = weekdayFromDays(utcDays);
+
+  // 节气表按年缓存，直接取数组，不再走两次断言 + 两次 Map 查询
+  const terms = termsOf(sy);
+  const firstTermDay = terms[sm * 2 - 2] as number;
+  const secondTermDay = terms[sm * 2 - 1] as number;
 
   let term: string | null = null;
   if (firstTermDay === sd) term = getSolarTerm(sm * 2 - 2);
@@ -155,10 +213,12 @@ const computeLunar = function (
   const isXiu = restState === "xiu";
   const isBan = restState === "ban";
 
-  const dayCyclical = utc / DAY_MS - (sd - 1) + 25567 + 10;
-  const gzDayOffset = dayCyclical + sd - 1;
+  // 干支日的偏移只和绝对天数有关：月份内第几天那两项正好抵消
+  const gzDayOffset = utcDays + GANZHI_DAY_BASE;
   // 只有 2 月才需要立春当天的日期，其它月份不去查节气表
-  const ganzhiYear = sm > 2 || (sm === 2 && sd >= getTerm(sy, 3)) ? sy : sy - 1;
+  const ganzhiYear = sm > 2 || (sm === 2 && sd >= (terms[2] as number)) ? sy : sy - 1;
+
+  refreshToday();
 
   return {
     xiu: isXiu,
@@ -179,10 +239,7 @@ const computeLunar = function (
     gzMonth: toGanZhi((sy - 1900) * 12 + sm + (sd >= firstTermDay ? 12 : 11)),
     gzDay: toGanZhi(gzDayOffset),
     gzHour: toHourGanZhi(gzDayOffset),
-    isToday: (function () {
-      const now = new Date();
-      return now.getFullYear() === sy && now.getMonth() + 1 === sm && now.getDate() === sd;
-    })(),
+    isToday: todayYear === sy && todayMonth === sm && todayDay === sd,
     isLeap,
     nWeek: dayOfWeek === 0 ? 7 : dayOfWeek,
     dayOfWeek,

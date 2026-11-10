@@ -228,6 +228,31 @@ describe("干支", () => {
       }
     }
   }, 60_000);
+
+  // 干支日 / 时辰干支 / 星期 / 农历文案都是「按绝对天数算」的，钉死几个锚点防止改坏
+  it("干支日、时辰干支、星期和农历文案的锚点值", () => {
+    const cases: Array<[number, number, number, string, string, number, string, string]> = [
+      // 年, 月, 日, gzDay, gzHour[0], dayOfWeek, lMonthCn, lDayCn
+      [2026, 10, 1, "戊申", "壬子", 4, "八月", "廿一"],
+      [2024, 2, 10, "甲辰", "甲子", 6, "正月", "初一"],
+      [2020, 5, 23, "丙寅", "戊子", 6, "闰四月", "初一"],
+      [1900, 1, 31, "甲辰", "甲子", 3, "正月", "初一"],
+      [2100, 12, 31, "丁未", "庚子", 5, "腊月", "初一"],
+    ];
+
+    for (const [y, m, d, gzDay, gzHour0, dayOfWeek, lMonthCn, lDayCn] of cases) {
+      const r = calendar.solarToLunar(y, m, d);
+      const label = `${y}-${m}-${d}`;
+      expect(r.gzDay, label).toBe(gzDay);
+      expect(r.gzHour, label).toHaveLength(12);
+      expect(r.gzHour[0], label).toBe(gzHour0);
+      expect(r.dayOfWeek, label).toBe(dayOfWeek);
+      expect(r.nWeek, label).toBe(dayOfWeek === 0 ? 7 : dayOfWeek);
+      expect(r.lMonthCn, label).toBe(lMonthCn);
+      expect(r.lDayCn, label).toBe(lDayCn);
+      expect(r.astro, label).toBe(utils.toAstro(m, d));
+    }
+  });
 });
 
 describe("工具函数", () => {

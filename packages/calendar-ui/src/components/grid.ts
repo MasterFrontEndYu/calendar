@@ -30,6 +30,9 @@ export const createGrid = function <TData = null>(options: GridOptions<TData>): 
   const el = node("div", "cui__grid");
   const rowEls = Array.from({ length: ROW_COUNT }, () => node("div", "cui__week"));
   const cells = Array.from({ length: CELL_COUNT }, () => createDayCell());
+  /** 格子 → 下标；点击时不用再扫 42 个节点找位置 */
+  const cellIndex = new WeakMap<HTMLButtonElement, number>();
+  cells.forEach((cell, index) => cellIndex.set(cell, index));
 
   rowEls.forEach((row, index) => {
     row.append(...cells.slice(index * 7, index * 7 + 7));
@@ -48,7 +51,9 @@ export const createGrid = function <TData = null>(options: GridOptions<TData>): 
     if (!cell) return;
 
     // 用索引取格子数据，比解析 data-date 快，也不受补位格影响
-    const index = cells.indexOf(cell as HTMLButtonElement);
+    const index = cellIndex.get(cell as HTMLButtonElement);
+    if (index === undefined) return;
+
     const picked = days[index];
     if (picked && !picked.isDisabled) options.onSelect(picked, index);
   };

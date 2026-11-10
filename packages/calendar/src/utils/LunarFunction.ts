@@ -5,6 +5,24 @@ import { assertInteger, failRange } from "./Assert";
 const LUNAR_YEAR_MIN = 1900;
 const LUNAR_YEAR_MAX = 2100;
 
+/** 十二时辰干支表：启动时按 "-" 切好，避免每天 split 一次 */
+const HOUR_GANZHI: string[][] = GanZhiHour.map((row) => row.split("-"));
+
+/** 农历月份中文名，1-12；建表时直接拼好「月」后缀 */
+const MONTH_CN: string[] = nStr3.map((name) => name + "月");
+
+/** 农历日中文名，1-30；初十、二十、三十是特例，其余由 nStr2 + nStr1 拼成 */
+const DAY_CN: string[] = (function () {
+  const table: string[] = [];
+  for (let d = 1; d <= 30; d++) {
+    if (d === 10) table.push("\u521d\u5341");
+    else if (d === 20) table.push("\u4e8c\u5341");
+    else if (d === 30) table.push("\u4e09\u5341");
+    else table.push(nStr2[Math.floor(d / 10)] + nStr1[d % 10]);
+  }
+  return table;
+})();
+
 /**
  * 校验农历年份是否在数据表范围内，越界直接抛 RangeError
  */
@@ -158,7 +176,8 @@ const toHourGanZhi = function (offset: number): string[] {
     failRange("toHourGanZhi(offset)", `必须是整数，收到 ${offset}`);
   }
   const index = ((offset % 10) + 10) % 10;
-  return GanZhiHour[index].split("-");
+  // 表在启动时切好，这里只复制一份数组；调用方改动不会污染共享表
+  return (HOUR_GANZHI[index] as string[]).slice();
 };
 
 /**
@@ -167,7 +186,7 @@ const toHourGanZhi = function (offset: number): string[] {
  */
 const toChinaMonth = function (m: number): string {
   assertInteger("toChinaMonth(month)", m, 1, 12);
-  return nStr3[m - 1] + "月";
+  return MONTH_CN[m - 1] as string;
 };
 
 /**
@@ -176,16 +195,7 @@ const toChinaMonth = function (m: number): string {
  */
 const toChinaDay = function (d: number): string {
   assertInteger("toChinaDay(day)", d, 1, 30);
-  switch (d) {
-    case 10:
-      return "\u521d\u5341";
-    case 20:
-      return "\u4e8c\u5341";
-    case 30:
-      return "\u4e09\u5341";
-    default:
-      return nStr2[Math.floor(d / 10)] + nStr1[d % 10];
-  }
+  return DAY_CN[d - 1] as string;
 };
 
 /**

@@ -9,8 +9,14 @@ const MS_PER_DAY = 86400000;
 /** 1970-01-01 是星期四，用作星期推算的基准 */
 const EPOCH_WEEKDAY = 4;
 
+/** 距 1970-01-01 的天数 → 星期，0 为周日；负数也能算对，供内部复用已算好的天数 */
+const weekdayFromDays = function (days: number): number {
+  return (((days + EPOCH_WEEKDAY) % 7) + 7) % 7;
+};
+
 /** 用毫秒数直接算星期，避免每次都 new Date */
 const weekdayOf = function (y: number, m: number, d: number): number {
+  // 这里不转调 weekdayFromDays：多一层调用在热路径上反而更慢
   const days = Math.round(Date.UTC(y, m - 1, d) / MS_PER_DAY);
   return (((days + EPOCH_WEEKDAY) % 7) + 7) % 7;
 };
@@ -34,6 +40,21 @@ const parseTerms = function (y: number): number[] {
       Number(chunk.slice(3, 4)),
       Number(chunk.slice(4, 6)),
     );
+  }
+  return days;
+};
+
+/**
+ * 某年 24 个节气日期（内部用）
+ *
+ * 和 getTerm 的区别只有一点：省掉两次入参断言——调用方已经把年份校验过了，
+ * 换算每天都在跑，这点开销也要省。
+ */
+const termsOf = function (y: number): number[] {
+  let days = termCache.get(y);
+  if (days === undefined) {
+    days = parseTerms(y);
+    termCache.set(y, days);
   }
   return days;
 };
@@ -93,6 +114,18 @@ const ASTRO_NAMES =
 /** 每个月切换星座的日期，当天大于等于该值即属于后一个星座 */
 const ASTRO_CUSP = [20, 19, 21, 20, 21, 22, 23, 23, 23, 24, 23, 22];
 
+/** 12 个月 × 31 天的星座表，预先切好，省掉每天一次字符串切片 */
+const ASTRO_TABLE: string[][] = (function () {
+  const table: string[][] = Array.from({ length: 13 }, () => [] as string[]);
+  for (let m = 1; m <= 12; m++) {
+    for (let d = 1; d <= 31; d++) {
+      const start = m * 2 - (d < (ASTRO_CUSP[m - 1] as number) ? 2 : 0);
+      (table[m] as string[])[d] = ASTRO_NAMES.slice(start, start + 2) + "\u5ea7";
+    }
+  }
+  return table;
+})();
+
 /**
  * 公历月、日判断所属星座
  * @param m 公历月（1-12）
@@ -102,8 +135,7 @@ const ASTRO_CUSP = [20, 19, 21, 20, 21, 22, 23, 23, 23, 24, 23, 22];
 const toAstro = function (m: number, d: number): string {
   assertInteger("toAstro(month)", m, 1, 12);
   assertInteger("toAstro(day)", d, 1, 31);
-  const start = m * 2 - (d < ASTRO_CUSP[m - 1] ? 2 : 0);
-  return ASTRO_NAMES.slice(start, start + 2) + "\u5ea7";
+  return (ASTRO_TABLE[m] as string[])[d] as string;
 };
 
 /**
@@ -117,13 +149,7 @@ const getTerm = function (y: number, n: number): number {
   assertInteger("getTerm(year)", y, 1900, 2100);
   assertInteger("getTerm(n)", n, 1, 24);
 
-  let days = termCache.get(y);
-  if (days === undefined) {
-    days = parseTerms(y);
-    termCache.set(y, days);
-  }
-
-  const day = days[n - 1];
+  const day = (termsOf(y) as number[])[n - 1];
   if (!Number.isInteger(day)) {
     failRange("getTerm", `${y} 年第 ${n} 个节气解析失败`);
   }
@@ -155,8 +181,10 @@ export {
   toChinaNum,
   solarFirstWeek,
   weekdayOf,
+  weekdayFromDays,
   nthWeekdayOfMonth,
   toAstro,
   getTerm,
+  termsOf,
   getAnimal,
 };
