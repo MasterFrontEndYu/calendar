@@ -49,16 +49,6 @@ export const createInstance = function <TData = null>(
       if (root.hidden) popup?.close(false);
     },
     isVisible: () => !root.hidden,
-    showHeader: () => {
-      header.el.hidden = false;
-    },
-    hideHeader: () => {
-      header.el.hidden = true;
-    },
-    toggleHeader: () => {
-      header.el.hidden = !header.el.hidden;
-    },
-    isHeaderVisible: () => !header.el.hidden,
     getMinDate: () => (bounds.minDate === null ? null : new Date(bounds.minDate)),
     setMinDate: (date) => {
       applyBounds(runtime, readDate(date, "setMinDate(date)"), bounds.maxDate);
@@ -76,10 +66,10 @@ export const createInstance = function <TData = null>(
     destroy: () => {
       popup?.destroy();
       slide.stop();
-      pickerLayer.destroy();
-      picker.destroy();
+      pickerLayer?.destroy();
+      picker?.destroy();
       collapse.destroy();
-      header.destroy();
+      header?.destroy();
       panels.forEach((panel) => panel.grid.destroy());
       root.remove();
     },

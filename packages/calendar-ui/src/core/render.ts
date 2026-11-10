@@ -39,10 +39,11 @@ export const createDayBuilder = function <TData = null>(
 
 /** 更新头部翻页按钮状态。 */
 export const updateNav = function (
-  header: HeaderHandle,
+  header: HeaderHandle | null,
   bounds: CalendarBounds,
   state: CalendarState,
 ): void {
+  if (header === null) return;
   const { prev, next } = navDisabled(bounds, state.year, state.month);
   header.setNavDisabled(prev, next);
 };
@@ -72,7 +73,7 @@ export const createRenderer = function <TData = null>(
   let labelKey = "";
 
   return function render(animateRows = true): CalendarDay<TData>[][] {
-    header.update(state.year, state.month);
+    header?.update(state.year, state.month);
     const dayLists = panels.map((_, index) => deps.currentDays(index));
 
     // 最小档按「有没有副标题」切换格宽；normal / fill 不受影响

@@ -6,7 +6,7 @@ import CalendarUIHeadless from "../../components/demo/calendar-ui-headless";
 
 # 无头日历
 
-`header: false` 会去掉「‹ 年 月 ›」头部，只留下星期和日期网格；标题、翻月按钮和月份选择层全部交给外部 UI。
+`header: false` 不会创建「‹ 年 月 ›」头部，也不会创建月份选择层，只渲染星期和日期网格；标题、翻月按钮全部交给外部 UI。
 
 <CalendarUIHeadless />
 
@@ -17,14 +17,14 @@ const calendar = createCalendarUI(container, {
   onSelect: (day) => console.log(day.year, day.month, day.day),
 });
 
-// 头部已隐藏，用实例方法控制月份
+// 没有头部，用实例方法控制月份
 calendar.prevMonth();
 calendar.nextMonth();
 calendar.setMonth(2026, 12);
 ```
 
-- 头部节点仍然存在，只是被 `hidden`，`showHeader()` 可以临时显示；
-- 选择层和翻月按钮随头部一起隐藏，选中、范围、折叠等能力不变；
+- 头部和选择层节点完全不会创建，DOM 里只有星期行与日期网格；
+- 选中、范围、折叠等能力不变；
 - 需要同步外部标题时用 `onMonthChange` 或 `getMonth()`。
 
 ```ts

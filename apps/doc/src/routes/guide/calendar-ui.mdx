@@ -67,7 +67,7 @@ interface CalendarAnimationOptions {
 | `locale`        | `CalendarLocale \| "zh-CN" \| "en-US"` | `"zh-CN"`  | 界面语言                         |
 | `theme`         | `"light" \| "dark" \| "auto"`          | `"auto"`   | 主题                             |
 | `size`          | `"min" \| "normal" \| "fill"`          | `"normal"` | 尺寸模板：最小 / 正常 / 跟随容器 |
-| `header`        | `boolean`                              | `true`     | 是否显示头部                     |
+| `header`        | `boolean`                              | `true`     | 是否渲染头部与月份选择层         |
 | `renderHeader`  | `HeaderRenderer`                       | -          | 自定义头部                       |
 | `popup`         | `CalendarPopupOptions`                 | -          | 日期格 popup；不传则不启用       |
 | `adapter`       | `CalendarAdapter<TData>`               | -          | 装饰适配器                       |
@@ -265,21 +265,20 @@ createCalendarUI(container, {
 
 ## CalendarInstance
 
-| 成员                                                                     | 说明                       |
-| ------------------------------------------------------------------------ | -------------------------- |
-| `el`                                                                     | 根元素                     |
-| `setMonth(year, month)`                                                  | 跳到某月                   |
-| `getMonth()`                                                             | 当前年月                   |
-| `prevMonth()` / `nextMonth()`                                            | 前后翻月                   |
-| `select(date)`                                                           | 选中日期                   |
-| `getSelected()`                                                          | 单选选中；范围模式返回起点 |
-| `getRange()` / `setRange()` / `clearRange()`                             | 范围                       |
-| `getMinDate()` / `setMinDate()`                                          | 最小日期                   |
-| `getMaxDate()` / `setMaxDate()`                                          | 最大日期                   |
-| `show()` / `hide()` / `toggle()` / `isVisible()`                         | 显示状态                   |
-| `showHeader()` / `hideHeader()` / `toggleHeader()` / `isHeaderVisible()` | 头部状态                   |
-| `getTheme()` / `setTheme()`                                              | 主题                       |
-| `destroy()`                                                              | 销毁                       |
+| 成员                                             | 说明                       |
+| ------------------------------------------------ | -------------------------- |
+| `el`                                             | 根元素                     |
+| `setMonth(year, month)`                          | 跳到某月                   |
+| `getMonth()`                                     | 当前年月                   |
+| `prevMonth()` / `nextMonth()`                    | 前后翻月                   |
+| `select(date)`                                   | 选中日期                   |
+| `getSelected()`                                  | 单选选中；范围模式返回起点 |
+| `getRange()` / `setRange()` / `clearRange()`     | 范围                       |
+| `getMinDate()` / `setMinDate()`                  | 最小日期                   |
+| `getMaxDate()` / `setMaxDate()`                  | 最大日期                   |
+| `show()` / `hide()` / `toggle()` / `isVisible()` | 显示状态                   |
+| `getTheme()` / `setTheme()`                      | 主题                       |
+| `destroy()`                                      | 销毁                       |
 
 ## CalendarAdapter
 

@@ -49,47 +49,51 @@ export function createCalendarUI<TData = null>(
   });
   const currentDays = createDayBuilder(config, bounds, state);
 
-  const picker = createPicker({
-    locale: config.locale,
-    getYear: () => state.year,
-    getMonth: () => state.month,
-    isMonthDisabled: (year, month) => isMonthOutOfRange(bounds, year, month),
-    isYearDisabled: (year) => isYearOutOfRange(bounds, year),
-    onPickMonth: (year, month) => {
-      pickerLayer.close();
-      goToMonth(year, month);
-    },
-    onPickYear: (year) => {
-      pickerLayer.close();
-      goToMonth(year, state.month);
-    },
-  });
+  // header: false 时头部和选择层都不创建，避免在 DOM 里留下 hidden 的空节点
+  const picker = config.showHeader
+    ? createPicker({
+        locale: config.locale,
+        getYear: () => state.year,
+        getMonth: () => state.month,
+        isMonthDisabled: (year, month) => isMonthOutOfRange(bounds, year, month),
+        isYearDisabled: (year) => isYearOutOfRange(bounds, year),
+        onPickMonth: (year, month) => {
+          pickerLayer?.close();
+          goToMonth(year, month);
+        },
+        onPickYear: (year) => {
+          pickerLayer?.close();
+          goToMonth(year, state.month);
+        },
+      })
+    : null;
 
-  const header = createHeader({
-    year: state.year,
-    month: state.month,
-    locale: config.locale,
-    label: createHeaderLabel(config.locale, monthCount),
-    onYearClick: () => pickerLayer.toggle("year"),
-    onMonthClick: () => pickerLayer.toggle("month"),
-    onPrev: () => pickerLayer.step(-1),
-    onNext: () => pickerLayer.step(1),
-    getNavDisabled: () => {
-      if (picker.mode() === "year") {
-        return { prev: !picker.canPage(-1), next: !picker.canPage(1) };
-      }
-      return navDisabled(bounds, state.year, state.month);
-    },
-    getPickerMode: () => picker.mode(),
-    renderer: config.renderHeader,
-  });
-  header.el.hidden = !config.showHeader;
-  header.setTitleExpanded(false);
+  const header = config.showHeader
+    ? createHeader({
+        year: state.year,
+        month: state.month,
+        locale: config.locale,
+        label: createHeaderLabel(config.locale, monthCount),
+        onYearClick: () => pickerLayer?.toggle("year"),
+        onMonthClick: () => pickerLayer?.toggle("month"),
+        onPrev: () => pickerLayer?.step(-1),
+        onNext: () => pickerLayer?.step(1),
+        getNavDisabled: () => {
+          if (picker !== null && picker.mode() === "year") {
+            return { prev: !picker.canPage(-1), next: !picker.canPage(1) };
+          }
+          return navDisabled(bounds, state.year, state.month);
+        },
+        getPickerMode: () => picker?.mode() ?? null,
+        renderer: config.renderHeader,
+      })
+    : null;
+  header?.setTitleExpanded(false);
 
   const panelEls = mountCalendar({
     root,
-    headerEl: header.el,
-    pickerEl: picker.el,
+    headerEl: header?.el ?? null,
+    pickerEl: picker?.el ?? null,
     collapseButton: collapse.button,
     panels,
     monthCount,
@@ -125,14 +129,17 @@ export function createCalendarUI<TData = null>(
     currentDays,
   };
 
-  const pickerLayer = createPickerLayer({
-    root,
-    header,
-    picker,
-    getMonth: () => ({ year: state.year, month: state.month }),
-    updateNav: () => updateNav(header, bounds, state),
-    onGoTo: (year, month) => goToMonth(year, month),
-  });
+  const pickerLayer =
+    header !== null && picker !== null
+      ? createPickerLayer({
+          root,
+          header,
+          picker,
+          getMonth: () => ({ year: state.year, month: state.month }),
+          updateNav: () => updateNav(header, bounds, state),
+          onGoTo: (year, month) => goToMonth(year, month),
+        })
+      : null;
 
   /** 翻到指定年月。 */
   function goToMonth(year: number, month: number): void {

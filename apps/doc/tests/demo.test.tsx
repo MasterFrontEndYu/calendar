@@ -102,12 +102,13 @@ describe("demo components", () => {
     expect(container.textContent).toContain("3 月");
   });
 
-  it("headless renders without a visible header", () => {
+  it("headless renders without a header node", () => {
     const { container } = render(() => <CalendarUIHeadless />);
     flush();
 
     expect(container.querySelectorAll(".cui")).toHaveLength(1);
-    expect(container.querySelector<HTMLElement>(".cui__header")?.hidden).toBe(true);
+    expect(container.querySelector(".cui__header")).toBeNull();
+    expect(container.querySelector(".cui__picker")).toBeNull();
     expect(container.querySelectorAll(".cui__day")).toHaveLength(42);
   });
 

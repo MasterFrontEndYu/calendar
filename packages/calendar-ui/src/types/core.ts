@@ -65,7 +65,7 @@ export interface CalendarConfig<TData = null> {
   mode: CalendarMode;
   requestedMonths: 1 | 2;
   subtitle?: SubtitleRenderer;
-  /** 是否显示头部 */
+  /** 是否渲染头部；为 false 时内部不创建头部 */
   showHeader: boolean;
   renderHeader?: HeaderRenderer;
   /** 日期格 popup */
@@ -190,11 +190,12 @@ export interface RendererDeps<TData = null> {
   config: CalendarConfig<TData>;
   state: CalendarState;
   bounds: CalendarBounds;
-  header: HeaderHandle;
   panels: readonly CalendarPanel<TData>[];
   /** 双视图时是每个月份外层的 group 元素，用于写 aria-label */
   panelEls: readonly HTMLElement[];
   collapse: CollapseHandle<TData>;
+  /** 头部；header: false 时为 null */
+  header: HeaderHandle | null;
   /** 日期格 popup；未启用时为 null */
   popup: DayPopupHandle | null;
   currentDays(offset?: number): CalendarDay<TData>[];
@@ -216,9 +217,11 @@ export interface ActionContext<TData = null> {
 
 /** 构建公开实例需要的完整上下文 */
 export interface CalendarRuntime<TData = null> extends ActionContext<TData> {
-  header: HeaderHandle;
-  picker: PickerHandle;
-  pickerLayer: PickerLayerHandle;
+  /** 头部；header: false 时为 null */
+  header: HeaderHandle | null;
+  /** 年月选择层；header: false 时为 null */
+  picker: PickerHandle | null;
+  pickerLayer: PickerLayerHandle | null;
   popup: DayPopupHandle | null;
   goTo(year: number, month: number): void;
 }

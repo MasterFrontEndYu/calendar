@@ -98,13 +98,6 @@ const ui = createCalendarLunar(container, {
 });
 ```
 
-## 在线体验
-
-文档站内置交互式示例，无需安装即可试：
-
-- [GitHub Pages](https://sanguo-dev.github.io/calendar/)
-- [Netlify](https://calendardocs.netlify.app/)
-
 ## 数据
 
 - 农历、节气数据覆盖 1900–2100，超出范围会抛 `RangeError`。

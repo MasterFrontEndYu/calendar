@@ -34,10 +34,6 @@ interface CalendarInstance {
   hide(): void;
   toggle(): void;
   isVisible(): boolean;
-  showHeader(): void;
-  hideHeader(): void;
-  toggleHeader(): void;
-  isHeaderVisible(): boolean;
   getMinDate(): Date | null;
   setMinDate(date: CalendarDateInput | null): void;
   getMaxDate(): Date | null;
@@ -77,16 +73,12 @@ interface CalendarInstance {
 
 显示：
 
-| 方法                                                         | 返回      | 说明         |
-| ------------------------------------------------------------ | --------- | ------------ |
-| [show](/api/calendar-ui/instance/show)                       | `void`    | 显示整个日历 |
-| [hide](/api/calendar-ui/instance/hide)                       | `void`    | 隐藏整个日历 |
-| [toggle](/api/calendar-ui/instance/toggle)                   | `void`    | 切换显示状态 |
-| [isVisible](/api/calendar-ui/instance/isVisible)             | `boolean` | 当前是否可见 |
-| [showHeader](/api/calendar-ui/instance/showHeader)           | `void`    | 显示头部     |
-| [hideHeader](/api/calendar-ui/instance/hideHeader)           | `void`    | 隐藏头部     |
-| [toggleHeader](/api/calendar-ui/instance/toggleHeader)       | `void`    | 切换头部     |
-| [isHeaderVisible](/api/calendar-ui/instance/isHeaderVisible) | `boolean` | 头部是否可见 |
+| 方法                                             | 返回      | 说明         |
+| ------------------------------------------------ | --------- | ------------ |
+| [show](/api/calendar-ui/instance/show)           | `void`    | 显示整个日历 |
+| [hide](/api/calendar-ui/instance/hide)           | `void`    | 隐藏整个日历 |
+| [toggle](/api/calendar-ui/instance/toggle)       | `void`    | 切换显示状态 |
+| [isVisible](/api/calendar-ui/instance/isVisible) | `boolean` | 当前是否可见 |
 
 边界与主题：
 
@@ -103,6 +95,7 @@ interface CalendarInstance {
 ## 说明
 
 - 显示 / 隐藏只切换根节点的 `hidden`，不重建 DOM；
+- `header: false` 时不渲染头部和月份选择层，也没有头部显隐相关方法；
 - 边界变化会把当前选中日期与展示月份夹到新的可选范围；
 - `destroy()` 会移除根节点与全部事件监听，之后不要再调用实例方法。
 

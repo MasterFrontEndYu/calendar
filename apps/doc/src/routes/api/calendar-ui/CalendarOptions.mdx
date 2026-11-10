@@ -56,7 +56,7 @@ interface CalendarOptions<TData = null> {
 | `size`          | `CalendarSize`                          | `"normal"` | 尺寸模板：`min` / `normal` / `fill`                          |
 | `animation`     | `CalendarAnimationOptions`              | -          | 动画配置；不传时翻月直接切换、不显示折叠箭头                 |
 | `subtitle`      | `SubtitleRenderer`                      | -          | 自定义副标题，优先于适配器；返回 `null` / `undefined` 时回退 |
-| `header`        | `boolean`                               | `true`     | 是否显示头部                                                 |
+| `header`        | `boolean`                               | `true`     | 是否渲染头部与月份选择层                                     |
 | `renderHeader`  | `HeaderRenderer`                        | -          | 自定义头部，替换默认的「‹ 标题 ›」                           |
 | `popup`         | `CalendarPopupOptions`                  | -          | 日期格 popup；不传则不启用                                   |
 | `onSelect`      | `(day: CalendarDay<TData>) => void`     | -          | 选中某一天或范围变化后触发                                   |

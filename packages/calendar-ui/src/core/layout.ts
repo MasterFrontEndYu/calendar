@@ -44,8 +44,10 @@ export interface MountPanel {
 
 export interface MountCalendarOptions {
   root: HTMLElement;
-  headerEl: HTMLElement;
-  pickerEl: HTMLElement;
+  /** header: false 时为 null */
+  headerEl: HTMLElement | null;
+  /** header: false 时为 null */
+  pickerEl: HTMLElement | null;
   collapseButton: HTMLButtonElement | null;
   panels: readonly MountPanel[];
   monthCount: 1 | 2;
@@ -57,7 +59,8 @@ export const mountCalendar = function (options: MountCalendarOptions): HTMLEleme
   const panelEls: HTMLElement[] = [];
 
   if (monthCount === 1) {
-    root.append(headerEl, panels[0]!.weekdays.el, panels[0]!.viewport);
+    if (headerEl !== null) root.append(headerEl);
+    root.append(panels[0]!.weekdays.el, panels[0]!.viewport);
   } else {
     const monthsEl = node("div", "cui__months");
     panels.forEach((panel) => {
@@ -67,11 +70,12 @@ export const mountCalendar = function (options: MountCalendarOptions): HTMLEleme
       monthsEl.append(monthEl);
       panelEls.push(monthEl);
     });
-    root.append(headerEl, monthsEl);
+    if (headerEl !== null) root.append(headerEl);
+    root.append(monthsEl);
   }
 
   if (collapseButton !== null) root.append(collapseButton);
-  root.append(pickerEl);
+  if (pickerEl !== null) root.append(pickerEl);
 
   return panelEls;
 };

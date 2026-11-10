@@ -263,7 +263,7 @@ export interface CalendarOptions<TData = null> {
   animation?: CalendarAnimationOptions;
   /** 自定义副标题；优先于 adapter.subtitle，返回 null/undefined 时回退 */
   subtitle?: SubtitleRenderer;
-  /** 是否显示头部，默认 true */
+  /** 是否渲染头部，默认 true；为 false 时不创建头部和月份选择层 */
   header?: boolean;
   /** 自定义头部，替换默认的 ‹ 标题 › */
   renderHeader?: HeaderRenderer;
@@ -307,14 +307,6 @@ export interface CalendarInstance {
   toggle(): void;
   /** 整个日历当前是否可见 */
   isVisible(): boolean;
-  /** 显示头部 */
-  showHeader(): void;
-  /** 隐藏头部 */
-  hideHeader(): void;
-  /** 切换头部的显示状态 */
-  toggleHeader(): void;
-  /** 头部当前是否可见 */
-  isHeaderVisible(): boolean;
   /** 当前最小可选日期，未设置时为 null */
   getMinDate(): Date | null;
   /** 设置最小可选日期，传 null 取消 */
