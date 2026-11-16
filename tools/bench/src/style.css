@@ -1,0 +1,25 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 1000px;
+  overflow: hidden;
+  background: #eef0f3;
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+#stage {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 372px);
+  gap: 16px;
+  align-content: start;
+  justify-content: start;
+  height: 1000px;
+  box-sizing: border-box;
+  padding: 16px;
+  overflow: auto;
+}
+
+.cui-host {
+  display: block;
+}

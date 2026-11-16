@@ -1,0 +1,24 @@
+{
+  "name": "@sanguo-dev/bench",
+  "version": "0.0.0",
+  "private": true,
+  "description": "calendar-ui 的 UI 性能基准：本地构建与 npm latest 两套运行方式",
+  "type": "module",
+  "scripts": {
+    "build": "vp build",
+    "install:browser": "node ./node_modules/playwright/cli.js install chromium",
+    "refresh:npm": "bun update calendar-ui-npm",
+    "bench:local": "vp run -F @sanguo-dev/calendar-ui build && vp run build && vpx ./runner/main.ts --target local",
+    "bench:npm": "vp run build && vpx ./runner/main.ts --target npm",
+    "bench:report": "vpx ./runner/main.ts --report"
+  },
+  "devDependencies": {
+    "@sanguo-dev/calendar-ui": "workspace:*",
+    "@types/node": "catalog:",
+    "calendar-ui-npm": "npm:@sanguo-dev/calendar-ui@latest",
+    "playwright": "^1.65.1",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

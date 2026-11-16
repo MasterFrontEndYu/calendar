@@ -113,6 +113,18 @@ const ui = createCalendarLunar(container, {
 | GitHub Pages | [sanguo-dev.github.io/calendar](https://sanguo-dev.github.io/calendar/) |
 | Netlify      | [calendardocs.netlify.app](https://calendardocs.netlify.app/)           |
 
+## 性能基准
+
+`tools/bench` 是基于 Playwright 的操作型性能基准（类似 js-framework-benchmark），支持本地构建与 npm 线上版本两种被测对象：
+
+```bash
+vp run bench:local   # 本地 workspace 构建
+vp run bench:npm     # npm 上的 @sanguo-dev/calendar-ui@latest
+vp run bench:report  # 生成 local vs npm 对比报告
+```
+
+首次运行前需要 `vp install` 和 `vp run -F @sanguo-dev/bench install:browser`。指标口径、参数与局限见 [tools/bench/README.md](tools/bench/README.md)。
+
 ## 开发
 
 ```bash

@@ -15,7 +15,11 @@
     "dev": "vp run --fail-if-no-match doc#dev",
     "prepare": "vp config",
     "test": "vp test",
-    "coverage": "vp run -r coverage"
+    "coverage": "vp run -r coverage",
+    "bench": "vp run bench:local",
+    "bench:local": "vp run -F @sanguo-dev/bench bench:local",
+    "bench:npm": "vp run -F @sanguo-dev/bench bench:npm",
+    "bench:report": "vp run -F @sanguo-dev/bench bench:report"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
