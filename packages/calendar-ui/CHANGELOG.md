@@ -1,5 +1,11 @@
 # @sanguo-dev/calendar-ui
 
+## 0.3.2
+
+### Patch Changes
+
+- 同步更新
+
 ## 0.3.1
 
 ### Patch Changes
