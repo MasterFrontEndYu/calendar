@@ -11,24 +11,18 @@ const STATE_RANGE_END = 16;
 const STATE_IN_RANGE = 32;
 const STATE_DISABLED = 64;
 
-interface CellMark {
-  /** 状态位组合，见 STATE_* */
-  mask: number;
-  /** 上一次写入的 aria-label */
-  label: string;
+/** 每个网格自己的格子状态；用数组代替「格子 → 对象」的 WeakMap */
+export interface DayMarks {
+  readonly masks: Int32Array;
+  readonly labels: string[];
 }
 
-/** 每个格子最近一次写入的状态；结构固定，不用 WeakMap 之外的地方保存 */
-const marks = new WeakMap<HTMLElement, CellMark>();
-
-/** 取（或建）格子的状态记录 */
-const markOf = function (cell: HTMLElement): CellMark {
-  let mark = marks.get(cell);
-  if (mark === undefined) {
-    mark = { mask: -1, label: "" };
-    marks.set(cell, mark);
-  }
-  return mark;
+/** 创建 42 格的 mark 存储。 */
+export const createDayMarks = function (count: number): DayMarks {
+  return {
+    masks: new Int32Array(count),
+    labels: Array.from({ length: count }, () => ""),
+  };
 };
 
 /** 创建日期格元素。 */
@@ -49,7 +43,12 @@ export const createDayCell = function (): HTMLButtonElement {
 };
 
 /** 更新日期格的内容和状态。 */
-export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknown>): void {
+export const setDay = function (
+  cell: HTMLButtonElement,
+  day: CalendarDay<unknown>,
+  marks: DayMarks,
+  index: number,
+): void {
   const key = dateStringKey(day.year, day.month, day.day);
 
   if (cell.dataset.date !== key) {
@@ -86,11 +85,16 @@ export const setDay = function (cell: HTMLButtonElement, day: CalendarDay<unknow
     cell.classList.toggle("is-weekend", weekday === 0 || weekday === 6);
   }
 
-  setDayState(cell, day);
+  setDayState(cell, day, marks, index);
 };
 
 /** 更新日期格的状态。 */
-export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay<unknown>): void {
+export const setDayState = function (
+  cell: HTMLButtonElement,
+  day: CalendarDay<unknown>,
+  marks: DayMarks,
+  index: number,
+): void {
   const mask =
     (day.inCurrentMonth ? 0 : STATE_OUTSIDE) |
     (day.isToday ? STATE_TODAY : 0) |
@@ -101,25 +105,40 @@ export const setDayState = function (cell: HTMLButtonElement, day: CalendarDay<u
     (day.isDisabled ? STATE_DISABLED : 0);
 
   // 42 个格子里每次通常只有 1-2 个真的变了，其余直接跳过
-  const mark = markOf(cell);
-  if (mark.mask === mask && mark.label === day.ariaLabel) return;
-  mark.mask = mask;
-  mark.label = day.ariaLabel;
+  const previousMask = marks.masks[index] ?? 0;
+  const previousLabel = marks.labels[index] ?? "";
+  const labelChanged = previousLabel !== day.ariaLabel;
+  if (previousMask === mask && !labelChanged) return;
 
-  cell.classList.toggle("is-outside", !day.inCurrentMonth);
-  cell.classList.toggle("is-today", day.isToday);
-  cell.classList.toggle("is-selected", day.isSelected);
-  cell.classList.toggle("is-range-start", day.isRangeStart);
-  cell.classList.toggle("is-range-end", day.isRangeEnd);
-  cell.classList.toggle("is-in-range", day.isInRange);
-  cell.classList.toggle("is-disabled", day.isDisabled);
-  cell.disabled = day.isDisabled;
-  cell.tabIndex = day.inCurrentMonth && !day.isDisabled ? 0 : -1;
-  cell.setAttribute("aria-label", day.ariaLabel);
+  // 只碰发生变化的位；翻月时 aria-label 全变，但状态位通常只变少数几格
+  const diff = previousMask ^ mask;
 
-  if (day.isDisabled) cell.setAttribute("aria-disabled", "true");
-  else cell.removeAttribute("aria-disabled");
+  if ((diff & STATE_OUTSIDE) !== 0) cell.classList.toggle("is-outside", !day.inCurrentMonth);
+  if ((diff & STATE_TODAY) !== 0) cell.classList.toggle("is-today", day.isToday);
+  if ((diff & STATE_RANGE_START) !== 0) cell.classList.toggle("is-range-start", day.isRangeStart);
+  if ((diff & STATE_RANGE_END) !== 0) cell.classList.toggle("is-range-end", day.isRangeEnd);
+  if ((diff & STATE_IN_RANGE) !== 0) cell.classList.toggle("is-in-range", day.isInRange);
 
-  if (day.isSelected) cell.setAttribute("aria-pressed", "true");
-  else cell.removeAttribute("aria-pressed");
+  // isSelected / aria-pressed 同时受「选中」和「范围端点」影响，三者任一变化都要同步
+  if ((diff & (STATE_SELECTED | STATE_RANGE_START | STATE_RANGE_END)) !== 0) {
+    cell.classList.toggle("is-selected", day.isSelected);
+    if (day.isSelected) cell.setAttribute("aria-pressed", "true");
+    else cell.removeAttribute("aria-pressed");
+  }
+
+  if ((diff & STATE_DISABLED) !== 0) {
+    cell.classList.toggle("is-disabled", day.isDisabled);
+    cell.disabled = day.isDisabled;
+    if (day.isDisabled) cell.setAttribute("aria-disabled", "true");
+    else cell.removeAttribute("aria-disabled");
+  }
+
+  if ((diff & (STATE_OUTSIDE | STATE_DISABLED)) !== 0) {
+    cell.tabIndex = day.inCurrentMonth && !day.isDisabled ? 0 : -1;
+  }
+
+  if (labelChanged) cell.setAttribute("aria-label", day.ariaLabel);
+
+  marks.masks[index] = mask;
+  marks.labels[index] = day.ariaLabel;
 };

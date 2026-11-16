@@ -216,6 +216,31 @@ describe("范围选择", () => {
     instance.destroy();
   });
 
+  it("范围端点移动时清掉旧端点的 is-selected / aria-pressed", () => {
+    const instance = createCalendarUI(host(), {
+      mode: "range",
+      initialDate: "2026-10-15",
+    });
+
+    const start = cellOf(instance.el, "2026-10-10");
+    const end = cellOf(instance.el, "2026-10-20");
+    start.click();
+    end.click();
+    expect(start.hasAttribute("aria-pressed")).toBe(true);
+    expect(end.hasAttribute("aria-pressed")).toBe(true);
+
+    // 第三次点击重新开始范围，旧端点不再属于 isSelected
+    const next = cellOf(instance.el, "2026-10-25");
+    next.click();
+    expect(start.classList.contains("is-selected")).toBe(false);
+    expect(start.hasAttribute("aria-pressed")).toBe(false);
+    expect(end.classList.contains("is-selected")).toBe(false);
+    expect(end.hasAttribute("aria-pressed")).toBe(false);
+    expect(next.getAttribute("aria-pressed")).toBe("true");
+
+    instance.destroy();
+  });
+
   it("setRange 反向输入自动交换，clearRange 清空", () => {
     const changes: Array<{ start: Date | null; end: Date | null }> = [];
     const instance = createCalendarUI(host(), {

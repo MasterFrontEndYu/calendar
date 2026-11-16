@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { CalendarDay, CalendarLocale, HeaderRenderContext } from "../src/index.ts";
 import { zhCN } from "../src/index.ts";
 import { createCalendarUI } from "../src/index.ts";
-import { createDayCell, setDay } from "../src/components/day.ts";
+import { createDayCell, createDayMarks, setDay as applyDay } from "../src/components/day.ts";
 import { createGrid } from "../src/components/grid.ts";
 import { createHeader } from "../src/components/header.ts";
 import { createPicker } from "../src/components/picker.ts";
@@ -64,18 +64,41 @@ const daysOf = function (count = 42): CalendarDay[] {
   return Array.from({ length: count }, (_, index) => dayOf(index + 1));
 };
 
+// 单个格子的测试沿用两参数写法；内部为每个 cell 保留一份 marks
+const cellMarks = new WeakMap<HTMLButtonElement, ReturnType<typeof createDayMarks>>();
+const setDay = function (cell: HTMLButtonElement, day: CalendarDay): void {
+  let marks = cellMarks.get(cell);
+  if (marks === undefined) {
+    marks = createDayMarks(1);
+    cellMarks.set(cell, marks);
+  }
+  applyDay(cell, day, marks, 0);
+};
+
 describe("网格点击", () => {
   it("点击格子回传对应数据和索引", () => {
     const onSelect = vi.fn();
     const grid = createGrid({ onSelect });
     document.body.append(grid.el);
     const days = daysOf();
+    days[5] = {
+      ...dayOf(6, { subtitle: "初六", badge: { text: "休", tone: "rest" } }),
+      data: { id: "d6" },
+    } as unknown as CalendarDay;
     grid.render(days);
 
     grid.el.querySelectorAll<HTMLButtonElement>(".cui__day")[5]!.click();
 
     expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect.mock.calls[0]?.[0]).toBe(days[5]);
+    expect(onSelect.mock.calls[0]?.[0]).toMatchObject({
+      year: 2026,
+      month: 10,
+      day: 6,
+      data: { id: "d6" },
+      subtitle: "初六",
+      badge: { text: "休", tone: "rest" },
+      isSelected: false,
+    });
     expect(onSelect.mock.calls[0]?.[1]).toBe(5);
   });
 
@@ -118,12 +141,23 @@ describe("网格点击", () => {
     expect(onSelect).not.toHaveBeenCalled();
   });
 
-  it("updateState 接受不完整的 42 天数据", () => {
+  it("selectDay 只更新存在的格子并返回完整数据", () => {
     const grid = createGrid({ onSelect: () => {} });
     document.body.append(grid.el);
     grid.render(daysOf());
 
-    expect(() => grid.updateState(daysOf(2))).not.toThrow();
+    const day = grid.selectDay(20261020);
+    expect(day?.day).toBe(20);
+    expect(day?.isSelected).toBe(true);
+
+    const cell = grid.el.querySelectorAll<HTMLButtonElement>(".cui__day")[19]!;
+    expect(cell.classList.contains("is-selected")).toBe(true);
+    expect(cell.getAttribute("aria-pressed")).toBe("true");
+
+    // 不在本次 42 格里的日期，或者数据被截断的格子，返回 undefined
+    expect(grid.selectDay(20261101)).toBeUndefined();
+    grid.render(daysOf(2));
+    expect(grid.selectDay(20261020)).toBeUndefined();
   });
 });
 
@@ -324,6 +358,13 @@ describe("年月选择层", () => {
   const cellsOf = function (picker: ReturnType<typeof createPicker>): HTMLButtonElement[] {
     return Array.from(picker.el.querySelectorAll<HTMLButtonElement>(".cui__picker-cell"));
   };
+
+  it("首次打开前不创建 12 个格子，打开后再建", () => {
+    const { picker } = createTestPicker();
+    expect(cellsOf(picker)).toHaveLength(0);
+    picker.open("month");
+    expect(cellsOf(picker)).toHaveLength(12);
+  });
 
   it("月份层显示 12 个中文月份，选中当前月并聚焦", () => {
     const { picker } = createTestPicker();

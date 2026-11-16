@@ -109,8 +109,12 @@ export interface GridHandle<TData = null> {
   el: HTMLElement;
   /** 换月：更新格子文本与状态（节点复用，不重新创建） */
   render(days: CalendarDay<TData>[]): void;
-  /** 只更新选中/今天等状态类，不动文本 */
-  updateState(days: CalendarDay<TData>[]): void;
+  /**
+   * 点选：只更新旧选中 / 新选中的格子，并返回新选中格的完整数据
+   *
+   * 42 个 day 对象不再长期保留；这里从格子当前的 DOM 状态组装。
+   */
+  selectDay(key: number): CalendarDay<TData> | undefined;
   /**
    * 折叠时只显示指定行；传 null 显示全部 6 行
    *

@@ -1,6 +1,7 @@
 import type { ActionContext, CalendarDateInput, CalendarDay } from "../types";
 import {
   compareDay,
+  dateKey,
   monthIndexOf,
   normalizeMonth,
   readDate,
@@ -54,20 +55,23 @@ const commitSingle = function <TData = null>(
   // 点选不换月，只需要刷新状态类；折叠状态下要重绘整块才能切到新行
   const collapsed = ctx.collapse.isCollapsed();
   const shouldRender = options.forceRender || collapsed;
-  const dayLists = shouldRender ? ctx.render(true) : null;
-  const days = dayLists?.[0] ?? ctx.currentDays();
-  if (!shouldRender) ctx.panels[0]?.grid.updateState(days);
-
-  // 回调用更新后的对象，保证 isSelected 是本次点击的结果
   let day: CalendarDay<TData> | undefined;
-  if (options.day !== undefined && options.index !== undefined) {
-    day = days[options.index] ?? options.day;
+
+  if (shouldRender) {
+    const days = ctx.render(true)[0] ?? ctx.currentDays();
+    if (options.day !== undefined && options.index !== undefined) {
+      day = days[options.index] ?? options.day;
+    } else {
+      const year = target.getFullYear();
+      const month = target.getMonth() + 1;
+      const date = target.getDate();
+      day = days.find((item) => item.year === year && item.month === month && item.day === date);
+    }
   } else {
-    const year = target.getFullYear();
-    const month = target.getMonth() + 1;
-    const date = target.getDate();
-    day = days.find((item) => item.year === year && item.month === month && item.day === date);
+    // 42 个 day 对象不再长期保留；网格从 DOM 状态组装选中格，并只改 1-2 个格子
+    day = ctx.panels[0]?.grid.selectDay(dateKey(target));
   }
+
   if (day) ctx.config.onSelect?.(day);
 };
 

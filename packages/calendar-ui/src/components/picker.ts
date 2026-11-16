@@ -6,18 +6,13 @@ const PAGE_SIZE = 12;
 
 /** 创建年月选择层。 */
 export const createPicker = function (options: PickerOptions): PickerHandle {
+  // 只先建一个空壳；12 个格子和点击监听等第一次打开时再建，
+  // 没点过年月标题的实例不应该为选择层付 DOM / 闭包成本。
   const el = node("div", "cui__picker");
   el.setAttribute("role", "dialog");
 
-  const grid = node("div", "cui__picker-grid");
-  const cells = Array.from({ length: PAGE_SIZE }, () => {
-    const cell = node("button", "cui__picker-cell");
-    cell.type = "button";
-    return cell;
-  });
-  grid.append(...cells);
-  el.append(grid);
-
+  let grid: HTMLElement | null = null;
+  let cells: HTMLButtonElement[] = [];
   let mode: "month" | "year" | null = null;
   /** 月份层展示的年份 */
   let viewYear = options.getYear();
@@ -34,6 +29,39 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
     return false;
   };
 
+  const onGridClick = (event: MouseEvent): void => {
+    const cell = (event.target as HTMLElement).closest<HTMLButtonElement>(".cui__picker-cell");
+    if (!cell || cell.disabled) return;
+
+    const index = cells.indexOf(cell);
+    if (index < 0) return;
+
+    if (mode === "month") {
+      options.onPickMonth(viewYear, index + 1);
+      return;
+    }
+
+    if (mode === "year") {
+      options.onPickYear(pageStart + index);
+    }
+  };
+
+  const ensureGrid = (): HTMLButtonElement[] => {
+    if (cells.length > 0) return cells;
+
+    const gridEl = node("div", "cui__picker-grid");
+    cells = Array.from({ length: PAGE_SIZE }, () => {
+      const cell = node("button", "cui__picker-cell");
+      cell.type = "button";
+      return cell;
+    });
+    gridEl.append(...cells);
+    gridEl.addEventListener("click", onGridClick);
+    el.append(gridEl);
+    grid = gridEl;
+    return cells;
+  };
+
   function movePage(direction: -1 | 1): void {
     if (mode !== "year") return;
     const start = pageStart + direction * PAGE_SIZE;
@@ -46,7 +74,7 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
     el.classList.add("is-month");
     el.setAttribute("aria-label", options.locale.pickMonth ?? "选择月份");
 
-    cells.forEach((cell, index) => {
+    ensureGrid().forEach((cell, index) => {
       const month = index + 1;
       cell.textContent = monthName(month);
       cell.dataset.month = String(month);
@@ -64,7 +92,7 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
     el.classList.remove("is-month");
     el.setAttribute("aria-label", options.locale.pickYear ?? "选择年份");
 
-    cells.forEach((cell, index) => {
+    ensureGrid().forEach((cell, index) => {
       const year = pageStart + index;
       cell.textContent = String(year);
       cell.dataset.year = String(year);
@@ -101,25 +129,6 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
     el.classList.remove("is-open");
   }
 
-  const onGridClick = (event: MouseEvent): void => {
-    const cell = (event.target as HTMLElement).closest<HTMLButtonElement>(".cui__picker-cell");
-    if (!cell || cell.disabled) return;
-
-    const index = cells.indexOf(cell);
-    if (index < 0) return;
-
-    if (mode === "month") {
-      options.onPickMonth(viewYear, index + 1);
-      return;
-    }
-
-    if (mode === "year") {
-      options.onPickYear(pageStart + index);
-    }
-  };
-
-  grid.addEventListener("click", onGridClick);
-
   return {
     el,
     open,
@@ -133,7 +142,9 @@ export const createPicker = function (options: PickerOptions): PickerHandle {
       render();
     },
     destroy: () => {
-      grid.removeEventListener("click", onGridClick);
+      grid?.removeEventListener("click", onGridClick);
+      grid = null;
+      cells = [];
     },
   };
 };

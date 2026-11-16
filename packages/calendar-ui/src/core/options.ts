@@ -11,6 +11,9 @@ import { findSelectable } from "../utils/selectable";
 import { assertBounds } from "./bounds";
 
 const POPUP_TRIGGERS = ["click", "hover", "focus", "auto"] as const;
+
+/** 没有 disabledDates 时共享同一个空 Set，避免每个实例都建一个 */
+const EMPTY_DISABLED = new Set<number>();
 const POPUP_PLACEMENTS = ["auto", "top", "bottom", "center"] as const;
 const POPUP_ROLES = ["dialog", "tooltip"] as const;
 
@@ -111,7 +114,7 @@ export const resolveOptions = function <TData = null>(
   if (!Array.isArray(disabledDates)) {
     throw new TypeError("[calendar-ui] disabledDates 必须是 Date 数组");
   }
-  const disabled = new Set<number>();
+  const disabled = disabledDates.length === 0 ? EMPTY_DISABLED : new Set<number>();
   disabledDates.forEach((value, index) => {
     const date = readDate(value, `disabledDates[${index}]`);
     if (date !== null) disabled.add(dateKey(date));

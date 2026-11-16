@@ -140,6 +140,27 @@ function targetTable(run: RunResult, variants: readonly { id: string; label: str
   </table>`;
 }
 
+function ratioTable(run: RunResult, variants: readonly { id: string; label: string }[]): string {
+  const rows = variants
+    .map((variant) => {
+      const cells = CORE.map((scenario) => {
+        const value = opOf(run, variant.id, scenario)?.syncMs;
+        const base = opOf(run, "vanilla", scenario)?.syncMs;
+        const ratio =
+          value !== undefined && base !== undefined && base > 0
+            ? `${(value / base).toFixed(2)}×`
+            : "—";
+        return `<td>${ratio}</td>`;
+      }).join("");
+      return `<tr><th class="rowhead">${esc(variant.label)}</th>${cells}</tr>`;
+    })
+    .join("");
+  return `<table>
+    <thead><tr><th>变体</th>${CORE.map((scenario) => `<th>${esc(SHORT[scenario] ?? scenario)} 相对基线</th>`).join("")}</tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
 function memoryCompareTable(
   runs: Loaded["runs"],
   variants: readonly { id: string; label: string }[],
@@ -273,7 +294,9 @@ export async function generateReport(resultsDir: string): Promise<string[]> {
     const run = runs[target];
     if (!run) return "";
     return `<h2>${target === "local" ? "本地构建" : "npm latest"}</h2>
-      <div class="scroll">${targetTable(run, variants)}</div>`;
+      <div class="scroll">${targetTable(run, variants)}</div>
+      <p class="sub">相对基线 = 变体 JS / 原生基线 JS；同一次运行内比较，受机器状态影响更小。</p>
+      <div class="scroll">${ratioTable(run, variants)}</div>`;
   }).join("");
 
   const html = `<!doctype html>
@@ -327,7 +350,7 @@ export async function generateReport(resultsDir: string): Promise<string[]> {
     hasBoth
       ? `<h2>本地 vs npm latest</h2>
     <div class="scroll">${compareTable(runs, defaultVariant?.id ?? "single")}</div>
-    <p class="sub">默认配置（单日历）；JS 变化 = npm 相对本地，正数表示 npm 更慢。创建 100 个、销毁 100 个为每实例均摊。${sameVersion ? "本次 local 与 npm 都是 " + runs.local?.meta.library.version + "，差异应视为运行间噪声。" : ""}</p>`
+    <p class="sub">默认配置（单日历）；JS 变化 = npm 相对本地，正数表示 npm 更慢。创建 100 个、销毁 100 个为每实例均摊。${sameVersion ? "本次 local 与 npm 版本号相同（" + runs.local?.meta.library.version + "）；local 是工作区当前代码，npm 是已发布产物，差异可能包含未发布改动与运行噪声。" : ""}</p>`
       : ""
   }
 
@@ -387,6 +410,21 @@ export async function generateReport(resultsDir: string): Promise<string[]> {
       md.push(
         `| ${variant.label} | ${js.join(" | ")} | ${frames.join(" | ")} | ${fmt(memOf(run, variant.id)?.perInstanceKB, 1)} KB | ${fmt(bootOf(run, variant.id)?.mountMs, 1)} ms |`,
       );
+    }
+    md.push("");
+    md.push("相对基线（JS / 原生基线 JS）：");
+    md.push("");
+    md.push(`| 变体 | ${CORE.map((scenario) => SHORT[scenario] ?? scenario).join(" | ")} |`);
+    md.push(`| --- | ${CORE.map(() => "---:").join(" | ")} |`);
+    for (const variant of variants) {
+      const cells = CORE.map((scenario) => {
+        const value = opOf(run, variant.id, scenario)?.syncMs;
+        const base = opOf(run, "vanilla", scenario)?.syncMs;
+        return value !== undefined && base !== undefined && base > 0
+          ? `${(value / base).toFixed(2)}×`
+          : "—";
+      });
+      md.push(`| ${variant.label} | ${cells.join(" | ")} |`);
     }
     md.push("");
   }

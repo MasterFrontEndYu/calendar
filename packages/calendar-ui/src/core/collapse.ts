@@ -27,6 +27,9 @@ export const createCollapse = function <TData = null>(
   };
 
   const updateRows = function (dayLists: readonly CalendarDay<TData>[][], animate: boolean): void {
+    // 没有开启折叠时不需要每次重绘都去碰行可见性
+    if (!collapsible) return;
+
     if (!collapsed) {
       panels.forEach((panel) => panel.grid.setVisibleRows(null, animate));
       return;
