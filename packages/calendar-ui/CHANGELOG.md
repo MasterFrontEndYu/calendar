@@ -1,5 +1,17 @@
 # @sanguo-dev/calendar-ui
 
+## 0.3.1
+
+### Patch Changes
+
+- 性能：翻月、点选只写入状态发生变化的格子，未启用折叠时跳过重复的行可见性同步。
+- 性能：点选复用当前网格，不再每次点击重建整月 42 个日期对象。
+- 内存：渲染后不再长期保留 42 个 CalendarDay / Date，点击时按需从 DOM 和 adapter data 组装；单实例 JS 堆约从 17.6 KB 降到 8.8 KB。
+- 内存：年月选择层改为第一次打开时创建；没打开过的实例少 13 个 DOM 节点（单月 250 → 237，双月 479 → 466）。
+- 内存：格子状态标记和网格索引改用数组，移除 WeakMap；范围双月 JS 堆约从 29.5 KB 降到 14.0 KB。
+- 内部：CalendarInstance / CalendarGrid 改为原型方法，减少每实例闭包；空 disabledDates 共享同一个 Set。
+- 修复：范围端点移动时正确清理旧端点的 is-selected / aria-pressed。
+
 ## 0.3.0
 
 ### Minor Changes
