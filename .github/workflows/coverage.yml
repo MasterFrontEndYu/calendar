@@ -3,6 +3,12 @@ name: Coverage
 on:
   push:
     branches: [master]
+    # 覆盖率只关心 packages/* 的代码：只有文档站、Markdown 和 changeset 的
+    # master push 不必再跑一遍。PR 不受影响，始终运行。
+    paths-ignore:
+      - "apps/doc/**"
+      - "**/*.md"
+      - ".changeset/**"
   pull_request:
 
 jobs:
