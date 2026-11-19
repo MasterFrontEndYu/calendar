@@ -18,8 +18,8 @@
     "@sanguo-dev/calendar-ui-lunar": "workspace:*",
     "@solidjs/meta": "^1.0.0-next.2",
     "@solidjs/router": "2.0.0-next.37",
-    "@solidjs/web": "^2.0.0-rc.20",
-    "solid-js": "^2.0.0-rc.20"
+    "@solidjs/web": "^2.0.3",
+    "solid-js": "^2.0.3"
   },
   "devDependencies": {
     "@iconify-json/ri": "^1.2.10",
